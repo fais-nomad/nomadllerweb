@@ -325,8 +325,8 @@ section {
 }
 
 @media (max-width: 900px) {
-  .feature-item {
-    flex: 0 0 80vw;
+  .feature-item, .package-card {
+    flex: 0 0 85vw;
     padding: 2rem;
   }
   
