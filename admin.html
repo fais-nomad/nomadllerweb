@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nomadller | Admin Portal</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/src/admin.css">
+</head>
+<body class="admin-body">
+    <div class="login-container">
+        <div class="login-card reveal">
+            <div class="login-header">
+                <div class="login-logo">NOMADLLER</div>
+                <div class="login-subtitle">Command Center Portal</div>
+            </div>
+            
+            <form id="admin-login-form" class="login-form">
+                <div class="form-group">
+                    <label for="username">Admin ID</label>
+                    <input type="text" id="username" required placeholder="Enter your ID">
+                </div>
+                <div class="form-group">
+                    <label for="password">Security Key</label>
+                    <input type="password" id="password" required placeholder="Enter security key">
+                </div>
+                <button type="submit" class="login-btn">AUTHENTICATE</button>
+            </form>
+            <div id="login-error" style="color: var(--admin-danger); text-align: center; margin-top: 1rem; display: none; font-size: 0.85rem;">
+                Invalid credentials. Access denied.
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/admin.js"></script>
+</body>
+</html>

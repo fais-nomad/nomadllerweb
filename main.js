@@ -75,7 +75,7 @@ function updateHero(index) {
   dots[index].classList.add('active');
 
   // Animate text change
-  const newTitle = slides[index].getAttribute('data-title').replace(' ', '<br>');
+  const newTitle = slides[index].getAttribute('data-title').replace(/ /g, '<br>');
   const newSubtitle = slides[index].getAttribute('data-subtitle');
 
   gsap.to([heroTitle, heroSubtitle], {

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nomadller | Upcoming Trips Admin</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/src/admin.css">
+    <!-- Phosphor Icons for Sidebar -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- jsPDF and AutoTable for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .trip-form {
+            background: var(--admin-card-bg);
+            border: 1px solid var(--admin-border);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--admin-border);
+            border-radius: 10px;
+            color: white;
+            font-family: var(--font-main);
+            transition: all 0.3s;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.2);
+        }
+        .submit-btn {
+            padding: 1rem 2rem;
+            background: var(--admin-primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+        .submit-btn:hover {
+            background: #ff8b65;
+        }
+    </style>
+</head>
+<body class="admin-body">
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header" style="padding: 2rem 1rem;">
+                <div class="login-logo" style="font-size: 1.2rem; letter-spacing: 1px; margin-bottom: 0;">NOMADLLER</div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <i class="ph ph-calendar-plus"></i>
+                    Upcoming Trips
+                </a>
+            </nav>
+            <div style="padding: 1.5rem;">
+                <button id="logout-btn" class="btn" style="width: 100%; padding: 0.8rem; font-size: 0.8rem; margin-top: 0; background: transparent; border: 1px solid var(--admin-border);">
+                    <i class="ph ph-sign-out"></i> LOGOUT
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <button id="mobile-menu-btn" class="mobile-menu-btn">
+                    <i class="ph ph-list"></i>
+                </button>
+                <h1 class="dashboard-title">Upcoming Trips Management</h1>
+                <div class="user-profile">
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Welcome, Admin</span>
+                    <div class="user-avatar">A</div>
+                </div>
+            </header>
+
+            <!-- Add Trip Form -->
+            <div class="trip-form">
+                <div class="section-header">
+                    <h3>Add New Upcoming Trip</h3>
+                </div>
+                <form id="add-trip-form">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="tripName">Trip Name</label>
+                            <input type="text" id="tripName" required placeholder="e.g. Everest Base Camp Expedition">
+                        </div>
+                        <div class="form-group">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" id="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">End Date</label>
+                            <input type="date" id="endDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="guideName">Guide Name</label>
+                            <input type="text" id="guideName" required placeholder="e.g. Mohamed Fais">
+                        </div>
+                        <div class="form-group">
+                            <label for="guideContact">Guide Contact No.</label>
+                            <input type="tel" id="guideContact" required placeholder="+91 XXXXX XXXXX">
+                        </div>
+                        <div class="form-group full-width" id="link-container" style="display: none; background: rgba(46, 196, 182, 0.1); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--admin-success);">
+                            <label style="color: var(--admin-success);">Generated Guest Link</label>
+                            <div style="display: flex; gap: 1rem;">
+                                <input type="text" id="generatedLink" readonly style="flex: 1; border-color: var(--admin-success); color: var(--admin-success);">
+                                <button type="button" id="copyLinkBtn" class="btn" style="margin: 0; padding: 0 1.5rem; background: var(--admin-success);"><i class="ph ph-copy"></i> Copy</button>
+                            </div>
+                            <p style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-secondary);">Share this link with your guests so they can fill out their details and upload their tickets.</p>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn" id="generate-btn">CREATE TRIP & GENERATE GUEST LINK</button>
+                </form>
+            </div>
+
+            <!-- Trips List -->
+            <div class="recent-orders">
+                <div class="section-header">
+                    <h3>Scheduled Trips</h3>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Trip Name</th>
+                                <th>Dates</th>
+                                <th>Guide</th>
+                                <th>Contact</th>
+                                <th>Guests</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trips-table-body">
+                            <!-- Populated by JS -->
+                            <tr>
+                                <td><strong>Example Trip</strong></td>
+                                <td>2026-10-12 to 2026-10-26</td>
+                                <td>Fais</td>
+                                <td>+91 8129163766</td>
+                                <td>12 Guests (Standard)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Guest Details Modal -->
+    <div id="guest-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 1000px; max-height: 90vh; overflow-y: auto; border-radius: 15px; border: 1px solid var(--admin-border); padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                <h2 style="color: white; margin: 0;">Registered Guests for <span id="modal-trip-name" style="color: var(--admin-primary);">Trip</span></h2>
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <button id="download-flight-data" class="btn" style="margin: 0; padding: 0.5rem 1rem; background: var(--admin-primary); font-size: 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer;"><i class="ph ph-download"></i> Flights</button>
+                    <button id="download-passport-data" class="btn" style="margin: 0; padding: 0.5rem 1rem; background: var(--accent); font-size: 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer;"><i class="ph ph-download"></i> Passports</button>
+                    <button id="modal-copy-link" class="btn" style="margin: 0; padding: 0.5rem 1rem; background: var(--admin-success); font-size: 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer;"><i class="ph ph-copy"></i> Link</button>
+                    <button id="close-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin-left: 0.5rem;"><i class="ph ph-x"></i></button>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem;">
+                <button id="download-flight-data" class="btn" style="padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); font-size: 0.8rem;"><i class="ph ph-airplane-landing"></i> Flight Info</button>
+                <button id="download-passport-data" class="btn" style="padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); font-size: 0.8rem;"><i class="ph ph-identification-card"></i> Passport Info</button>
+                <button id="plan-pickups-btn" class="btn" style="padding: 0.8rem; background: var(--admin-primary); border: none; font-size: 0.8rem;"><i class="ph ph-magic-wand"></i> AI Pickup Plan</button>
+                <button id="plan-drops-btn" class="btn" style="padding: 0.8rem; background: var(--accent); border: none; font-size: 0.8rem;"><i class="ph ph-magic-wand"></i> AI Drop Plan</button>
+            </div>
+            <div id="modal-guests-container">
+                <!-- Populated by JS -->
+                <p style="color: var(--text-secondary); text-align: center;">Loading guests...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Guest Modal -->
+    <div id="edit-guest-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1001; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 15px; border: 1px solid var(--admin-border); padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem;">
+                <h2 style="color: white; margin: 0;">Edit Guest Details</h2>
+                <button id="close-edit-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="edit-guest-form">
+                <input type="hidden" id="edit-guest-id">
+                
+                <h3 style="color: var(--accent); margin-bottom: 1rem;">1. Personal Details</h3>
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Full Name</label>
+                        <input type="text" id="edit-g-name" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Contact No.</label>
+                        <input type="tel" id="edit-g-contact" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Emergency Contact No.</label>
+                        <input type="tel" id="edit-g-emergency" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Blood Group</label>
+                        <input type="text" id="edit-g-blood" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                </div>
+
+                <h3 style="color: var(--accent); margin-bottom: 1rem;">2. Passport Details</h3>
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Name on Passport</label>
+                        <input type="text" id="edit-p-name" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Passport Number</label>
+                        <input type="text" id="edit-p-no" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Expiry Date</label>
+                        <input type="date" id="edit-p-expiry" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                </div>
+
+                <h3 style="color: var(--accent); margin-bottom: 1rem;">3. Flight Details</h3>
+                <h4 style="color: white; margin-bottom: 0.5rem;">Arrival Flight</h4>
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Flight No</label>
+                        <input type="text" id="edit-arr-flight-no" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Departure Place</label>
+                        <input type="text" id="edit-arr-dep-place" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Arrival Place</label>
+                        <input type="text" id="edit-arr-arr-place" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Dep Date</label>
+                        <input type="date" id="edit-arr-dep-date" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Arr Date</label>
+                        <input type="date" id="edit-arr-arr-date" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div></div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Dep Time</label>
+                        <input type="time" id="edit-arr-dep-time" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Arr Time</label>
+                        <input type="time" id="edit-arr-arr-time" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                </div>
+
+                <h4 style="color: white; margin-bottom: 0.5rem;">Departure Flight</h4>
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Flight No</label>
+                        <input type="text" id="edit-dep-flight-no" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Departure Place</label>
+                        <input type="text" id="edit-dep-dep-place" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Arrival Place</label>
+                        <input type="text" id="edit-dep-arr-place" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Dep Date</label>
+                        <input type="date" id="edit-dep-dep-date" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Arr Date</label>
+                        <input type="date" id="edit-dep-arr-date" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div></div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Dep Time</label>
+                        <input type="time" id="edit-dep-dep-time" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Arr Time</label>
+                        <input type="time" id="edit-dep-arr-time" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                </div>
+
+                <button type="submit" id="save-guest-edits-btn" style="width: 100%; padding: 1rem; background: var(--admin-primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem;">SAVE CHANGES</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Trip Modal -->
+    <div id="edit-trip-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1001; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; border-radius: 15px; border: 1px solid var(--admin-border); padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem;">
+                <h2 style="color: white; margin: 0;">Edit Trip Details</h2>
+                <button id="close-edit-trip-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="edit-trip-form">
+                <input type="hidden" id="edit-trip-id">
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Trip Name</label>
+                        <input type="text" id="edit-trip-name" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Start Date</label>
+                        <input type="date" id="edit-trip-start" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">End Date</label>
+                        <input type="date" id="edit-trip-end" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Guide Name</label>
+                        <input type="text" id="edit-trip-guide" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Guide Contact</label>
+                        <input type="tel" id="edit-trip-contact" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                </div>
+                <button type="submit" id="save-trip-edits-btn" style="width: 100%; padding: 1rem; background: var(--admin-primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem;">UPDATE TRIP DETAILS</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Travel Planner Modal (Pickups/Drops) -->
+    <div id="planner-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1002; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 600px; max-height: 80vh; border-radius: 15px; border: 1px solid var(--admin-border); overflow: hidden; display: flex; flex-direction: column;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--admin-border); display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color: white; margin: 0; font-size: 1.2rem;"><i class="ph ph-magic-wand" style="color: var(--accent);"></i> <span id="planner-modal-title">AI Planner</span></h2>
+                <button id="close-planner-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
+            </div>
+            <div id="planner-content" style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+                <!-- Content will be injected here -->
+            </div>
+            <div style="padding: 1rem; background: rgba(0,0,0,0.2); text-align: center; border-top: 1px solid var(--admin-border); display: flex; flex-direction: column; gap: 1rem;">
+                <p id="planner-modal-note" style="color: var(--text-secondary); font-size: 0.8rem; margin: 0;">Grouping guests based on flight times.</p>
+                <button id="download-planner-sheet" class="btn" style="background: var(--admin-success); color: white; border: none; padding: 0.8rem; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer;">
+                    <i class="ph ph-file-pdf"></i> DOWNLOAD SHEET (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/dashboard.js"></script>
+</body>
+</html>
