@@ -8,10 +8,12 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Reveal animations for dashboard
-    gsap.fromTo('.sidebar', 
-        { x: -100, opacity: 0 }, 
-        { x: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
-    );
+    if (window.innerWidth > 1024) {
+        gsap.fromTo('.sidebar', 
+            { x: -100, opacity: 0 }, 
+            { x: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+        );
+    }
     
     gsap.fromTo('.topbar', 
         { y: -30, opacity: 0 }, 
@@ -50,6 +52,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         mobileMenuBtn.addEventListener('click', () => {
             sidebar.classList.toggle('active');
         });
+
+        const closeBtn = document.getElementById('sidebar-close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+            });
+        }
 
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', (e) => {

@@ -150,7 +150,8 @@ body.admin-body {
   .sidebar {
     transform: translateX(-100%);
     box-shadow: 20px 0 50px rgba(0,0,0,0.5);
-    width: 280px; /* Slightly wider for better text fit */
+    width: 80%; /* Cover 80% of width on mobile */
+    max-width: 300px;
   }
   
   .sidebar.active {
@@ -228,6 +229,8 @@ body.admin-body {
 @media (max-width: 1024px) {
   .mobile-menu-btn {
     display: flex;
+    position: relative;
+    z-index: 1100; /* Stay above sidebar */
   }
 }
 
@@ -251,10 +254,11 @@ body.admin-body {
     left: 0;
     right: 0;
     background: var(--admin-bg);
-    padding: 1rem;
-    z-index: 900;
+    padding: 0.8rem 1rem;
+    z-index: 1050; /* Above sidebar initially, or handled via script */
     border-bottom: 1px solid var(--admin-border);
     margin-bottom: 0;
+    height: 60px;
   }
   
   .dashboard-title {
