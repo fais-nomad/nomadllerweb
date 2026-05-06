@@ -48,6 +48,7 @@
         }
         .form-group input, .form-group textarea {
             width: 100%;
+            box-sizing: border-box; /* Crucial for mobile width */
             padding: 1rem;
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid var(--admin-border);
@@ -55,6 +56,7 @@
             color: white;
             font-family: var(--font-main);
             transition: all 0.3s;
+            appearance: none; /* For cleaner look on some mobile browsers */
         }
         .form-group input:focus, .form-group textarea:focus {
             outline: none;
