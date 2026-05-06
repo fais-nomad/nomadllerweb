@@ -150,6 +150,7 @@ body.admin-body {
   .sidebar {
     transform: translateX(-100%);
     box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+    width: 280px; /* Slightly wider for better text fit */
   }
   
   .sidebar.active {
@@ -205,7 +206,8 @@ body.admin-body {
 @media (max-width: 1024px) {
   .main-content {
     margin-left: 0;
-    padding: 1.5rem;
+    padding: 1rem;
+    padding-top: 5rem; /* Space for the topbar */
   }
 }
 
@@ -244,13 +246,19 @@ body.admin-body {
 
 @media (max-width: 768px) {
   .topbar {
-    flex-direction: row;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--admin-bg);
+    padding: 1rem;
+    z-index: 900;
+    border-bottom: 1px solid var(--admin-border);
+    margin-bottom: 0;
   }
   
   .dashboard-title {
-    font-size: 1.2rem;
+    font-size: 1rem;
   }
   
   .user-profile span {
