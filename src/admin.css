@@ -209,6 +209,9 @@ body.admin-body {
     margin-left: 0;
     padding: 1rem;
     padding-top: 5rem; /* Space for the topbar */
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: visible; /* Ensure vertical scrolling */
   }
 }
 
@@ -353,6 +356,13 @@ body.admin-body {
   border: 1px solid var(--admin-border);
   border-radius: 15px;
   padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 600px) {
+  .recent-orders {
+    padding: 1rem;
+  }
 }
 
 .section-header {
@@ -369,6 +379,9 @@ body.admin-body {
 
 .table-responsive {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  margin-top: 1rem;
 }
 
 table {
@@ -380,6 +393,14 @@ th, td {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid var(--admin-border);
+  white-space: nowrap; /* Prevent text wrapping in table headers */
+}
+
+@media (max-width: 768px) {
+  th, td {
+    padding: 0.8rem;
+    font-size: 0.8rem;
+  }
 }
 
 th {
