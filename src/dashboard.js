@@ -991,9 +991,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const target = e.target.closest('.send-agent-wa-btn');
                         const code = target.getAttribute('data-code');
                         const name = target.getAttribute('data-name');
-                        const loginUrl = `${window.location.origin}/agent-login.html`;
-                        const text = `Hello ${name},\n\nWelcome to the Nomadller B2B Portal!\n\nYou can log in and access exclusive B2B rates and unbranded PDF itineraries here:\n${loginUrl}\n\nYour Access Code: *${code}*`;
-                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                        
+                        // We need to call the modal opening function. 
+                        // Since openWaModal is defined globally or lower in the script, we can just call it.
+                        // However, wait, openWaModal is defined lower in the script inside a block or global?
+                        // Let's just dispatch an event or directly define it globally to be safe, 
+                        // or just get the inputs directly here:
+                        const waAgentModal = document.getElementById('wa-agent-modal');
+                        const waAgentCodeInput = document.getElementById('wa-agent-code');
+                        const waAgentNameInput = document.getElementById('wa-agent-name');
+                        
+                        waAgentCodeInput.value = code;
+                        waAgentNameInput.value = name;
+                        waAgentModal.style.display = 'flex';
+                        gsap.fromTo(waAgentModal.querySelector('.modal-content'), 
+                            { y: 50, opacity: 0 }, 
+                            { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out' }
+                        );
                     });
                 });
 
@@ -1072,14 +1086,60 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        // WA Modal Logic
+        const waAgentModal = document.getElementById('wa-agent-modal');
+        const closeWaAgentModal = document.getElementById('close-wa-agent-modal');
+        const waAgentForm = document.getElementById('wa-agent-form');
+        const waAgentCodeInput = document.getElementById('wa-agent-code');
+        const waAgentNameInput = document.getElementById('wa-agent-name');
+
+        const openWaModal = (code, name) => {
+            waAgentCodeInput.value = code;
+            waAgentNameInput.value = name;
+            waAgentModal.style.display = 'flex';
+            gsap.fromTo(waAgentModal.querySelector('.modal-content'), 
+                { y: 50, opacity: 0 }, 
+                { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out' }
+            );
+        };
+
+        if (closeWaAgentModal) {
+            closeWaAgentModal.addEventListener('click', () => {
+                gsap.to(waAgentModal.querySelector('.modal-content'), { 
+                    y: 50, opacity: 0, duration: 0.2, 
+                    onComplete: () => { waAgentModal.style.display = 'none'; } 
+                });
+            });
+        }
+
+        if (waAgentForm) {
+            waAgentForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const code = waAgentCodeInput.value;
+                const name = waAgentNameInput.value || 'Agent';
+                const country = document.getElementById('wa-country-code').value;
+                const phone = document.getElementById('wa-phone-number').value;
+                
+                const loginUrl = `${window.location.origin}/agent-login.html`;
+                const text = `Hello ${name},\n\nThank you so much for collaborating with us! We are thrilled to have you onboard.\n\nYou can log in to our B2B portal to access exclusive rates, live availability, and unbranded PDF itineraries for your clients.\n\n*Agent Portal Access:*\n🔗 Link: ${loginUrl}\n🔑 Access Code: *${code}*\n\nLet us know if you need any assistance!\n\nWarm regards,\nNomadller Team`;
+                
+                window.open(`https://wa.me/${country}${phone}?text=${encodeURIComponent(text)}`, '_blank');
+                
+                // Close modal
+                gsap.to(waAgentModal.querySelector('.modal-content'), { 
+                    y: 50, opacity: 0, duration: 0.2, 
+                    onComplete: () => { waAgentModal.style.display = 'none'; } 
+                });
+                waAgentForm.reset();
+            });
+        }
+
         const sendAgentWaBtn = document.getElementById('sendAgentWaBtn');
         if (sendAgentWaBtn) {
             sendAgentWaBtn.addEventListener('click', () => {
                 const code = generatedAgentCodeInput.value;
                 const name = document.getElementById('agentName').value || 'Agent';
-                const loginUrl = `${window.location.origin}/agent-login.html`;
-                const text = `Hello ${name},\n\nWelcome to the Nomadller B2B Portal!\n\nYou can log in and access exclusive B2B rates and unbranded PDF itineraries here:\n${loginUrl}\n\nYour Access Code: *${code}*`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                openWaModal(code, name);
             });
         }
     }
