@@ -1120,8 +1120,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const country = document.getElementById('wa-country-code').value;
                 const phone = document.getElementById('wa-phone-number').value;
                 
-                const loginUrl = `${window.location.origin}/agent-login.html`;
-                const text = `Hello ${name},\n\nThank you so much for collaborating with us! We are thrilled to have you onboard.\n\nYou can log in to our B2B portal to access exclusive rates, live availability, and unbranded PDF itineraries for your clients.\n\n*Agent Portal Access:*\n🔗 Link: ${loginUrl}\n🔑 Access Code: *${code}*\n\nLet us know if you need any assistance!\n\nWarm regards,\nNomadller Team`;
+                const loginUrl = `https://www.nomadller.com/agent-login`;
+                const text = `Hello ${name},\n\nThank you so much for collaborating with us! We are thrilled to have you onboard.\n\n*Agent Portal Access:*\n🔗 Link: ${loginUrl}\n🔑 Access Code: *${code}*\n\n*How to use the portal:*\n✅ Download customized PDF itineraries automatically branded with your own company name.\n✅ To make a booking, click the "Generate Link" button and type the guest's WhatsApp number (Note: Your guest's number is strictly confidential and is not saved anywhere in the Nomadller database).\n✅ Send the generated registration link directly to your guests.\n\nLet us know if you need any assistance!\n\nWarm regards,\nNomadller Team`;
                 
                 window.open(`https://wa.me/${country}${phone}?text=${encodeURIComponent(text)}`, '_blank');
                 
