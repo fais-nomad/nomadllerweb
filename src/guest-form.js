@@ -22,6 +22,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    const agentId = urlParams.get('agent_id');
+    if (agentId) {
+        fetchAgentBranding();
+    }
+
+    async function fetchAgentBranding() {
+        try {
+            const { data } = await supabase.from('agents').select('company_name').eq('id', agentId).maybeSingle();
+            if (data && data.company_name) {
+                const brandName = data.company_name.toUpperCase();
+                document.getElementById('brand-logo').textContent = brandName;
+                document.title = `${data.company_name} | Guest Registration`;
+            }
+        } catch (e) {
+            console.error("Failed to load agent branding", e);
+        }
+    }
+
     // Fetch Trip Details for Header
     async function fetchTripDetails() {
         try {
