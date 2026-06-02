@@ -843,14 +843,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Wait for all images inside the PDF template to load
             const waitForImages = () => {
-                const element = document.getElementById('luxury-pdf-content');
-                const imgs = Array.from(element.querySelectorAll('img'));
-                const promises = imgs.map(img => {
-                    if (!img.getAttribute('src') || img.src === window.location.href) return Promise.resolve();
+                const imgs = templateContainer.querySelectorAll('img');
+                const promises = Array.from(imgs).map(img => {
                     if (img.complete) return Promise.resolve();
                     return new Promise(resolve => {
-                        img.onload = resolve;
-                        img.onerror = resolve;
+                        // Set a maximum timeout of 3 seconds for any single image to load
+                        const timer = setTimeout(() => {
+                            console.warn("Image load timeout for", img.src);
+                            resolve();
+                        }, 3000);
+                        
+                        img.onload = () => { clearTimeout(timer); resolve(); };
+                        img.onerror = () => { clearTimeout(timer); resolve(); };
                     });
                 });
                 return Promise.all(promises);
@@ -864,8 +868,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const opt = {
                 margin:       0,
                 filename:     `${fd.destination.replace(/ /g, '_')}_Itinerary.pdf`,
-                image:        { type: 'jpeg', quality: 1 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                image:        { type: 'jpeg', quality: 0.95 },
+                html2canvas:  { scale: 1.5, useCORS: true, logging: false },
                 jsPDF:        { unit: 'px', format: [800, 1120], orientation: 'portrait' }
             };
 
