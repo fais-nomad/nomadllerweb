@@ -905,4 +905,432 @@ document.addEventListener('DOMContentLoaded', async () => {
         plannerContent.innerHTML = html;
         plannerModal.style.display = 'flex';
     }
+
+    // --- AGENTS MANAGEMENT LOGIC ---
+    
+    const navTrips = document.getElementById('nav-trips');
+    const navAgents = document.getElementById('nav-agents');
+    const navFixedDepartures = document.getElementById('nav-fixed-departures');
+    
+    const tripsView = document.getElementById('trips-view-section');
+    const agentsView = document.getElementById('agents-view-section');
+    const fixedDeparturesView = document.getElementById('fixed-departures-view-section');
+    
+    const mainDashboardTitle = document.getElementById('main-dashboard-title');
+    
+    if (navTrips && navAgents && navFixedDepartures) {
+        navTrips.addEventListener('click', (e) => {
+            e.preventDefault();
+            navTrips.classList.add('active');
+            navAgents.classList.remove('active');
+            navFixedDepartures.classList.remove('active');
+            tripsView.style.display = 'block';
+            agentsView.style.display = 'none';
+            fixedDeparturesView.style.display = 'none';
+            if (mainDashboardTitle) mainDashboardTitle.textContent = 'Upcoming Trips Management';
+        });
+
+        navAgents.addEventListener('click', (e) => {
+            e.preventDefault();
+            navAgents.classList.add('active');
+            navTrips.classList.remove('active');
+            navFixedDepartures.classList.remove('active');
+            agentsView.style.display = 'block';
+            tripsView.style.display = 'none';
+            fixedDeparturesView.style.display = 'none';
+            if (mainDashboardTitle) mainDashboardTitle.textContent = 'Agents Management';
+            loadAgents();
+        });
+
+        navFixedDepartures.addEventListener('click', (e) => {
+            e.preventDefault();
+            navFixedDepartures.classList.add('active');
+            navTrips.classList.remove('active');
+            navAgents.classList.remove('active');
+            fixedDeparturesView.style.display = 'block';
+            tripsView.style.display = 'none';
+            agentsView.style.display = 'none';
+            if (mainDashboardTitle) mainDashboardTitle.textContent = 'Fixed Departures Management';
+            loadFixedDepartures();
+        });
+    }
+
+    // Load Agents
+    const agentsTableBody = document.getElementById('agents-table-body');
+    async function loadAgents() {
+        if (!agentsTableBody) return;
+        try {
+            const { data: agents, error } = await supabase
+                .from('agents')
+                .select('*')
+                .order('created_at', { ascending: false });
+                
+            if (error) throw error;
+            
+            agentsTableBody.innerHTML = '';
+            if (agents && agents.length > 0) {
+                agents.forEach(agent => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${agent.agent_name}</strong></td>
+                        <td style="font-family: monospace; font-size: 1.1rem; color: var(--admin-success);">${agent.agent_code}</td>
+                        <td>${new Date(agent.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="action-btn delete-agent-btn" data-id="${agent.id}" title="Delete Agent"><i class="ph ph-trash"></i></button>
+                        </td>
+                    `;
+                    agentsTableBody.appendChild(tr);
+                });
+
+                // Add delete listeners
+                document.querySelectorAll('.delete-agent-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const agentId = e.target.closest('.delete-agent-btn').getAttribute('data-id');
+                        if (confirm('Are you sure you want to delete this agent?')) {
+                            try {
+                                const { error } = await supabase.from('agents').delete().eq('id', agentId);
+                                if (error) throw error;
+                                loadAgents();
+                            } catch (err) {
+                                console.error('Error deleting agent:', err);
+                                alert('Error deleting agent');
+                            }
+                        }
+                    });
+                });
+            } else {
+                agentsTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No agents found</td></tr>';
+            }
+        } catch (error) {
+            console.error('Error fetching agents:', error);
+        }
+    }
+
+    // Add Agent Form
+    const addAgentForm = document.getElementById('add-agent-form');
+    const generateAgentBtn = document.getElementById('generate-agent-btn');
+    const agentLinkContainer = document.getElementById('agent-link-container');
+    const generatedAgentCodeInput = document.getElementById('generatedAgentCode');
+    const copyAgentCodeBtn = document.getElementById('copyAgentCodeBtn');
+
+    if (addAgentForm) {
+        addAgentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const agentName = document.getElementById('agentName').value;
+            if (!agentName) return;
+
+            generateAgentBtn.textContent = 'GENERATING...';
+            generateAgentBtn.disabled = true;
+
+            // Generate a random 6-character alphanumeric code
+            const agentCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            try {
+                const { error } = await supabase
+                    .from('agents')
+                    .insert([{ agent_name: agentName, agent_code: agentCode }]);
+
+                if (error) throw error;
+
+                generatedAgentCodeInput.value = agentCode;
+                agentLinkContainer.style.display = 'block';
+                
+                loadAgents();
+                document.getElementById('agentName').value = '';
+            } catch (err) {
+                console.error('Error creating agent:', err);
+                alert('Error creating agent code. Check console for details.');
+            } finally {
+                generateAgentBtn.textContent = 'GENERATE AGENT CODE';
+                generateAgentBtn.disabled = false;
+            }
+        });
+
+        if (copyAgentCodeBtn) {
+            copyAgentCodeBtn.addEventListener('click', () => {
+                generatedAgentCodeInput.select();
+                document.execCommand('copy');
+                copyAgentCodeBtn.innerHTML = '<i class="ph ph-check"></i> Copied';
+                setTimeout(() => {
+                    copyAgentCodeBtn.innerHTML = '<i class="ph ph-copy"></i> Copy';
+                }, 2000);
+            });
+        }
+    }
+
+    // --- CURRENCY CONVERTER LOGIC ---
+    let usdToInrRate = 83.5; // Fallback rate
+    async function fetchExchangeRate() {
+        try {
+            const response = await fetch('https://open.er-api.com/v6/latest/USD');
+            const data = await response.json();
+            if (data && data.rates && data.rates.INR) {
+                usdToInrRate = data.rates.INR;
+            }
+        } catch (err) {
+            console.error('Failed to fetch exchange rate, using fallback.', err);
+        }
+    }
+    fetchExchangeRate();
+
+    function setupCurrencyConverter(inputId, spanId) {
+        const input = document.getElementById(inputId);
+        const span = document.getElementById(spanId);
+        if (input && span) {
+            input.addEventListener('input', (e) => {
+                const usdVal = parseFloat(e.target.value);
+                if (!isNaN(usdVal) && usdVal > 0) {
+                    const inrVal = (usdVal * usdToInrRate).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+                    span.textContent = `≈ ₹${inrVal}`;
+                } else {
+                    span.textContent = '≈ ₹0';
+                }
+            });
+        }
+    }
+    
+    setupCurrencyConverter('fdPrice', 'fdPriceInr');
+    setupCurrencyConverter('fdMaxSellingPrice', 'fdMaxSellingPriceInr');
+
+    // --- FIXED DEPARTURES LOGIC ---
+    const fdTableBody = document.getElementById('fixed-departures-table-body');
+    async function loadFixedDepartures() {
+        if (!fdTableBody) return;
+        try {
+            const { data: fds, error } = await supabase
+                .from('fixed_departures')
+                .select('*')
+                .order('start_date', { ascending: true });
+                
+            if (error) throw error;
+            
+            fdTableBody.innerHTML = '';
+            if (fds && fds.length > 0) {
+                window.fdsData = fds;
+
+                fds.forEach(fd => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${fd.destination}</strong></td>
+                        <td>${new Date(fd.start_date).toLocaleDateString()} - ${new Date(fd.end_date).toLocaleDateString()}</td>
+                        <td>${fd.available_slots} / ${fd.total_slots}</td>
+                        <td style="color: var(--admin-success); font-weight: bold;">${fd.b2b_price}</td>
+                        <td>
+                            <span style="padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; background: ${fd.status === 'Available' ? 'rgba(46, 196, 182, 0.2)' : fd.status === 'Sold Out' ? 'rgba(255, 107, 53, 0.2)' : 'rgba(255,255,255,0.1)'}; color: ${fd.status === 'Available' ? 'var(--admin-success)' : fd.status === 'Sold Out' ? 'var(--admin-danger)' : 'white'};">
+                                ${fd.status}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn edit-fd-btn" data-id="${fd.id}" title="Edit Departure"><i class="ph ph-pencil-simple"></i></button>
+                                <button class="action-btn delete-fd-btn" data-id="${fd.id}" title="Delete Departure"><i class="ph ph-trash"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    fdTableBody.appendChild(tr);
+                });
+
+                document.querySelectorAll('.edit-fd-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const fdId = e.target.closest('.edit-fd-btn').getAttribute('data-id');
+                        const fd = window.fdsData.find(f => f.id === fdId);
+                        if (!fd) return;
+
+                        // Populate form
+                        document.getElementById('edit-fd-id').value = fd.id;
+                        document.getElementById('edit-fd-destination').value = fd.destination || '';
+                        document.getElementById('edit-fd-start').value = fd.start_date || '';
+                        document.getElementById('edit-fd-end').value = fd.end_date || '';
+                        document.getElementById('edit-fd-slots').value = fd.total_slots || '';
+                        document.getElementById('edit-fd-status').value = fd.status || 'Available';
+                        
+                        // Parse USD prices from strings like "$1500"
+                        const parseUsd = str => str ? parseFloat(str.replace('$', '').replace(',', '')) : '';
+                        document.getElementById('edit-fd-b2b').value = parseUsd(fd.b2b_price);
+                        document.getElementById('edit-fd-max').value = parseUsd(fd.max_selling_price);
+
+                        document.getElementById('edit-fd-cover-url').value = fd.cover_image_url || '';
+                        document.getElementById('edit-fd-map-url').value = fd.map_image_url || '';
+                        document.getElementById('edit-fd-altitude-url').value = fd.altitude_image_url || '';
+                        
+                        document.getElementById('edit-fd-highlights').value = fd.trip_highlights || '';
+                        document.getElementById('edit-fd-itinerary').value = fd.detailed_itinerary || '';
+                        document.getElementById('edit-fd-inclusions').value = fd.inclusions || '';
+                        document.getElementById('edit-fd-exclusions').value = fd.exclusions || '';
+                        document.getElementById('edit-fd-notes').value = fd.important_notes || '';
+                        document.getElementById('edit-fd-remember').value = fd.things_to_remember || '';
+                        document.getElementById('edit-fd-terms').value = fd.terms_and_conditions || '';
+                        document.getElementById('edit-fd-risk').value = fd.risk_liabilities || '';
+                        document.getElementById('edit-fd-health').value = fd.health_and_fitness || '';
+                        document.getElementById('edit-fd-insurance').value = fd.travel_insurance || '';
+                        document.getElementById('edit-fd-cancellation').value = fd.cancellation_policy || '';
+
+                        document.getElementById('edit-fd-modal').style.display = 'flex';
+                    });
+                });
+
+                document.querySelectorAll('.delete-fd-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const fdId = e.target.closest('.delete-fd-btn').getAttribute('data-id');
+                        if (confirm('Are you sure you want to delete this Fixed Departure?')) {
+                            try {
+                                const { error } = await supabase.from('fixed_departures').delete().eq('id', fdId);
+                                if (error) throw error;
+                                loadFixedDepartures();
+                            } catch (err) {
+                                console.error('Error deleting fixed departure:', err);
+                                alert('Error deleting fixed departure');
+                            }
+                        }
+                    });
+                });
+            } else {
+                fdTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No fixed departures found</td></tr>';
+            }
+        } catch (error) {
+            console.error('Error fetching fixed departures:', error);
+        }
+    }
+
+    const addFdForm = document.getElementById('add-fixed-departure-form');
+    if (addFdForm) {
+        addFdForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('create-fd-btn');
+            
+            const b2bUsd = parseFloat(document.getElementById('fdPrice').value) || 0;
+            const maxUsd = parseFloat(document.getElementById('fdMaxSellingPrice').value) || 0;
+            
+            const b2bInr = (b2bUsd * usdToInrRate).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            const maxInr = (maxUsd * usdToInrRate).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+
+            const fdData = {
+                destination: document.getElementById('fdDestination').value,
+                start_date: document.getElementById('fdStartDate').value,
+                end_date: document.getElementById('fdEndDate').value,
+                total_slots: parseInt(document.getElementById('fdTotalSlots').value),
+                available_slots: parseInt(document.getElementById('fdTotalSlots').value),
+                b2b_price: `$${b2bUsd}`,
+                b2b_price_inr: `₹${b2bInr}`,
+                max_selling_price: `$${maxUsd}`,
+                max_selling_price_inr: `₹${maxInr}`,
+                status: document.getElementById('fdStatus').value,
+                trip_highlights: document.getElementById('fdHighlights').value,
+                detailed_itinerary: document.getElementById('fdItinerary').value,
+                cover_image_url: document.getElementById('fdCoverImage').value || null,
+                map_image_url: document.getElementById('fdMapImage').value || null,
+                altitude_image_url: document.getElementById('fdAltitudeImage').value || null,
+                inclusions: document.getElementById('fdInclusions').value,
+                exclusions: document.getElementById('fdExclusions').value,
+                important_notes: document.getElementById('fdImportantNotes').value,
+                things_to_remember: document.getElementById('fdThingsToRemember').value,
+                terms_and_conditions: document.getElementById('fdTerms').value,
+                risk_liabilities: document.getElementById('fdRisk').value,
+                health_and_fitness: document.getElementById('fdHealth').value,
+                travel_insurance: document.getElementById('fdInsurance').value,
+                cancellation_policy: document.getElementById('fdCancellation').value
+            };
+
+            btn.textContent = 'CREATING...';
+            btn.disabled = true;
+
+            try {
+                const { error } = await supabase.from('fixed_departures').insert([fdData]);
+                if (error) throw error;
+                
+                const addToUpcoming = document.getElementById('fdAddToUpcoming')?.checked;
+                if (addToUpcoming) {
+                    const upcomingData = {
+                        trip_name: fdData.destination,
+                        start_date: fdData.start_date,
+                        end_date: fdData.end_date,
+                        guide_name: 'TBA',
+                        guide_contact: 'TBA'
+                    };
+                    const { error: upcError } = await supabase.from('upcoming_trips').insert([upcomingData]);
+                    if (upcError) {
+                        console.error('Error adding to upcoming trips:', upcError);
+                    } else {
+                        // Refresh upcoming trips list if we have a function for it, though loadTrips might be the one
+                        if (typeof loadTrips === 'function') loadTrips();
+                    }
+                }
+
+                addFdForm.reset();
+                loadFixedDepartures();
+            } catch (err) {
+                console.error('Error creating fixed departure:', err);
+                alert('Error creating fixed departure');
+            } finally {
+                btn.textContent = 'CREATE DEPARTURE';
+                btn.disabled = false;
+            }
+        });
+    }
+    const editFdModal = document.getElementById('edit-fd-modal');
+    const closeEditFdModal = document.getElementById('close-edit-fd-modal');
+    const editFdForm = document.getElementById('edit-fd-form');
+
+    if (closeEditFdModal) {
+        closeEditFdModal.addEventListener('click', () => {
+            editFdModal.style.display = 'none';
+        });
+    }
+
+    if (editFdForm) {
+        editFdForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('save-fd-edits-btn');
+            const fdId = document.getElementById('edit-fd-id').value;
+            
+            const b2bUsd = parseFloat(document.getElementById('edit-fd-b2b').value) || 0;
+            const maxUsd = parseFloat(document.getElementById('edit-fd-max').value) || 0;
+            
+            const b2bInr = (b2bUsd * usdToInrRate).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            const maxInr = (maxUsd * usdToInrRate).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+
+            const updatedFdData = {
+                destination: document.getElementById('edit-fd-destination').value,
+                start_date: document.getElementById('edit-fd-start').value,
+                end_date: document.getElementById('edit-fd-end').value,
+                total_slots: parseInt(document.getElementById('edit-fd-slots').value),
+                b2b_price: `$${b2bUsd}`,
+                b2b_price_inr: `₹${b2bInr}`,
+                max_selling_price: `$${maxUsd}`,
+                max_selling_price_inr: `₹${maxInr}`,
+                status: document.getElementById('edit-fd-status').value,
+                trip_highlights: document.getElementById('edit-fd-highlights').value,
+                detailed_itinerary: document.getElementById('edit-fd-itinerary').value,
+                cover_image_url: document.getElementById('edit-fd-cover-url').value || null,
+                map_image_url: document.getElementById('edit-fd-map-url').value || null,
+                altitude_image_url: document.getElementById('edit-fd-altitude-url').value || null,
+                inclusions: document.getElementById('edit-fd-inclusions').value,
+                exclusions: document.getElementById('edit-fd-exclusions').value,
+                important_notes: document.getElementById('edit-fd-notes').value,
+                things_to_remember: document.getElementById('edit-fd-remember').value,
+                terms_and_conditions: document.getElementById('edit-fd-terms').value,
+                risk_liabilities: document.getElementById('edit-fd-risk').value,
+                health_and_fitness: document.getElementById('edit-fd-health').value,
+                travel_insurance: document.getElementById('edit-fd-insurance').value,
+                cancellation_policy: document.getElementById('edit-fd-cancellation').value
+            };
+
+            btn.textContent = 'UPDATING...';
+            btn.disabled = true;
+
+            try {
+                const { error } = await supabase.from('fixed_departures').update(updatedFdData).eq('id', fdId);
+                if (error) throw error;
+
+                editFdModal.style.display = 'none';
+                loadFixedDepartures();
+            } catch (err) {
+                console.error('Error updating fixed departure:', err);
+                alert('Error updating fixed departure');
+            } finally {
+                btn.textContent = 'UPDATE DEPARTURE';
+                btn.disabled = false;
+            }
+        });
+    }
 });

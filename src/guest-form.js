@@ -25,13 +25,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch Trip Details for Header
     async function fetchTripDetails() {
         try {
-            const { data, error } = await supabase
+            let { data, error } = await supabase
                 .from('upcoming_trips')
                 .select('*')
                 .eq('id', tripId)
-                .single();
+                .maybeSingle(); // Use maybeSingle to prevent error if not found
                 
-            if (error) throw error;
+            if (!data) {
+                // Fallback to fixed_departures
+                const { data: fdData, error: fdError } = await supabase
+                    .from('fixed_departures')
+                    .select('*')
+                    .eq('id', tripId)
+                    .maybeSingle();
+                if (fdError) throw fdError;
+                data = fdData;
+                if (data) {
+                    // Map destination to trip_name for consistent rendering
+                    data.trip_name = data.destination;
+                }
+            }
+
+            if (error && error.code !== 'PGRST116') throw error;
             
             if (data) {
                 document.getElementById('display-trip-name').textContent = data.trip_name;
@@ -39,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const start = new Date(data.start_date).toLocaleDateString('en-GB', options);
                 const end = new Date(data.end_date).toLocaleDateString('en-GB', options);
                 document.getElementById('display-trip-dates').textContent = `${start} — ${end}`;
+            } else {
+                console.error("Trip not found in database.");
             }
         } catch (err) {
             console.error("Error fetching trip header:", err);
@@ -237,8 +254,12 @@ ${text}
         submitBtn.textContent = 'SUBMITTING...';
         submitBtn.disabled = true;
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const agentId = urlParams.get('agent_id');
+
         const payload = {
             trip_id: tripId,
+            agent_id: agentId || null,
             name: document.getElementById('g_name').value,
             contact_no: document.getElementById('g_contact').value,
             emergency_contact_no: document.getElementById('g_emergency').value,

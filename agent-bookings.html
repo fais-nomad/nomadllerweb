@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nomadller | Agent Bookings</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/src/admin.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .bookings-container {
+            background: var(--admin-card-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            overflow-x: auto;
+        }
+        .bookings-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        .bookings-table th, .bookings-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--admin-border);
+        }
+        .bookings-table th {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .bookings-table td {
+            color: white;
+            font-size: 0.95rem;
+        }
+        .status-badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(37, 211, 102, 0.2);
+            color: #25D366;
+            border: 1px solid rgba(37, 211, 102, 0.4);
+        }
+        .view-btn {
+            background: var(--admin-primary);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body class="admin-body">
+    <div class="dashboard-wrapper">
+        <main class="main-content" style="margin-left: 0; max-width: 1200px; margin: 0 auto;">
+            <header class="topbar" style="justify-content: space-between;">
+                <div class="login-logo" style="font-size: 1.5rem; letter-spacing: 2px; margin: 0; cursor: pointer;" onclick="window.location.href='agent-dashboard.html'">NOMADLLER <span style="color: var(--text-secondary); font-size: 0.8rem; letter-spacing: 1px;">B2B PORTAL</span></div>
+                <div style="display: flex; gap: 1.5rem; align-items: center;">
+                    <a href="agent-dashboard.html" class="nav-item">Dashboard</a>
+                    <a href="agent-fixed-departures.html" class="nav-item">Fixed Departures</a>
+                    <a href="agent-bookings.html" class="nav-item active">Bookings</a>
+                    
+                    <div class="user-profile" style="margin-left: 1rem; border-left: 1px solid var(--admin-border); padding-left: 1rem;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;" id="agent-welcome-name">Loading...</span>
+                    </div>
+                </div>
+            </header>
+
+            <div style="margin-top: 3rem;">
+                <h2 style="color: white; font-size: 2rem; margin-bottom: 0.5rem;">Your Bookings</h2>
+                <p style="color: var(--text-secondary);">Track your clients and their upcoming departure dates.</p>
+            </div>
+
+            <div class="bookings-container" id="bookings-container">
+                <div id="loading-spinner" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                    <i class="ph ph-spinner ph-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>Loading your bookings...</p>
+                </div>
+                
+                <table class="bookings-table" id="bookings-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Guest Name</th>
+                            <th>Trip Destination</th>
+                            <th>Dates</th>
+                            <th>Contact</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookings-table-body">
+                        <!-- Bookings injected here -->
+                    </tbody>
+                </table>
+                <div id="no-bookings-msg" style="display: none; text-align: center; color: var(--text-secondary); padding: 2rem;">
+                    No bookings found. Generate and send registration links to your guests!
+                </div>
+            </div>
+            
+            <!-- Details Modal -->
+            <div id="guest-details-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+                <div class="modal-content" style="background: var(--admin-card-bg); border: 1px solid var(--admin-border); border-radius: 15px; padding: 2rem; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative;">
+                    <button id="close-details-modal" style="position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.5rem; z-index: 10;">
+                        <i class="ph ph-x"></i>
+                    </button>
+                    <h2 style="color: white; margin-bottom: 1.5rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem;">Guest Details</h2>
+                    <div id="guest-details-content" style="color: var(--text-secondary); line-height: 1.6;"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script type="module" src="/src/agent-bookings.js"></script>
+</body>
+</html>

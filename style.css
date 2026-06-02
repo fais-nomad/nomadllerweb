@@ -97,6 +97,12 @@ nav.scrolled {
   color: var(--accent);
 }
 
+.nav-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
 .admin-login-btn {
   background: var(--accent) !important;
   color: white !important;
@@ -106,7 +112,6 @@ nav.scrolled {
   font-size: 0.75rem !important;
   text-decoration: none !important;
   display: inline-block !important;
-  margin-left: 1rem !important;
   box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
   transition: transform 0.3s ease, background 0.3s ease !important;
 }
@@ -173,8 +178,12 @@ nav.scrolled {
     letter-spacing: 2px;
   }
   
+  .nav-buttons {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
   .admin-login-btn {
-    margin-left: 0 !important;
     font-size: 1rem !important;
     padding: 12px 30px !important;
   }

@@ -91,9 +91,17 @@
                 </button>
             </div>
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item active">
+                <a href="#" class="nav-item active" id="nav-trips">
                     <i class="ph ph-calendar-plus"></i>
                     Upcoming Trips
+                </a>
+                <a href="#" class="nav-item" id="nav-agents">
+                    <i class="ph ph-users"></i>
+                    Agents Management
+                </a>
+                <a href="#" class="nav-item" id="nav-fixed-departures">
+                    <i class="ph ph-airplane-tilt"></i>
+                    Fixed Departures
                 </a>
             </nav>
             <div style="padding: 1.5rem;">
@@ -109,13 +117,15 @@
                 <button id="mobile-menu-btn" class="mobile-menu-btn">
                     <i class="ph ph-list"></i>
                 </button>
-                <h1 class="dashboard-title">Upcoming Trips Management</h1>
+                <h1 class="dashboard-title" id="main-dashboard-title">Upcoming Trips Management</h1>
                 <div class="user-profile">
                     <span style="color: var(--text-secondary); font-size: 0.9rem;">Welcome, Admin</span>
                     <div class="user-avatar">A</div>
                 </div>
             </header>
 
+            <!-- TRIPS VIEW -->
+            <div id="trips-view-section">
             <!-- Add Trip Form -->
             <div class="trip-form">
                 <div class="section-header">
@@ -175,17 +185,196 @@
                         </thead>
                         <tbody id="trips-table-body">
                             <!-- Populated by JS -->
-                            <tr>
-                                <td><strong>Example Trip</strong></td>
-                                <td>2026-10-12 to 2026-10-26</td>
-                                <td>Fais</td>
-                                <td>+91 8129163766</td>
-                                <td>12 Guests (Standard)</td>
-                            </tr>
+
                         </tbody>
                     </table>
                 </div>
             </div>
+            </div> <!-- End TRIPS VIEW -->
+
+            <!-- AGENTS VIEW -->
+            <div id="agents-view-section" style="display: none;">
+                <!-- Add Agent Form -->
+                <div class="trip-form">
+                    <div class="section-header">
+                        <h3>Generate New Agent Code</h3>
+                    </div>
+                    <form id="add-agent-form">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="agentName">Agent or Agency Name</label>
+                                <input type="text" id="agentName" required placeholder="e.g. Skyline Travels">
+                            </div>
+                            <div class="form-group full-width" id="agent-link-container" style="display: none; background: rgba(46, 196, 182, 0.1); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--admin-success);">
+                                <label style="color: var(--admin-success);">Generated Agent Code</label>
+                                <div style="display: flex; gap: 1rem;">
+                                    <input type="text" id="generatedAgentCode" readonly style="flex: 1; border-color: var(--admin-success); color: var(--admin-success); font-weight: bold;">
+                                    <button type="button" id="copyAgentCodeBtn" class="btn" style="margin: 0; padding: 0 1.5rem; background: var(--admin-success);"><i class="ph ph-copy"></i> Copy</button>
+                                </div>
+                                <p style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-secondary);">Share this code with the agent. They will use it to log in from the homepage.</p>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn" id="generate-agent-btn">GENERATE AGENT CODE</button>
+                    </form>
+                </div>
+
+                <!-- Agents List -->
+                <div class="recent-orders">
+                    <div class="section-header">
+                        <h3>Registered Agents</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Agent Name</th>
+                                    <th>Agent Code</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agents-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div> <!-- End AGENTS VIEW -->
+
+            <!-- FIXED DEPARTURES VIEW -->
+            <div id="fixed-departures-view-section" style="display: none;">
+                <!-- Add Fixed Departure Form -->
+                <div class="trip-form">
+                    <div class="section-header">
+                        <h3>Add New Fixed Departure</h3>
+                    </div>
+                    <form id="add-fixed-departure-form">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="fdDestination">Destination</label>
+                                <input type="text" id="fdDestination" required placeholder="e.g. Everest Base Camp">
+                            </div>
+                            <div class="form-group">
+                                <label for="fdStartDate">Start Date</label>
+                                <input type="date" id="fdStartDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdEndDate">End Date</label>
+                                <input type="date" id="fdEndDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdTotalSlots">Total Slots</label>
+                                <input type="number" id="fdTotalSlots" required min="1" placeholder="e.g. 15">
+                            </div>
+                            <div class="form-group">
+                                <label for="fdPrice">B2B Price (in USD)</label>
+                                <input type="number" step="0.01" id="fdPrice" required placeholder="e.g. 1200">
+                                <span id="fdPriceInr" style="display: block; margin-top: 0.5rem; font-size: 0.85rem; color: var(--admin-success); font-weight: bold;">≈ ₹0</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdMaxSellingPrice">Max Selling Cost (in USD)</label>
+                                <input type="number" step="0.01" id="fdMaxSellingPrice" required placeholder="e.g. 1500">
+                                <span id="fdMaxSellingPriceInr" style="display: block; margin-top: 0.5rem; font-size: 0.85rem; color: var(--admin-success); font-weight: bold;">≈ ₹0</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdStatus">Status</label>
+                                <select id="fdStatus" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.2); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                    <option value="Available">Available</option>
+                                    <option value="Filling Fast">Filling Fast</option>
+                                    <option value="Sold Out">Sold Out</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                            <!-- Extra Details -->
+                            <div class="form-group full-width">
+                                <label for="fdHighlights">Trip Highlights</label>
+                                <textarea id="fdHighlights" rows="3" placeholder="Enter trip highlights..."></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="fdItinerary">Detailed Itinerary</label>
+                                <textarea id="fdItinerary" rows="5" placeholder="Day 1: ...\nDay 2: ..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdCoverImage">Cover Image URL (Optional)</label>
+                                <input type="text" id="fdCoverImage" placeholder="e.g. /images/cover.jpg or https://...">
+                            </div>
+                            <div class="form-group">
+                                <label for="fdMapImage">Expedition Map Image URL (Optional)</label>
+                                <input type="text" id="fdMapImage" placeholder="e.g. /images/trek-map.png">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="fdAltitudeImage">Altitude Profile Image URL (Optional)</label>
+                                <input type="text" id="fdAltitudeImage" placeholder="e.g. /images/altitude-profile.png">
+                            </div>
+                            <div class="form-group">
+                                <label for="fdInclusions">Inclusions</label>
+                                <textarea id="fdInclusions" rows="4" placeholder="What's included..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdExclusions">Exclusions</label>
+                                <textarea id="fdExclusions" rows="4" placeholder="What's excluded..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdImportantNotes">Important Notes / Trek Essentials</label>
+                                <textarea id="fdImportantNotes" rows="4"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdThingsToRemember">Things to Remember</label>
+                                <textarea id="fdThingsToRemember" rows="4"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdTerms">Terms and Conditions</label>
+                                <textarea id="fdTerms" rows="4"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdRisk">Risk & Liabilities</label>
+                                <textarea id="fdRisk" rows="4"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdHealth">Health and Fitness</label>
+                                <textarea id="fdHealth" rows="4"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fdInsurance">Travel Insurance</label>
+                                <textarea id="fdInsurance" rows="4"></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="fdCancellation">Cancellation Policy</label>
+                                <textarea id="fdCancellation" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group full-width" style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="fdAddToUpcoming" style="width: auto;">
+                            <label for="fdAddToUpcoming" style="margin: 0; cursor: pointer;">Automatically add this to "Upcoming Trips" for guests</label>
+                        </div>
+                        <button type="submit" class="submit-btn" id="create-fd-btn">CREATE DEPARTURE</button>
+                    </form>
+                </div>
+
+                <!-- Fixed Departures List -->
+                <div class="recent-orders">
+                    <div class="section-header">
+                        <h3>Manage Fixed Departures</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Destination</th>
+                                    <th>Dates</th>
+                                    <th>Slots (Avail/Total)</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fixed-departures-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div> <!-- End FIXED DEPARTURES VIEW -->
         </main>
     </div>
     
@@ -198,6 +387,7 @@
                     <button id="download-flight-data" class="btn" style="margin: 0; padding: 0.5rem 1rem; background: var(--admin-primary); font-size: 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer;"><i class="ph ph-download"></i> Flights</button>
                     <button id="download-passport-data" class="btn" style="margin: 0; padding: 0.5rem 1rem; background: var(--accent); font-size: 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer;"><i class="ph ph-download"></i> Passports</button>
                     <button id="modal-copy-link" class="btn" style="margin: 0; padding: 0.5rem 1rem; background: var(--admin-success); font-size: 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer;"><i class="ph ph-copy"></i> Link</button>
+                    <button id="toggle-agent-bookings-btn" class="btn" style="margin: 0; padding: 0.5rem 1rem; background: #a46bb5; font-size: 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer;"><i class="ph ph-users-three"></i> Agent Bookings</button>
                     <button id="close-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin-left: 0.5rem;"><i class="ph ph-x"></i></button>
                 </div>
             </div>
@@ -384,6 +574,119 @@
                     <i class="ph ph-file-pdf"></i> DOWNLOAD SHEET (PDF)
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Edit Fixed Departure Modal -->
+    <div id="edit-fd-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1001; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 15px; border: 1px solid var(--admin-border); padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem;">
+                <h2 style="color: white; margin: 0;">Edit Fixed Departure</h2>
+                <button id="close-edit-fd-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="edit-fd-form">
+                <input type="hidden" id="edit-fd-id">
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Destination</label>
+                        <input type="text" id="edit-fd-destination" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Start Date</label>
+                        <input type="date" id="edit-fd-start" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">End Date</label>
+                        <input type="date" id="edit-fd-end" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Total Slots</label>
+                        <input type="number" id="edit-fd-slots" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Status</label>
+                        <select id="edit-fd-status" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                            <option value="Available">Available</option>
+                            <option value="Sold Out">Sold Out</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">B2B Net Rate (USD)</label>
+                        <input type="number" id="edit-fd-b2b" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Max Selling Price (USD)</label>
+                        <input type="number" id="edit-fd-max" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
+                    </div>
+
+                    <!-- Images -->
+                    <div style="grid-column: 1 / -1; margin-top: 1rem; border-top: 1px solid #333; padding-top: 1rem;">
+                        <h3 style="color: var(--accent); margin-bottom: 1rem; font-size: 1rem;">PDF Images (Optional)</h3>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Cover Image URL</label>
+                        <input type="text" id="edit-fd-cover-url" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" placeholder="/images/cover.jpg">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Map Image URL</label>
+                        <input type="text" id="edit-fd-map-url" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Altitude Image URL</label>
+                        <input type="text" id="edit-fd-altitude-url" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
+                    </div>
+
+                    <!-- Long Text Fields -->
+                    <div style="grid-column: 1 / -1; margin-top: 1rem; border-top: 1px solid #333; padding-top: 1rem;">
+                        <h3 style="color: var(--accent); margin-bottom: 1rem; font-size: 1rem;">Content Details</h3>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Highlights</label>
+                        <textarea id="edit-fd-highlights" rows="3" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Detailed Itinerary</label>
+                        <textarea id="edit-fd-itinerary" rows="5" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Inclusions</label>
+                        <textarea id="edit-fd-inclusions" rows="4" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Exclusions</label>
+                        <textarea id="edit-fd-exclusions" rows="4" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Important Notes</label>
+                        <textarea id="edit-fd-notes" rows="3" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Things to Remember</label>
+                        <textarea id="edit-fd-remember" rows="3" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Terms & Conditions</label>
+                        <textarea id="edit-fd-terms" rows="3" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Risk Liabilities</label>
+                        <textarea id="edit-fd-risk" rows="3" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Health & Fitness</label>
+                        <textarea id="edit-fd-health" rows="3" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Travel Insurance</label>
+                        <textarea id="edit-fd-insurance" rows="3" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Cancellation Policy</label>
+                        <textarea id="edit-fd-cancellation" rows="3" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;"></textarea>
+                    </div>
+                </div>
+                <button type="submit" id="save-fd-edits-btn" style="width: 100%; padding: 1rem; background: var(--admin-primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem;">UPDATE DEPARTURE</button>
+            </form>
         </div>
     </div>
 

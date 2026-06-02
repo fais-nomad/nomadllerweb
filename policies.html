@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policies & Disclaimers | Nomadller</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0a192f;
+            --accent: #ffd700;
+            --text: #f0f4f8;
+            --danger: #e74c3c;
+        }
+        body {
+            background-color: var(--primary);
+            color: var(--text);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            margin: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header i {
+            font-size: 3rem;
+            color: var(--danger);
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3.5rem;
+            margin: 0;
+            letter-spacing: 2px;
+            color: var(--text);
+        }
+        .disclaimer-box {
+            border-left: 6px solid var(--danger);
+            background: rgba(231, 76, 60, 0.1);
+            padding: 30px;
+            border-radius: 0 15px 15px 0;
+        }
+        .policy-item {
+            margin-bottom: 25px;
+        }
+        .policy-item strong {
+            color: var(--accent);
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 30px;
+            background: var(--accent);
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: transform 0.3s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <i class="fas fa-triangle-exclamation"></i>
+            <h1>IMPORTANT POLICIES & <span style="color: var(--accent);">DISCLAIMERS</span></h1>
+        </div>
+        
+        <div class="disclaimer-box">
+            <div class="policy-item">
+                <strong><i class="fas fa-clock"></i> Extra Stay Policy</strong>
+                If any extra stay is required due to unforeseen circumstances (weather, flight delays, health, etc.), the client is responsible for paying for the additional days directly.
+            </div>
+            
+            <div class="policy-item">
+                <strong><i class="fas fa-ban"></i> Refund & Cancellation Policy</strong>
+                Any cancellation of rooms, flights, and related services is strictly non-refundable once booked. We recommend travel insurance for all participants.
+            </div>
+            
+            <div class="policy-item">
+                <strong><i class="fas fa-helicopter"></i> Flight Cancellation Protocol</strong>
+                If your flight is canceled, we provide two options: travel by road (managed by us) or by helicopter. The exact helicopter cost will be known only at the time of flying. If you choose to travel via road, we will take care of the arrangements for you.
+            </div>
+        </div>
+
+        <div class="footer">
+            <a href="/" class="btn">Back to Website</a>
+            <p style="margin-top: 20px;">&copy; 2026 Nomadller Adventures. All Rights Reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
