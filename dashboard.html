@@ -207,9 +207,10 @@
                             </div>
                             <div class="form-group full-width" id="agent-link-container" style="display: none; background: rgba(46, 196, 182, 0.1); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--admin-success);">
                                 <label style="color: var(--admin-success);">Generated Agent Code</label>
-                                <div style="display: flex; gap: 1rem;">
-                                    <input type="text" id="generatedAgentCode" readonly style="flex: 1; border-color: var(--admin-success); color: var(--admin-success); font-weight: bold;">
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                    <input type="text" id="generatedAgentCode" readonly style="flex: 1; min-width: 150px; border-color: var(--admin-success); color: var(--admin-success); font-weight: bold;">
                                     <button type="button" id="copyAgentCodeBtn" class="btn" style="margin: 0; padding: 0 1.5rem; background: var(--admin-success);"><i class="ph ph-copy"></i> Copy</button>
+                                    <button type="button" id="sendAgentWaBtn" class="btn" style="margin: 0; padding: 0 1.5rem; background: #25D366; color: white; border: none;"><i class="ph ph-whatsapp-logo"></i> Send</button>
                                 </div>
                                 <p style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-secondary);">Share this code with the agent. They will use it to log in from the homepage.</p>
                             </div>

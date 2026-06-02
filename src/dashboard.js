@@ -976,10 +976,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <td style="font-family: monospace; font-size: 1.1rem; color: var(--admin-success);">${agent.agent_code}</td>
                         <td>${new Date(agent.created_at).toLocaleDateString()}</td>
                         <td>
-                            <button class="action-btn delete-agent-btn" data-id="${agent.id}" title="Delete Agent"><i class="ph ph-trash"></i></button>
+                            <div class="actions-cell">
+                                <button class="action-btn send-agent-wa-btn" data-code="${agent.agent_code}" data-name="${agent.agent_name}" title="Send via WhatsApp" style="color: #25D366; border-color: #25D366;"><i class="ph ph-whatsapp-logo"></i></button>
+                                <button class="action-btn delete-agent-btn" data-id="${agent.id}" title="Delete Agent"><i class="ph ph-trash"></i></button>
+                            </div>
                         </td>
                     `;
                     agentsTableBody.appendChild(tr);
+                });
+
+                // Add WA listeners
+                document.querySelectorAll('.send-agent-wa-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const target = e.target.closest('.send-agent-wa-btn');
+                        const code = target.getAttribute('data-code');
+                        const name = target.getAttribute('data-name');
+                        const loginUrl = `${window.location.origin}/agent-login.html`;
+                        const text = `Hello ${name},\n\nWelcome to the Nomadller B2B Portal!\n\nYou can log in and access exclusive B2B rates and unbranded PDF itineraries here:\n${loginUrl}\n\nYour Access Code: *${code}*`;
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                    });
                 });
 
                 // Add delete listeners
@@ -1054,6 +1069,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 setTimeout(() => {
                     copyAgentCodeBtn.innerHTML = '<i class="ph ph-copy"></i> Copy';
                 }, 2000);
+            });
+        }
+
+        const sendAgentWaBtn = document.getElementById('sendAgentWaBtn');
+        if (sendAgentWaBtn) {
+            sendAgentWaBtn.addEventListener('click', () => {
+                const code = generatedAgentCodeInput.value;
+                const name = document.getElementById('agentName').value || 'Agent';
+                const loginUrl = `${window.location.origin}/agent-login.html`;
+                const text = `Hello ${name},\n\nWelcome to the Nomadller B2B Portal!\n\nYou can log in and access exclusive B2B rates and unbranded PDF itineraries here:\n${loginUrl}\n\nYour Access Code: *${code}*`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
             });
         }
     }
