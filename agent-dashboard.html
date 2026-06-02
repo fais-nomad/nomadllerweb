@@ -59,6 +59,39 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
         }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .topbar {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .topbar > div:last-child {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+            .agent-welcome {
+                padding: 1.5rem;
+                margin-top: 1rem;
+            }
+            .agent-welcome h2 {
+                font-size: 1.5rem;
+            }
+            .agent-welcome p {
+                font-size: 0.95rem;
+            }
+            .b2b-resources {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                margin-top: 2rem;
+            }
+            .resource-card {
+                padding: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body class="admin-body">
