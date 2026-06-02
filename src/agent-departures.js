@@ -840,6 +840,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             templateContainer.style.left = '-9999px';
             templateContainer.style.zIndex = '-9999';
             templateContainer.style.opacity = '1';
+            // CRITICAL FIX: Lock the container to desktop width to prevent mobile layout shifting
+            templateContainer.style.width = '800px';
+
+            // CRITICAL FIX: Lock all pages to exact PDF dimensions
+            allPages.forEach(p => {
+                p.style.width = '800px';
+                p.style.height = '1120px';
+                p.style.boxSizing = 'border-box';
+                p.style.overflow = 'hidden';
+            });
 
             // Wait for all images inside the PDF template to load
             const waitForImages = () => {
@@ -869,7 +879,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 margin:       0,
                 filename:     `${fd.destination.replace(/ /g, '_')}_Itinerary.pdf`,
                 image:        { type: 'jpeg', quality: 0.95 },
-                html2canvas:  { scale: 1.5, useCORS: true, logging: false },
+                html2canvas:  { 
+                    scale: 1.5, 
+                    useCORS: true, 
+                    logging: false,
+                    // CRITICAL FIX: Force html2canvas to render at desktop width to bypass mobile media queries
+                    windowWidth: 800,
+                    width: 800
+                },
                 jsPDF:        { unit: 'px', format: [800, 1120], orientation: 'portrait' }
             };
 
