@@ -74,7 +74,8 @@
             }
             .topbar > div:last-child {
                 width: 100%;
-                justify-content: space-between;
+                justify-content: flex-start; /* Changed from space-between to flex-start */
+                gap: 1rem !important; /* Force a consistent smaller gap */
                 flex-wrap: wrap;
             }
             .agent-welcome {
