@@ -63,10 +63,14 @@
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .topbar {
+                height: auto !important; /* Override fixed height from admin.css */
                 flex-direction: column !important;
                 align-items: flex-start !important;
                 gap: 1rem;
-                padding: 1rem;
+                padding: 1rem !important;
+            }
+            .main-content {
+                padding-top: 130px !important; /* Ensure enough space for the stacked topbar */
             }
             .topbar > div:last-child {
                 width: 100%;
