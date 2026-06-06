@@ -103,6 +103,14 @@
                     <i class="ph ph-airplane-tilt"></i>
                     Fixed Departures
                 </a>
+                <a href="#" class="nav-item" id="nav-cloud-data">
+                    <i class="ph ph-cloud"></i>
+                    Cloud Data
+                </a>
+                <a href="#" class="nav-item" id="nav-costing">
+                    <i class="ph ph-calculator"></i>
+                    Costing
+                </a>
             </nav>
             <div style="padding: 1.5rem;">
                 <button id="logout-btn" class="btn" style="width: 100%; padding: 0.8rem; font-size: 0.8rem; margin-top: 0; background: transparent; border: 1px solid var(--admin-border);">
@@ -376,6 +384,686 @@
                     </div>
                 </div>
             </div> <!-- End FIXED DEPARTURES VIEW -->
+
+            <!-- CLOUD DATA VIEW -->
+            <div id="cloud-data-view-section" style="display: none;">
+                
+                <!-- Master View: Global Forms & Trek Selection -->
+                <div id="cloud-master-list">
+                    <div class="section-header" style="margin-bottom: 2rem;">
+                        <h3>Global Cloud Data</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Manage common data that applies across all treks</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+                        
+                        <!-- Global Hotels -->
+                        <div class="trip-form" style="margin: 0; display: flex; flex-direction: column;">
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Hotels</h3>
+                                <button id="toggle-add-g-hotel-btn" class="btn" style="background: var(--admin-primary); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-plus"></i> ADD HOTEL</button>
+                            </div>
+                            
+                            <!-- The List -->
+                            <div id="g-hotels-list-container" style="flex-grow: 1; margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Loc</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Name</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Stars</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Room</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Cost</th>
+                                            <th style="text-align: right; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="g-hotels-tbody">
+                                        <!-- JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <form id="add-global-hotel-form" style="display: none; border-top: 1px solid var(--admin-border); padding-top: 1rem;">
+                                <input type="hidden" id="gHotelEditId">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Location</label>
+                                        <select id="gHotelLocation" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                            <option value="" disabled selected>Select Location</option>
+                                            <option value="Kathmandu">Kathmandu</option>
+                                            <option value="Pokhara">Pokhara</option>
+                                            <option value="Beshishar">Beshishar</option>
+                                            <option value="Mukthinath">Mukthinath</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Hotel Name</label>
+                                        <input type="text" id="gHotelName" required placeholder="e.g. Yak & Yeti">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Star Category</label>
+                                        <select id="gHotelStars" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                            <option value="" disabled selected>Select Category (Optional)</option>
+                                            <option value="1 Star">1 Star</option>
+                                            <option value="2 Star">2 Star</option>
+                                            <option value="3 Star">3 Star</option>
+                                            <option value="4 Star">4 Star</option>
+                                            <option value="5 Star">5 Star</option>
+                                            <option value="Boutique">Boutique</option>
+                                            <option value="Luxury">Luxury</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Room Option</label>
+                                        <input type="text" id="gHotelRoom" required placeholder="e.g. Deluxe Double">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Price Per Night</label>
+                                        <input type="number" step="0.01" id="gHotelPrice" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="submit-btn" id="btn-add-g-hotel">SAVE HOTEL</button>
+                            </form>
+                        </div>
+
+                        <!-- Global Transport -->
+                        <div class="trip-form" style="margin: 0; display: flex; flex-direction: column;">
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Transport</h3>
+                                <button id="toggle-add-g-transport-btn" class="btn" style="background: var(--admin-primary); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-plus"></i> ADD TRANSPORT</button>
+                            </div>
+
+                            <!-- The List -->
+                            <div id="g-transport-list-container" style="flex-grow: 1; margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Vehicle</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Route</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Cap.</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Cost</th>
+                                            <th style="text-align: right; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="g-transport-tbody">
+                                        <!-- JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <form id="add-global-transport-form" style="display: none; border-top: 1px solid var(--admin-border); padding-top: 1rem;">
+                                <input type="hidden" id="gTransportEditId">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Vehicle Name</label>
+                                        <input type="text" id="gTransportName" required placeholder="e.g. Scorpio Jeep">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Capacity</label>
+                                        <input type="number" id="gTransportCap" required placeholder="e.g. 7">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Route / Location</label>
+                                        <select id="gTransportRouteSelect" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;" onchange="if(this.value==='Other'){ document.getElementById('gTransportRouteOther').style.display='block'; document.getElementById('gTransportRouteOther').required=true; } else { document.getElementById('gTransportRouteOther').style.display='none'; document.getElementById('gTransportRouteOther').required=false; }">
+                                            <option value="" disabled selected>Select Route</option>
+                                            <option value="Kathmandu Airport Pickup/Drop">Kathmandu Airport Pickup/Drop</option>
+                                            <option value="Pokhara Airport Pickup/Drop">Pokhara Airport Pickup/Drop</option>
+                                            <option value="Kathmandu to Ramechhap">Kathmandu to Ramechhap</option>
+                                            <option value="Ramechhap to Kathmandu">Ramechhap to Kathmandu</option>
+                                            <option value="Kathmandu to Pokhara">Kathmandu to Pokhara</option>
+                                            <option value="Pokhara to Kathmandu">Pokhara to Kathmandu</option>
+                                            <option value="Kathmandu to Chitwan">Kathmandu to Chitwan</option>
+                                            <option value="Chitwan to Kathmandu">Chitwan to Kathmandu</option>
+                                            <option value="Other">Other (Type custom)</option>
+                                        </select>
+                                        <input type="text" id="gTransportRouteOther" placeholder="Type custom route" style="display: none; margin-top: 0.5rem;">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Cost (NPR)</label>
+                                        <input type="number" step="0.01" id="gTransportCost" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="submit-btn" id="btn-add-g-transport">SAVE TRANSPORT</button>
+                            </form>
+                        </div>
+                    </div> <!-- End Global Grid -->
+
+                    <!-- TREK SELECTION -->
+                    <div class="section-header">
+                        <h3>Trek Specific Data</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Select a trek to manage permits, trail accommodations, transfers, guides, and porters</p>
+                    </div>
+                    <div class="form-grid" id="trek-cards-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                        <!-- Cards populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Detail View (Hidden by default) -->
+                <div id="cloud-detail-view" style="display: none;">
+                    <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                        <button id="back-to-cloud-list" class="btn" style="background: transparent; border: 1px solid var(--admin-border); padding: 0.5rem 1rem;"><i class="ph ph-arrow-left"></i> Back</button>
+                        <h2 id="current-trek-title" style="margin: 0; color: white;">Trek Name</h2>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;">
+                            <label style="color: var(--text-secondary); margin: 0;">Total Days:</label>
+                            <input type="number" id="cloudTrekDays" value="14" style="width: 80px; padding: 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                            <button class="btn" id="btn-save-trek-days" style="margin: 0; padding: 0.5rem 1rem; background: var(--admin-primary);">SAVE</button>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="cloudTrekId">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        
+                        <!-- Trek Transfers -->
+                        <div class="trip-form" style="margin: 0; display: flex; flex-direction: column;">
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Transfers</h3>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button onclick="openCopyDataModal('transfers')" class="btn" style="background: var(--admin-border); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-copy"></i> COPY TO...</button>
+                                    <button id="toggle-add-t-transfer-btn" class="btn" style="background: var(--admin-primary); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-plus"></i> ADD TRANSFER</button>
+                                </div>
+                            </div>
+                            
+                            <div id="t-transfers-list-container" style="flex-grow: 1; margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Type</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Mode</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Route</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Veh</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Occ.</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Cost</th>
+                                            <th style="text-align: right; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="t-transfers-tbody"></tbody>
+                                </table>
+                            </div>
+
+                            <form id="add-t-transfer-form" style="display: none; border-top: 1px solid var(--admin-border); padding-top: 1rem;">
+                                <input type="hidden" id="tTransferEditId">
+                                <div class="form-grid">
+                                    <div class="form-group full-width">
+                                        <label>Transfer Type</label>
+                                        <select id="gTransferType" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                            <option value="" disabled selected>Select Type</option>
+                                            <option value="flight">Flight</option>
+                                            <option value="bus">Bus</option>
+                                            <option value="long_route">Long Route</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group full-width" id="gTransferVehicleGroup" style="display: none;">
+                                        <label id="gTransferVehicleLabel">Vehicle Type/Name</label>
+                                        <input type="text" id="gTransferVehicle" placeholder="e.g. 2:1 Sofa Bus, Jeep">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mode</label>
+                                        <select id="gTransferMode" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                            <option value="" disabled selected>Select Mode</option>
+                                            <option value="Sharing">Sharing</option>
+                                            <option value="Pvt">Pvt</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="gTransferFlightOptGroup">
+                                        <label>Preferred Flight Opt</label>
+                                        <select id="gTransferFlightOpt" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                            <option value="">Any (Global)</option>
+                                            <option value="Kathmandu">Kathmandu Option</option>
+                                            <option value="Ramechhap">Ramechhap Option</option>
+                                            <option value="No mention">No mention</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Departure</label>
+                                        <input type="text" id="gTransferDep" required placeholder="e.g. Kathmandu">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Arrival</label>
+                                        <input type="text" id="gTransferArr" required placeholder="e.g. Pokhara">
+                                    </div>
+                                    <div class="form-group">
+                                        <label id="gTransferOccupancyLabel">Occupancy</label>
+                                        <input type="number" id="gTransferOccupancy" placeholder="e.g. 5">
+                                    </div>
+                                    <div class="form-group">
+                                        <label id="gTransferCostLabel">Cost</label>
+                                        <input type="number" step="0.01" id="gTransferCost" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="submit-btn" id="btn-add-t-transfer">SAVE TRANSFER</button>
+                            </form>
+                        </div>
+
+                        <!-- Trek Permits -->
+                        <div class="trip-form" style="margin: 0; display: flex; flex-direction: column;">
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Permits</h3>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button onclick="openCopyDataModal('permits')" class="btn" style="background: var(--admin-border); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-copy"></i> COPY TO...</button>
+                                    <button id="toggle-add-t-permit-btn" class="btn" style="background: var(--admin-primary); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-plus"></i> ADD PERMIT</button>
+                                </div>
+                            </div>
+                            
+                            <div id="t-permits-list-container" style="flex-grow: 1; margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Name</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Cost</th>
+                                            <th style="text-align: right; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="t-permits-tbody"></tbody>
+                                </table>
+                            </div>
+
+                            <form id="add-trek-permit-form" style="display: none; border-top: 1px solid var(--admin-border); padding-top: 1rem;">
+                                <input type="hidden" id="tPermitEditId">
+                                <div class="form-grid">
+                                    <div class="form-group full-width">
+                                        <label>Permit Name</label>
+                                        <input type="text" id="tPermitName" required placeholder="e.g. ACAP, TIMS">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Cost</label>
+                                        <input type="number" step="0.01" id="tPermitCost" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="submit-btn" id="btn-add-t-permit">SAVE PERMIT</button>
+                            </form>
+                        </div>
+
+                        <!-- Trail Accommodation -->
+                        <div class="trip-form" style="margin: 0; display: flex; flex-direction: column;">
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Trail Accommodations</h3>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button onclick="openCopyDataModal('trails')" class="btn" style="background: var(--admin-border); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-copy"></i> COPY TO...</button>
+                                    <button id="toggle-add-t-trail-btn" class="btn" style="background: var(--admin-primary); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-plus"></i> ADD LOCATION</button>
+                                </div>
+                            </div>
+                            
+                            <div id="t-trails-list-container" style="flex-grow: 1; margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Location</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Cost/Day</th>
+                                            <th style="text-align: right; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="t-trails-tbody"></tbody>
+                                </table>
+                            </div>
+
+                            <form id="add-trek-trail-acc-form" style="display: none; border-top: 1px solid var(--admin-border); padding-top: 1rem;">
+                                <input type="hidden" id="tTrailEditId">
+                                <div class="form-grid">
+                                    <div class="form-group full-width">
+                                        <label>Location on Trail</label>
+                                        <input type="text" id="tTrailLoc" required placeholder="e.g. Sinuwa, Deurali">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Cost Per Day Per Person</label>
+                                        <input type="number" step="0.01" id="tTrailCost" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="submit-btn" id="btn-add-t-trail">SAVE ACCOMMODATION</button>
+                            </form>
+                        </div>
+
+                        <!-- Guides -->
+                        <div class="trip-form" style="margin: 0; display: flex; flex-direction: column;">
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Guides</h3>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button onclick="openCopyDataModal('guides')" class="btn" style="background: var(--admin-border); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-copy"></i> COPY TO...</button>
+                                    <button id="toggle-add-t-guide-btn" class="btn" style="background: var(--admin-primary); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-plus"></i> ADD GUIDE</button>
+                                </div>
+                            </div>
+                            
+                            <div id="t-guides-list-container" style="flex-grow: 1; margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Level</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Cost/Day</th>
+                                            <th style="text-align: right; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="t-guides-tbody"></tbody>
+                                </table>
+                            </div>
+
+                            <form id="add-t-guide-form" style="display: none; border-top: 1px solid var(--admin-border); padding-top: 1rem;">
+                                <input type="hidden" id="tGuideEditId">
+                                <div class="form-grid">
+                                    <div class="form-group full-width">
+                                        <label>Guide Name/Level</label>
+                                        <input type="text" id="gGuideName" required placeholder="e.g. English Speaking Guide">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Cost Per Day</label>
+                                        <input type="number" step="0.01" id="gGuideCost" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="submit-btn" id="btn-add-t-guide">SAVE GUIDE</button>
+                            </form>
+                        </div>
+
+                        <!-- Porters -->
+                        <div class="trip-form" style="margin: 0; display: flex; flex-direction: column;">
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Porters</h3>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button onclick="openCopyDataModal('porters')" class="btn" style="background: var(--admin-border); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-copy"></i> COPY TO...</button>
+                                    <button id="toggle-add-t-porter-btn" class="btn" style="background: var(--admin-primary); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-plus"></i> ADD PORTER</button>
+                                </div>
+                            </div>
+                            
+                            <div id="t-porters-list-container" style="flex-grow: 1; margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Type</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Cost/Day</th>
+                                            <th style="text-align: right; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="t-porters-tbody"></tbody>
+                                </table>
+                            </div>
+
+                            <form id="add-t-porter-form" style="display: none; border-top: 1px solid var(--admin-border); padding-top: 1rem;">
+                                <input type="hidden" id="tPorterEditId">
+                                <div class="form-grid">
+                                    <div class="form-group full-width">
+                                        <label>Porter Type</label>
+                                        <select id="gPorterType" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                            <option value="Human">Human</option>
+                                            <option value="Jokpe">Jokpe</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Cost Per Day</label>
+                                        <input type="number" step="0.01" id="gPorterCost" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="submit-btn" id="btn-add-t-porter">SAVE PORTER</button>
+                            </form>
+                        </div>
+
+                        <!-- Lunch Options -->
+                        <div class="trip-form" style="margin: 0; display: flex; flex-direction: column;">
+                            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Lunch Options</h3>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button onclick="openCopyDataModal('lunches')" class="btn" style="background: var(--admin-border); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-copy"></i> COPY TO...</button>
+                                    <button id="toggle-add-t-lunch-btn" class="btn" style="background: var(--admin-primary); padding: 0.4rem 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;"><i class="ph ph-plus"></i> ADD LUNCH</button>
+                                </div>
+                            </div>
+                            
+                            <div id="t-lunches-list-container" style="flex-grow: 1; margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Place</th>
+                                            <th style="text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Cost</th>
+                                            <th style="text-align: right; padding: 0.5rem; border-bottom: 1px solid var(--admin-border); color: var(--text-secondary);">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="t-lunches-tbody"></tbody>
+                                </table>
+                            </div>
+
+                            <form id="add-t-lunch-form" style="display: none; border-top: 1px solid var(--admin-border); padding-top: 1rem;">
+                                <input type="hidden" id="tLunchEditId">
+                                <div class="form-grid">
+                                    <div class="form-group full-width">
+                                        <label>Place</label>
+                                        <input type="text" id="gLunchPlace" required placeholder="e.g. Sinuwa, Deurali">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Cost</label>
+                                        <input type="number" step="0.01" id="gLunchCost" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="submit-btn" id="btn-add-t-lunch">SAVE LUNCH</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End CLOUD DATA VIEW -->
+
+            <!-- COSTING VIEW -->
+            <div id="costing-view" class="dashboard-view" style="display: none;">
+                <div id="costing-master-view">
+                    <div class="section-header">
+                        <h2>Trek Costing</h2>
+                        <p style="color: var(--text-secondary);">Select a trek to open the cost calculator.</p>
+                    </div>
+                    <div class="trek-grid" id="costing-treks-container">
+                        <!-- Loaded via JS -->
+                    </div>
+                </div>
+
+                <div id="costing-detail-view" style="display: none;">
+                    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem; margin-bottom: 2rem;">
+                        <div>
+                            <button class="btn" id="btn-back-costing" style="background: transparent; border: 1px solid var(--admin-border); color: white; margin-bottom: 1rem;"><i class="ph ph-arrow-left"></i> BACK TO TREKS</button>
+                            <h2 style="margin: 0;" id="costing-trek-title">Trek Name Calculator</h2>
+                        </div>
+                        <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid var(--admin-primary); padding: 1rem; border-radius: 10px; text-align: right;">
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">TOTAL ESTIMATED COST</div>
+                            <div style="color: var(--admin-primary); font-size: 1.5rem; font-weight: 700;" id="calc-total-cost">NPR 0</div>
+                        </div>
+                    </div>
+
+                    <!-- Global Inputs -->
+                    <div class="trip-form" style="margin-bottom: 2rem;">
+                        <h3>Trip Parameters</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Number of Pax (Guests)</label>
+                                <input type="number" id="calc-pax" value="2" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Number of Days</label>
+                                <input type="number" id="calc-days" value="14" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Meal Inclusion</label>
+                                <select id="calc-meal-inclusion" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                    <option value="With Food">With Food</option>
+                                    <option value="Without Food">Without Food</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group ebc-specific-input" style="display: none;">
+                                <label>Preferred Flight Option</label>
+                                <select id="calc-flight-opt" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                    <option value="Kathmandu">From Kathmandu</option>
+                                    <option value="Ramechhap">From Ramechhap</option>
+                                </select>
+                            </div>
+                            <div class="form-group ebc-specific-input" id="calc-ramechhap-mode-group" style="display: none;">
+                                <label>Ramechhap Transfer Mode <span id="calc-ramechhap-rec" style="color: var(--admin-primary); font-size: 0.8rem; font-weight: bold; margin-left: 0.5rem;"></span></label>
+                                <select id="calc-ramechhap-mode" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                    <option value="Sharing">Sharing</option>
+                                    <option value="Pvt">Pvt</option>
+                                </select>
+                            </div>
+                            
+                            <!-- ANNAPURNA SPECIFIC INPUTS -->
+                            <div class="form-group annapurna-specific-input" style="display: none;">
+                                <label>KTM to Pokhara Transfer</label>
+                                <select id="calc-ktm-pkr-transfer" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                    <option value="Flight">Flight</option>
+                                    <option value="Bus">Bus</option>
+                                </select>
+                            </div>
+                            <div class="form-group annapurna-specific-input" style="display: none;">
+                                <label>Pokhara Hotel Category</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <select id="calc-pokhara-hotel-cat" style="flex: 1; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                        <option value="0">No Hotel Needed</option>
+                                        <option value="3 Star">3 Star</option>
+                                        <option value="4 Star">4 Star</option>
+                                        <option value="5 Star">5 Star</option>
+                                        <option value="Boutique">Boutique</option>
+                                        <option value="Luxury">Luxury</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group annapurna-specific-input" style="display: none;">
+                                <label>Pokhara to Ghandruk Transfer <span id="calc-ghandruk-rec" style="color: var(--admin-primary); font-size: 0.8rem; font-weight: bold; margin-left: 0.5rem;"></span></label>
+                                <select id="calc-pkr-ghandruk-mode" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                    <option value="Sharing">Sharing</option>
+                                    <option value="Pvt">Pvt</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group hotel-global-input">
+                                <label>Kathmandu Hotel Category <span id="calc-hotel-rooms-rec" style="color: var(--admin-primary); font-size: 0.8rem; font-weight: bold; margin-left: 0.5rem;"></span></label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <select id="calc-hotel-cat" style="flex: 1; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                                        <option value="0">No Hotel Needed</option>
+                                        <option value="3 Star">3 Star</option>
+                                        <option value="4 Star">4 Star</option>
+                                        <option value="5 Star">5 Star</option>
+                                        <option value="Boutique">Boutique</option>
+                                        <option value="Luxury">Luxury</option>
+                                    </select>
+                                    <select id="calc-hotel-room-type" style="width: 150px; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;" title="Room Sharing Policy">
+                                        <option value="Double/Triple">Double & Triple</option>
+                                        <option value="Double Only">Double Rooms Only</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="trek-grid">
+                        <!-- Airport Transfers Card -->
+                        <div class="trip-form" id="calc-airport-card" style="margin: 0;">
+                            <h3>Kathmandu Airport Pickup / Drop</h3>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                Auto-calculating based on pax.
+                            </div>
+                            <div id="calc-airport-transfer-details" style="font-size: 0.95rem; font-weight: bold; color: white;"></div>
+                        </div>
+
+                        <!-- Global & EBC Specific Costs -->
+                        <div class="trip-form ebc-specific-view" style="margin: 0; display: none;">
+                            <h3>Flight & Long Route Transfers</h3>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;" id="calc-flight-details">Select options above.</div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; font-weight: bold;">Cost: <span id="calc-flight-cost-display">NPR 0</span></div>
+                        </div>
+
+                        <div class="trip-form hotel-global-view" style="margin: 0;">
+                            <h3>Kathmandu Hotel Allocation</h3>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;" id="calc-hotel-details">Select category above.</div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; font-weight: bold;">Cost: <span id="calc-hotel-cost-display">NPR 0</span></div>
+                        </div>
+
+                        <!-- Annapurna Specific Costs -->
+                        <div class="trip-form annapurna-specific-view" style="margin: 0; display: none;">
+                            <h3>Pokhara Hotel Allocation</h3>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;" id="calc-pkr-hotel-details">Select category above.</div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; font-weight: bold;">Cost: <span id="calc-pkr-hotel-cost-display">NPR 0</span></div>
+                        </div>
+                        <div class="trip-form annapurna-specific-view" style="margin: 0; display: none;">
+                            <h3>Annapurna Transfers</h3>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;" id="calc-annapurna-transfers-details">Select options above.</div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; font-weight: bold;">Cost: <span id="calc-annapurna-transfers-cost-display">NPR 0</span></div>
+                        </div>
+                        <!-- Guides -->
+                        <div class="trip-form" style="margin: 0;">
+                            <h3>Guide Allocation</h3>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                Auto-calculating based on <span id="calc-guide-pax">2</span> pax.
+                            </div>
+                            <div id="calc-guide-details" style="font-size: 0.95rem; font-weight: bold; color: white; margin-bottom: 0.5rem;">
+                                Calculating...
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">Cost: <span id="calc-guide-cost-display">NPR 0</span></div>
+                        </div>
+
+                        <!-- Porters -->
+                        <div class="trip-form" style="margin: 0;">
+                            <h3>Porter Allocation</h3>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                Auto-calculating based on <span id="calc-porter-pax">2</span> pax.
+                            </div>
+                            <div id="calc-porter-details" style="font-size: 0.95rem; font-weight: bold; color: white; margin-bottom: 0.5rem;">
+                                <span id="calc-porter-count">1</span> porter(s) assigned
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">Cost: <span id="calc-porter-cost-display">NPR 0</span></div>
+                        </div>
+
+                        <!-- Permits -->
+                        <div class="trip-form" style="margin: 0; grid-column: span 2;">
+                            <h3>Permits (Per Pax)</h3>
+                            <div id="calc-permits-container" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; color: white; font-size: 0.95rem;">
+                                <!-- List injected by JS -->
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">Cost: <span id="calc-permits-cost-display">NPR 0</span></div>
+                        </div>
+
+                        <!-- Trails & Lunches -->
+                        <div class="trip-form" id="calc-food-section" style="margin: 0; grid-column: span 2;">
+                            <h3>Total Accommodations & Lunches (Per Pax for Whole Trek)</h3>
+                            <div style="display: flex; gap: 2rem;">
+                                <div style="flex: 1;">
+                                    <h4>Accommodations</h4>
+                                    <div id="calc-trails-container" style="display: flex; flex-direction: column; gap: 0.5rem; color: white; font-size: 0.95rem;"></div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <h4>Lunches</h4>
+                                    <div id="calc-lunches-container" style="display: flex; flex-direction: column; gap: 0.5rem; color: white; font-size: 0.95rem;"></div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">Cost: <span id="calc-food-cost-display">NPR 0</span></div>
+                        </div>
+                        
+                        <!-- Transfers -->
+                        <div class="trip-form" id="calc-transfers-section" style="margin: 0; grid-column: span 2;">
+                            <h3>Transfers</h3>
+                            <div id="calc-transfers-container" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                                <!-- Checkboxes injected by JS -->
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">Cost: <span id="calc-transfers-cost-display">NPR 0</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bottom Grand Total -->
+                    <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid var(--admin-primary); padding: 1.5rem; border-radius: 10px; margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
+                        <!-- Left Side: Per Person -->
+                        <div style="text-align: left;">
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">COST PER PERSON</div>
+                            <div style="color: white; font-size: 1.8rem; font-weight: bold;" id="calc-pp-cost-bottom">NPR 0</div>
+                            <div style="display: flex; gap: 1rem; margin-top: 0.2rem; color: var(--text-secondary); font-size: 1rem;">
+                                <div id="calc-pp-inr">INR 0</div>
+                                <div style="opacity: 0.5;">|</div>
+                                <div id="calc-pp-usd">USD 0</div>
+                            </div>
+                        </div>
+
+                        <!-- Right Side: Grand Total -->
+                        <div style="text-align: right;">
+                            <div style="color: var(--text-secondary); font-size: 1rem;">GRAND TOTAL ESTIMATED COST</div>
+                            <div style="color: var(--admin-primary); font-size: 2.5rem; font-weight: 700;" id="calc-total-cost-bottom">NPR 0</div>
+                            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem; color: var(--text-secondary); font-size: 1.2rem; font-weight: bold;">
+                                <div id="calc-total-inr">INR 0</div>
+                                <div style="opacity: 0.5;">|</div>
+                                <div id="calc-total-usd">USD 0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
     
@@ -728,5 +1416,27 @@
     </div>
 
     <script type="module" src="/src/dashboard.js"></script>
+    <div id="copy-data-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: var(--bg-dark); border: 1px solid var(--admin-border); padding: 2rem; border-radius: 10px; width: 400px; max-width: 90%;">
+            <h2 id="copy-modal-title" style="margin-top: 0;">Copy Data to Trek</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">Select the destination trek. This will copy all items from the current view.</p>
+            
+            <form id="copy-data-form">
+                <input type="hidden" id="copy-source-type">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Destination Trek</label>
+                    <select id="copy-target-trek" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;">
+                        <option value="" disabled selected>Loading treks...</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn" onclick="document.getElementById('copy-data-modal').style.display='none'" style="background: transparent; border: 1px solid var(--admin-border); color: white;">CANCEL</button>
+                    <button type="submit" class="submit-btn" id="btn-confirm-copy" style="width: auto;">COPY DATA</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

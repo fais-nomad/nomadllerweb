@@ -6,6 +6,21 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+window.liveRates = { INR: 0.625, USD: 0.0075 }; // Fallbacks
+async function fetchExchangeRates() {
+    try {
+        const response = await fetch('https://open.er-api.com/v6/latest/NPR');
+        const data = await response.json();
+        if (data && data.rates) {
+            window.liveRates.INR = data.rates.INR;
+            window.liveRates.USD = data.rates.USD;
+        }
+    } catch(err) {
+        console.error('Exchange rates failed:', err);
+    }
+}
+fetchExchangeRates();
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Reveal animations for dashboard
     if (window.innerWidth > 1024) {
@@ -911,47 +926,87 @@ document.addEventListener('DOMContentLoaded', async () => {
     const navTrips = document.getElementById('nav-trips');
     const navAgents = document.getElementById('nav-agents');
     const navFixedDepartures = document.getElementById('nav-fixed-departures');
-    
-    const tripsView = document.getElementById('trips-view-section');
-    const agentsView = document.getElementById('agents-view-section');
-    const fixedDeparturesView = document.getElementById('fixed-departures-view-section');
-    
+    const navCloudData = document.getElementById('nav-cloud-data');
+    const navCosting = document.getElementById('nav-costing');
+
+    const viewTrips = document.getElementById('trips-view-section');
+    const viewAgents = document.getElementById('agents-view-section');
+    const viewFD = document.getElementById('fixed-departures-view-section');
+    const viewCloud = document.getElementById('cloud-data-view-section');
+    const viewCosting = document.getElementById('costing-view');
     const mainDashboardTitle = document.getElementById('main-dashboard-title');
-    
-    if (navTrips && navAgents && navFixedDepartures) {
+
+    function hideAllViews() {
+        if (viewTrips) viewTrips.style.display = 'none';
+        if (viewAgents) viewAgents.style.display = 'none';
+        if (viewFD) viewFD.style.display = 'none';
+        if (viewCloud) viewCloud.style.display = 'none';
+        if (viewCosting) viewCosting.style.display = 'none';
+
+        if (navTrips) navTrips.classList.remove('active');
+        if (navAgents) navAgents.classList.remove('active');
+        if (navFixedDepartures) navFixedDepartures.classList.remove('active');
+        if (navCloudData) navCloudData.classList.remove('active');
+        if (navCosting) navCosting.classList.remove('active');
+    }
+
+    if (navTrips) {
         navTrips.addEventListener('click', (e) => {
             e.preventDefault();
+            hideAllViews();
+            if (viewTrips) viewTrips.style.display = 'block';
             navTrips.classList.add('active');
-            navAgents.classList.remove('active');
-            navFixedDepartures.classList.remove('active');
-            tripsView.style.display = 'block';
-            agentsView.style.display = 'none';
-            fixedDeparturesView.style.display = 'none';
             if (mainDashboardTitle) mainDashboardTitle.textContent = 'Upcoming Trips Management';
         });
+    }
 
+    if (navAgents) {
         navAgents.addEventListener('click', (e) => {
             e.preventDefault();
+            hideAllViews();
+            if (viewAgents) viewAgents.style.display = 'block';
             navAgents.classList.add('active');
-            navTrips.classList.remove('active');
-            navFixedDepartures.classList.remove('active');
-            agentsView.style.display = 'block';
-            tripsView.style.display = 'none';
-            fixedDeparturesView.style.display = 'none';
             if (mainDashboardTitle) mainDashboardTitle.textContent = 'Agents Management';
             loadAgents();
         });
+    }
 
+    if (navFixedDepartures) {
         navFixedDepartures.addEventListener('click', (e) => {
             e.preventDefault();
+            hideAllViews();
+            if (viewFD) viewFD.style.display = 'block';
             navFixedDepartures.classList.add('active');
-            navTrips.classList.remove('active');
-            navAgents.classList.remove('active');
-            fixedDeparturesView.style.display = 'block';
-            tripsView.style.display = 'none';
-            agentsView.style.display = 'none';
             if (mainDashboardTitle) mainDashboardTitle.textContent = 'Fixed Departures Management';
             loadFixedDepartures();
+        });
+    }
+
+    if (navCloudData) {
+        navCloudData.addEventListener('click', (e) => {
+            e.preventDefault();
+            hideAllViews();
+            if (viewCloud) {
+                viewCloud.style.display = 'block';
+                document.getElementById('cloud-master-list').style.display = 'block';
+                document.getElementById('cloud-detail-view').style.display = 'none';
+            }
+            navCloudData.classList.add('active');
+            if (mainDashboardTitle) mainDashboardTitle.textContent = 'Cloud Data Treks';
+            loadCloudTreks();
+        });
+    }
+
+    if (navCosting) {
+        navCosting.addEventListener('click', (e) => {
+            e.preventDefault();
+            hideAllViews();
+            if (viewCosting) viewCosting.style.display = 'block';
+            navCosting.classList.add('active');
+            document.getElementById('costing-master-view').style.display = 'block';
+            document.getElementById('costing-detail-view').style.display = 'none';
+            if (mainDashboardTitle) mainDashboardTitle.textContent = 'Trek Costing Calculator';
+            loadCostingTreks();
         });
     }
 
@@ -1415,6 +1470,1661 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert('Error updating fixed departure');
             } finally {
                 btn.textContent = 'UPDATE DEPARTURE';
+                btn.disabled = false;
+            }
+        });
+    }
+});
+
+// --- CLOUD DATA TREKS LOGIC ---
+window.cloudDataCache = {
+    hotels: {}, transport: {}, transfers: {}, permits: {}, trails: {}, guides: {}, porters: {}, lunches: {}
+};
+
+window.openCopyModal = (id) => {
+    document.getElementById('copy-fd-id').value = id;
+    document.getElementById('copy-fd-modal').style.display = 'flex';
+};
+
+document.getElementById('copy-data-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const sourceId = document.getElementById('copy-fd-id').value;
+    const newDate = document.getElementById('copy-fd-date').value;
+    const btn = e.target.querySelector('button');
+    btn.textContent = 'COPYING...';
+    btn.disabled = true;
+    try {
+        const { data: source, error: fetchErr } = await supabase.from('fixed_departures').select('*').eq('id', sourceId).single();
+        if (fetchErr) throw fetchErr;
+        const { id, created_at, ...newData } = source;
+        newData.start_date = newDate;
+        const { error: insErr } = await supabase.from('fixed_departures').insert([newData]);
+        if (insErr) throw insErr;
+        document.getElementById('copy-fd-modal').style.display = 'none';
+        loadFixedDepartures();
+    } catch (err) {
+        console.error(err);
+        alert('Error copying departure');
+    } finally {
+        btn.textContent = 'COPY DEPARTURE';
+        btn.disabled = false;
+    }
+});
+
+// --- COPY TREK DATA LOGIC ---
+window.openCopyDataModal = async (type) => {
+    const currentTrekId = document.getElementById('cloudTrekId').value;
+    if (!currentTrekId) return;
+
+    document.getElementById('copy-source-type').value = type;
+    const titleMap = {
+        transfers: 'Transfers', permits: 'Permits', trails: 'Trail Accommodations',
+        guides: 'Guides', porters: 'Porters', lunches: 'Lunches'
+    };
+    document.getElementById('copy-modal-title').textContent = `Copy ${titleMap[type]} to Trek`;
+    
+    const select = document.getElementById('copy-target-trek');
+    select.innerHTML = '<option value="" disabled selected>Loading...</option>';
+    document.getElementById('copy-data-modal').style.display = 'flex';
+
+    try {
+        const { data, error } = await supabase.from('trek_destinations').select('*').order('name');
+        if (error) throw error;
+        select.innerHTML = '<option value="" disabled selected>Select destination trek</option>';
+        data.forEach(t => {
+            if (t.id !== currentTrekId) {
+                select.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        select.innerHTML = '<option value="" disabled>Error loading treks</option>';
+    }
+};
+
+document.getElementById('copy-data-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btn-confirm-copy');
+    btn.textContent = 'COPYING...';
+    btn.disabled = true;
+
+    try {
+        const sourceType = document.getElementById('copy-source-type').value;
+        const targetTrekId = document.getElementById('copy-target-trek').value;
+        const sourceTrekId = document.getElementById('cloudTrekId').value;
+
+        const tableMap = {
+            transfers: 'trek_transfers', permits: 'trek_permits', trails: 'trek_trail_accommodations',
+            guides: 'trek_guides', porters: 'trek_porters', lunches: 'trek_lunches'
+        };
+        const tableName = tableMap[sourceType];
+
+        const { data: items, error: fetchErr } = await supabase.from(tableName).select('*').eq('trek_id', sourceTrekId);
+        if (fetchErr) throw fetchErr;
+
+        if (!items || items.length === 0) {
+            alert('No items to copy in this section.');
+            document.getElementById('copy-data-modal').style.display = 'none';
+            return;
+        }
+
+        const payloads = items.map(item => {
+            const newItem = { ...item };
+            delete newItem.id;
+            delete newItem.created_at;
+            newItem.trek_id = targetTrekId;
+            return newItem;
+        });
+
+        const { error: insertErr } = await supabase.from(tableName).insert(payloads);
+        if (insertErr) throw insertErr;
+
+        alert('Data copied successfully!');
+        document.getElementById('copy-data-modal').style.display = 'none';
+    } catch (err) {
+        console.error(err);
+        alert('Error copying data');
+    } finally {
+        btn.textContent = 'COPY DATA';
+        btn.disabled = false;
+    }
+});
+
+// --- COSTING CALCULATOR LOGIC ---
+let costingCache = {};
+
+async function loadCostingTreks() {
+    const container = document.getElementById('costing-treks-container');
+    if (!container) return;
+
+    try {
+        const { data, error } = await supabase.from('trek_destinations').select('*').order('created_at');
+        if (error) throw error;
+
+        container.innerHTML = '';
+        data.forEach(trek => {
+            const card = document.createElement('div');
+            card.className = 'trek-card';
+            card.style.cssText = `
+                background: rgba(0,0,0,0.5); 
+                border: 1px solid var(--admin-border); 
+                padding: 1.5rem; 
+                border-radius: 10px; 
+                cursor: pointer; 
+                transition: transform 0.2s, background 0.2s;
+                text-align: center;
+            `;
+            card.innerHTML = `<h3 style="color: white; margin: 0;">${trek.name}</h3>`;
+            
+            card.addEventListener('mouseenter', () => { card.style.background = 'rgba(255, 107, 53, 0.1)'; card.style.transform = 'translateY(-2px)'; });
+            card.addEventListener('mouseleave', () => { card.style.background = 'rgba(0,0,0,0.5)'; card.style.transform = 'translateY(0)'; });
+            
+            card.addEventListener('click', () => {
+                openCostingDetail(trek);
+            });
+
+            container.appendChild(card);
+        });
+    } catch (err) {
+        console.error('Error loading costing treks:', err);
+        container.innerHTML = '<p style="color: red;">Error loading treks.</p>';
+    }
+}
+
+document.getElementById('btn-back-costing')?.addEventListener('click', () => {
+    document.getElementById('costing-detail-view').style.display = 'none';
+    document.getElementById('costing-master-view').style.display = 'block';
+});
+
+async function openCostingDetail(trek) {
+    document.getElementById('costing-master-view').style.display = 'none';
+    document.getElementById('costing-detail-view').style.display = 'block';
+    document.getElementById('costing-trek-title').textContent = `${trek.name} Calculator`;
+    
+    // Reset cache and inputs
+    costingCache = { guides: [], porters: [], permits: [], trails: [], lunches: [], transfers: [], cloudHotels: [], cloudTransports: [], trekCode: trek.code };
+    document.getElementById('calc-pax').value = 2;
+    document.getElementById('calc-days').value = trek.days || 14;
+
+    // Show/hide EBC logic
+    const tc = (trek.code || '').toLowerCase();
+    const isEbc = tc === 'ebc' || tc === 'ebc-gokyo';
+    document.querySelectorAll('.ebc-specific-input, .ebc-specific-view').forEach(el => {
+        el.style.display = isEbc ? (el.tagName === 'DIV' && el.classList.contains('form-group') && el.id !== 'calc-ramechhap-mode-group' ? 'block' : (el.id === 'calc-ramechhap-mode-group' ? 'none' : 'block')) : 'none';
+    });
+    
+    // Show/hide Annapurna logic
+    const isAnnapurna = tc.includes('abc') || tc.includes('annapurna');
+    document.querySelectorAll('.annapurna-specific-input, .annapurna-specific-view').forEach(el => {
+        el.style.display = isAnnapurna ? 'block' : 'none';
+    });
+    
+    const transfersSection = document.getElementById('calc-transfers-section');
+    if (transfersSection) {
+        transfersSection.style.display = (isEbc || isAnnapurna) ? 'none' : 'block';
+    }
+
+    if (isEbc) {
+        document.getElementById('calc-flight-opt').value = 'Kathmandu';
+        document.getElementById('calc-ramechhap-mode-group').style.display = 'none';
+    }
+
+    try {
+        const [guidesRes, portersRes, permitsRes, trailsRes, lunchesRes, transRes, hotelsRes, transportsRes] = await Promise.all([
+            supabase.from('trek_guides').select('*').eq('trek_id', trek.id),
+            supabase.from('trek_porters').select('*').eq('trek_id', trek.id),
+            supabase.from('trek_permits').select('*').eq('trek_id', trek.id),
+            supabase.from('trek_trail_accommodations').select('*').eq('trek_id', trek.id),
+            supabase.from('trek_lunches').select('*').eq('trek_id', trek.id),
+            supabase.from('trek_transfers').select('*').eq('trek_id', trek.id),
+            supabase.from('cloud_hotels').select('*'),
+            supabase.from('cloud_transport').select('*')
+        ]);
+
+        if (guidesRes.data) costingCache.guides = guidesRes.data;
+        if (portersRes.data) costingCache.porters = portersRes.data;
+        if (permitsRes.data) costingCache.permits = permitsRes.data;
+        if (trailsRes.data) costingCache.trails = trailsRes.data;
+        if (lunchesRes.data) costingCache.lunches = lunchesRes.data;
+        if (transRes.data) costingCache.transfers = transRes.data;
+        if (hotelsRes.data) costingCache.cloudHotels = hotelsRes.data;
+        if (transportsRes.data) costingCache.cloudTransports = transportsRes.data;
+
+        renderCostingUI();
+        calculateCostingTotal();
+    } catch (err) {
+        console.error(err);
+        alert('Error fetching trek data for costing');
+    }
+}
+
+function renderCostingUI() {
+    // Checkbox Lists Generator
+    const generateCheckboxes = (containerId, items, valueKey, labelFn, namePrefix) => {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        items.forEach((item, index) => {
+            const id = `chk_${namePrefix}_${index}`;
+            container.innerHTML += `
+                <label style="display: flex; align-items: center; gap: 0.5rem; color: white; cursor: pointer;">
+                    <input type="checkbox" class="calc-checkbox ${namePrefix}-chk" value="${item[valueKey]}" onchange="calculateCostingTotal()" checked>
+                    ${labelFn(item)}
+                </label>
+            `;
+        });
+    };
+
+    generateCheckboxes('calc-trails-container', costingCache.trails, 'cost_per_day_per_person', i => `${i.location} (NPR ${i.cost_per_day_per_person})`, 'trail');
+    generateCheckboxes('calc-lunches-container', costingCache.lunches, 'cost', i => `${i.place} (NPR ${i.cost})`, 'lunch');
+    generateCheckboxes('calc-transfers-container', costingCache.transfers, 'cost', i => `${i.transfer_type} - ${i.departure} to ${i.arrival} (NPR ${i.cost})`, 'transfer');
+}
+
+window.calculateCostingTotal = () => {
+    const pax = parseInt(document.getElementById('calc-pax').value) || 0;
+    const days = parseInt(document.getElementById('calc-days').value) || 0;
+    let total = 0;
+
+    // Guide Allocation
+    let mainGuides = 0, asstGuides = 0;
+    if (pax <= 6) { mainGuides = 1; asstGuides = 0; }
+    else if (pax <= 12) { mainGuides = 1; asstGuides = 1; }
+    else if (pax <= 16) { mainGuides = 1; asstGuides = 2; }
+    else { mainGuides = 2; asstGuides = 2; }
+    
+    let mainGuideCost = 0, asstGuideCost = 0;
+    const mGuide = costingCache.guides.find(g => g.name && !g.name.toLowerCase().includes('assistant')); 
+    const aGuide = costingCache.guides.find(g => g.name && g.name.toLowerCase().includes('assistant'));
+    
+    if (mGuide) mainGuideCost = parseFloat(mGuide.cost_per_day) || 0;
+    else if (costingCache.guides.length > 0) mainGuideCost = parseFloat(costingCache.guides[0].cost_per_day) || 0;
+
+    if (aGuide) asstGuideCost = parseFloat(aGuide.cost_per_day) || 0;
+    else if (costingCache.guides.length > 1) asstGuideCost = parseFloat(costingCache.guides[1].cost_per_day) || 0;
+
+    const guideDays = Math.max(1, days - 2);
+    const guideTotal = ((mainGuides * mainGuideCost) + (asstGuides * asstGuideCost)) * guideDays;
+    
+    const gPaxEl = document.getElementById('calc-guide-pax');
+    if (gPaxEl) gPaxEl.textContent = pax;
+    let gDetails = [];
+    if (mainGuides > 0) gDetails.push(`${mainGuides} Lead (NPR ${mainGuideCost.toLocaleString()})`);
+    if (asstGuides > 0) gDetails.push(`${asstGuides} Asst (NPR ${asstGuideCost.toLocaleString()})`);
+    const gDetEl = document.getElementById('calc-guide-details');
+    if (gDetEl) gDetEl.innerHTML = gDetails.length > 0 ? `(${gDetails.join(' + ')}) × ${guideDays} Days = <strong>NPR ${guideTotal.toLocaleString()}</strong>` : 'No guides assigned.';
+    document.getElementById('calc-guide-cost-display').textContent = `NPR ${guideTotal.toLocaleString()}`;
+    total += guideTotal;
+
+    // Porter Allocation
+    const porterCount = Math.floor(pax / 2);
+    let porterCostPerDay = 0;
+    if (costingCache.porters.length > 0) {
+        porterCostPerDay = parseFloat(costingCache.porters[0].cost_per_day) || 0;
+    }
+    const porterDays = Math.max(1, days - 3);
+    const porterTotal = porterCostPerDay * porterCount * porterDays;
+    
+    const pPaxEl = document.getElementById('calc-porter-pax');
+    if (pPaxEl) pPaxEl.textContent = pax;
+    const pDetEl = document.getElementById('calc-porter-details');
+    if (pDetEl) pDetEl.innerHTML = `${porterCount} Porter(s) × NPR ${porterCostPerDay.toLocaleString()} × ${porterDays} Days = <strong>NPR ${porterTotal.toLocaleString()}</strong>`;
+    document.getElementById('calc-porter-cost-display').textContent = `NPR ${porterTotal.toLocaleString()}`;
+    total += porterTotal;
+
+    // Helper for summing checked boxes
+    const sumCheckboxes = (className) => {
+        let sum = 0;
+        document.querySelectorAll(`.${className}:checked`).forEach(chk => {
+            sum += parseFloat(chk.value) || 0;
+        });
+        return sum;
+    };
+
+    // Permits (Per Pax)
+    let permitsSum = 0;
+    let permitsHtml = '';
+    costingCache.permits.forEach(p => {
+        const cost = parseFloat(p.cost) || 0;
+        permitsSum += cost;
+        permitsHtml += `<div style="display: flex; align-items: center; gap: 0.5rem;"><i class="ph-fill ph-check-circle" style="color: var(--admin-primary);"></i> ${p.permit_name} (NPR ${cost})</div>`;
+    });
+    
+    const permitsContainer = document.getElementById('calc-permits-container');
+    if (permitsContainer) {
+        permitsContainer.innerHTML = permitsHtml || 'No permits required.';
+    }
+
+    const permitsTotal = permitsSum * pax;
+    document.getElementById('calc-permits-cost-display').innerHTML = `NPR ${permitsSum.toLocaleString()} × ${pax} Pax = <strong>NPR ${permitsTotal.toLocaleString()}</strong>`;
+    total += permitsTotal;
+
+    // Trails & Lunches (Total Cost Per Pax for whole trek)
+    let foodTotal = 0;
+    const mealInc = document.getElementById('calc-meal-inclusion').value;
+    const foodSection = document.getElementById('calc-food-section');
+    
+    if (mealInc === 'With Food') {
+        if (foodSection) foodSection.style.display = 'block';
+        
+        let trailsSum = 0;
+        let trailsHtml = '';
+        costingCache.trails.forEach(t => {
+            const cost = parseFloat(t.cost_per_day_per_person) || 0;
+            trailsSum += cost;
+            trailsHtml += `<div style="display: flex; align-items: center; gap: 0.5rem;"><i class="ph-fill ph-check-circle" style="color: var(--admin-primary);"></i> ${t.location} (NPR ${cost})</div>`;
+        });
+        const trailsContainer = document.getElementById('calc-trails-container');
+        if (trailsContainer) trailsContainer.innerHTML = trailsHtml || 'No accommodations added.';
+
+        let lunchesSum = 0;
+        let lunchesHtml = '';
+        costingCache.lunches.forEach(l => {
+            const cost = parseFloat(l.cost) || 0;
+            lunchesSum += cost;
+            lunchesHtml += `<div style="display: flex; align-items: center; gap: 0.5rem;"><i class="ph-fill ph-check-circle" style="color: var(--admin-primary);"></i> ${l.place} (NPR ${cost})</div>`;
+        });
+        const lunchesContainer = document.getElementById('calc-lunches-container');
+        if (lunchesContainer) lunchesContainer.innerHTML = lunchesHtml || 'No lunches added.';
+
+        foodTotal = (trailsSum + lunchesSum) * pax;
+        document.getElementById('calc-food-cost-display').innerHTML = `(NPR ${trailsSum.toLocaleString()} + NPR ${lunchesSum.toLocaleString()}) × ${pax} Pax = <strong>NPR ${foodTotal.toLocaleString()}</strong>`;
+    } else {
+        if (foodSection) foodSection.style.display = 'none';
+        document.getElementById('calc-food-cost-display').textContent = `NPR 0`;
+    }
+    
+    total += foodTotal;
+
+    // Airport Transfers (Mandatory for Kathmandu)
+    const airportRoute = 'Kathmandu';
+    let airportTotal = 0;
+    let airportDetailsStr = '';
+
+    let carsNeeded = 0;
+    let hiaceNeeded = 0;
+
+    if (pax <= 4) {
+        carsNeeded = 1;
+    } else if (pax <= 14) {
+        hiaceNeeded = 1;
+    } else if (pax <= 20) {
+        carsNeeded = 1;
+        hiaceNeeded = 1;
+    } else {
+        hiaceNeeded = 2; // For up to 28 pax (can scale further if needed)
+        if (pax > 28) {
+            hiaceNeeded = Math.ceil(pax / 14); 
+        }
+    }
+
+    // Fetch prices from cloud transport cache
+    let carPrice = 0, hiacePrice = 0;
+    costingCache.cloudTransports.forEach(t => {
+        const tr = (t.route || '').toLowerCase();
+        if (tr.includes('kathmandu') && tr.includes('airport')) {
+            const v = (t.vehicle_name || '').toLowerCase();
+            if (v.includes('car')) carPrice += parseFloat(t.cost_npr) || 0;
+            if (v.includes('hiace')) hiacePrice += parseFloat(t.cost_npr) || 0;
+        }
+    });
+
+    airportTotal = (carsNeeded * carPrice) + (hiaceNeeded * hiacePrice);
+    
+    let arrMath = [];
+    if (carsNeeded > 0) arrMath.push(`${carsNeeded} Car × NPR ${carPrice.toLocaleString()}`);
+    if (hiaceNeeded > 0) arrMath.push(`${hiaceNeeded} Hiace × NPR ${hiacePrice.toLocaleString()}`);
+    
+    airportDetailsStr = `${arrMath.join(' + ')} = <br><strong>Cost: NPR ${airportTotal.toLocaleString()}</strong>`;
+
+    const airportDetEl = document.getElementById('calc-airport-transfer-details');
+    if (airportDetEl) {
+        airportDetEl.innerHTML = airportDetailsStr;
+    }
+
+    // Transfers (Flat Cost for now - excluding EBC specific flights/long routes handled below)
+    let transfersTotal = airportTotal;
+    const cCode = (costingCache.trekCode || '').toLowerCase();
+    if (!(cCode.includes('ebc') || cCode.includes('ebc-gokyo') || cCode.includes('abc') || cCode.includes('annapurna'))) {
+        transfersTotal += sumCheckboxes('transfer-chk');
+    }
+
+    // ----------------------------------------------------
+    // EBC SPECIFIC LOGIC (Flights & Ramechhap Transfers)
+    // ----------------------------------------------------
+    let ebcFlightTotal = 0;
+    if (cCode === 'ebc' || cCode === 'ebc-gokyo') {
+        const flightOpt = document.getElementById('calc-flight-opt').value; // 'Kathmandu' or 'Ramechhap'
+        let flightCostPerPax = 0;
+        
+        // Find flight cost in transfers cache
+        const flightTransfers = costingCache.transfers.filter(t => {
+            if ((t.transfer_type || '').toLowerCase() !== 'flight') return false;
+            
+            // If explicit flight_option is set, match it exactly
+            if (t.flight_option && t.flight_option !== 'Any (Global)') {
+                return t.flight_option.toLowerCase() === flightOpt.toLowerCase();
+            }
+            
+            // Fallback: match departure
+            return t.departure && t.departure.toLowerCase().includes(flightOpt.toLowerCase());
+        });
+        flightTransfers.forEach(f => { flightCostPerPax += parseFloat(f.cost) || 0; });
+        ebcFlightTotal += (flightCostPerPax * pax); // Do NOT multiply by 2, user adds both legs in DB
+
+        let detailsText = `Flight (${flightOpt}): ${pax} Pax × NPR ${flightCostPerPax.toLocaleString()} = <strong>NPR ${(flightCostPerPax * pax).toLocaleString()}</strong>`;
+
+        // If Ramechhap, calculate long route transfers
+        if (flightOpt === 'Ramechhap') {
+            const rMode = document.getElementById('calc-ramechhap-mode').value;
+            document.getElementById('calc-ramechhap-rec').textContent = pax <= 3 ? "(Recommended: Sharing)" : "(Recommended: Pvt)";
+            
+            if (rMode === 'Sharing') {
+                let shareCostPerPax = 0;
+                costingCache.transfers.forEach(t => {
+                    if ((t.transfer_type || '').toLowerCase() === 'long_route' && t.mode === 'Sharing') {
+                        // Match explicit flight_option if provided
+                        if (t.flight_option && t.flight_option !== 'Any (Global)') {
+                            if (t.flight_option.toLowerCase() === flightOpt.toLowerCase()) {
+                                shareCostPerPax += parseFloat(t.cost) || 0;
+                            }
+                        } else {
+                            // Fallback
+                            shareCostPerPax += parseFloat(t.cost) || 0;
+                        }
+                    }
+                });
+                ebcFlightTotal += (shareCostPerPax * pax); // Do NOT multiply by 2, user adds both legs
+                detailsText += `<br>Sharing Transfer: ${pax} Pax × NPR ${shareCostPerPax.toLocaleString()} = <strong>NPR ${(shareCostPerPax * pax).toLocaleString()}</strong>`;
+            } else if (rMode === 'Pvt') {
+                let carCount = 0;
+                let hiaceCount = 0;
+                if (pax >= 1 && pax <= 4) { carCount = 1; }
+                else if (pax >= 5 && pax <= 14) { hiaceCount = 1; }
+                else if (pax >= 15 && pax <= 20) { carCount = 1; hiaceCount = 1; }
+                else if (pax >= 21 && pax <= 28) { hiaceCount = 2; }
+                else {
+                    hiaceCount = Math.floor(pax / 14);
+                    const rem = pax % 14;
+                    if (rem > 4) hiaceCount++;
+                    else if (rem > 0) carCount++;
+                }
+
+                // Fetch vehicle costs from Trek Transfers (same as Sharing)
+                let carCost = 0, hiaceCost = 0;
+                costingCache.transfers.forEach(t => {
+                    if ((t.transfer_type || '').toLowerCase() === 'long_route' && t.mode === 'Pvt') {
+                        // Match explicit flight_option if provided
+                        let matchesOpt = false;
+                        if (t.flight_option && t.flight_option !== 'Any (Global)') {
+                            matchesOpt = (t.flight_option.toLowerCase() === flightOpt.toLowerCase());
+                        } else {
+                            matchesOpt = true; // Fallback to all Pvt long routes if no opt selected
+                        }
+                        
+                        if (matchesOpt) {
+                            const v = (t.vehicle_details || '').toLowerCase();
+                            if (v.includes('car')) carCost += parseFloat(t.cost) || 0;
+                            if (v.includes('hiace')) hiaceCost += parseFloat(t.cost) || 0;
+                        }
+                    }
+                });
+
+                const pvtCost = ((carCount * carCost) + (hiaceCount * hiaceCost)); // User adds both legs in DB
+                ebcFlightTotal += pvtCost;
+                
+                let pvtMath = [];
+                if (carCount > 0) pvtMath.push(`${carCount} Car × NPR ${carCost.toLocaleString()}`);
+                if (hiaceCount > 0) pvtMath.push(`${hiaceCount} Hiace × NPR ${hiaceCost.toLocaleString()}`);
+                
+                detailsText += `<br>Pvt Transfer: (${pvtMath.join(' + ')}) = <strong>NPR ${pvtCost.toLocaleString()}</strong>`;
+            }
+        }
+        
+        document.getElementById('calc-flight-details').innerHTML = detailsText;
+        document.getElementById('calc-flight-cost-display').textContent = `NPR ${ebcFlightTotal.toLocaleString()}`;
+        total += ebcFlightTotal;
+    } else if (cCode.includes('abc') || cCode.includes('annapurna')) {
+        let annapurnaTotal = 0;
+        let detailsText = '';
+
+        // 1. KTM to Pokhara Transfer
+        const kpMode = document.getElementById('calc-ktm-pkr-transfer').value; 
+        let kpCostPerPax = 0;
+        costingCache.transfers.forEach(t => {
+            if ((t.transfer_type || '').toLowerCase() === kpMode.toLowerCase() && (t.departure || '').toLowerCase().includes('kathmandu') && (t.arrival || '').toLowerCase().includes('pokhara')) {
+                kpCostPerPax += parseFloat(t.cost) || 0;
+            }
+        });
+        // Multiply by 2 for return trip based on requirement "if flight take cost kathmandu pokhara, pokhra to kathamndu"
+        kpCostPerPax = kpCostPerPax * 2;
+        const kpTotal = kpCostPerPax * pax;
+        annapurnaTotal += kpTotal;
+        detailsText += `KTM ⇄ PKR (${kpMode}): ${pax} Pax × NPR ${kpCostPerPax.toLocaleString()} = <strong>NPR ${kpTotal.toLocaleString()}</strong>`;
+
+        // 2. Pokhara to Ghandruk & Jhinu to Pokhara Transfers
+        const ghandrukMode = document.getElementById('calc-pkr-ghandruk-mode').value;
+        const gRec = document.getElementById('calc-ghandruk-rec');
+        if (gRec) gRec.textContent = pax <= 4 ? "(Recommended: Sharing)" : "(Recommended: Pvt)";
+
+        let pkrToGhandrukShare = 0, jhinuToPkrShare = 0;
+        let pkrToGhandrukJeep = 0, jhinuToPkrJeep = 0;
+        let pkrToGhandrukBus = 0, jhinuToPkrBus = 0;
+
+        costingCache.transfers.forEach(t => {
+            const arr = (t.arrival || '').toLowerCase();
+            const dep = (t.departure || '').toLowerCase();
+            const mode = (t.mode || '');
+            const type = (t.transfer_type || '').toLowerCase();
+            const details = (t.vehicle_details || '').toLowerCase();
+            const cost = parseFloat(t.cost) || 0;
+
+            if (type === 'long_route') {
+                if (dep.includes('pokhara') && (arr.includes('ghandruk') || arr.includes('gangdruk'))) {
+                    if (mode === 'Sharing') pkrToGhandrukShare += cost;
+                    else if (mode === 'Pvt') {
+                        if (details.includes('jeep')) pkrToGhandrukJeep += cost;
+                        if (details.includes('bus')) pkrToGhandrukBus += cost;
+                    }
+                }
+                if (dep.includes('jhinu') && arr.includes('pokhara')) {
+                    if (mode === 'Sharing') jhinuToPkrShare += cost;
+                    else if (mode === 'Pvt') {
+                        if (details.includes('jeep')) jhinuToPkrJeep += cost;
+                        if (details.includes('bus')) jhinuToPkrBus += cost;
+                    }
+                }
+            }
+        });
+
+        let ghandrukTotal = 0;
+        if (ghandrukMode === 'Sharing') {
+            let shareCostPerPax = pkrToGhandrukShare + jhinuToPkrShare;
+            ghandrukTotal = shareCostPerPax * pax;
+            detailsText += `<br>PKR ➔ Ghandruk + Jhinu ➔ PKR (Sharing): ${pax} Pax × NPR ${shareCostPerPax.toLocaleString()} = <strong>NPR ${ghandrukTotal.toLocaleString()}</strong>`;
+        } else if (ghandrukMode === 'Pvt') {
+            let jeepCount = 0;
+            let busCount = 0;
+            
+            if (pax >= 1 && pax <= 7) { jeepCount = 1; }
+            else if (pax >= 8 && pax <= 14) { jeepCount = 2; }
+            else if (pax >= 15 && pax <= 18) { busCount = 1; }
+            else if (pax >= 19 && pax <= 24) { busCount = 1; jeepCount = 1; }
+            else if (pax >= 25 && pax <= 30) { busCount = 2; }
+            else {
+                busCount = Math.floor(pax / 15);
+                const rem = pax % 15;
+                if (rem > 7) busCount++;
+                else if (rem > 0) jeepCount++;
+            }
+
+            let jeepCost = pkrToGhandrukJeep + jhinuToPkrJeep;
+            let busCost = pkrToGhandrukBus + jhinuToPkrBus;
+
+            ghandrukTotal = (jeepCount * jeepCost) + (busCount * busCost);
+            let pvtMath = [];
+            if (jeepCount > 0) pvtMath.push(`${jeepCount} Jeep × NPR ${jeepCost.toLocaleString()}`);
+            if (busCount > 0) pvtMath.push(`${busCount} Bus × NPR ${busCost.toLocaleString()}`);
+            detailsText += `<br>PKR ➔ Ghandruk + Jhinu ➔ PKR (Pvt): (${pvtMath.join(' + ')}) = <strong>NPR ${ghandrukTotal.toLocaleString()}</strong>`;
+        }
+        annapurnaTotal += ghandrukTotal;
+
+        // 3. Pokhara Airport/Bus Park Transfer (Pick up & Drop off)
+        let pkrCarPrice = 0, pkrHiacePrice = 0;
+        costingCache.cloudTransports.forEach(t => {
+            const tr = (t.route || '').toLowerCase();
+            if (tr.includes('pokhara') && (tr.includes('airport') || tr.includes('pick') || tr.includes('drop'))) {
+                const v = (t.vehicle_name || '').toLowerCase();
+                if (v.includes('car')) pkrCarPrice += parseFloat(t.cost_npr) || 0;
+                if (v.includes('hiace')) pkrHiacePrice += parseFloat(t.cost_npr) || 0;
+            }
+        });
+
+        // Multiply by 2 for both pick up and drop off
+        pkrCarPrice = pkrCarPrice * 2;
+        pkrHiacePrice = pkrHiacePrice * 2;
+        
+        let pkrTransferTotal = (carsNeeded * pkrCarPrice) + (hiaceNeeded * pkrHiacePrice);
+        if (pkrTransferTotal > 0) {
+            annapurnaTotal += pkrTransferTotal;
+            let pkrMath = [];
+            if (carsNeeded > 0) pkrMath.push(`${carsNeeded} Car × NPR ${pkrCarPrice.toLocaleString()}`);
+            if (hiaceNeeded > 0) pkrMath.push(`${hiaceNeeded} Hiace × NPR ${pkrHiacePrice.toLocaleString()}`);
+            detailsText += `<br>PKR Pick/Drop: (${pkrMath.join(' + ')}) = <strong>NPR ${pkrTransferTotal.toLocaleString()}</strong>`;
+        }
+        
+        const annTrDet = document.getElementById('calc-annapurna-transfers-details');
+        if (annTrDet) annTrDet.innerHTML = detailsText;
+        const annTrDisp = document.getElementById('calc-annapurna-transfers-cost-display');
+        if (annTrDisp) annTrDisp.innerHTML = `NPR ${annapurnaTotal.toLocaleString()}`;
+        
+        total += transfersTotal + annapurnaTotal;
+
+        // 3. Pokhara Hotel Logic
+        const pkrHotelCat = document.getElementById('calc-pokhara-hotel-cat').value;
+        let pkrHotelTotal = 0;
+        if (pkrHotelCat !== '0') {
+            let doubleRooms = 0, tripleRooms = 0;
+            const catHotels = costingCache.cloudHotels.filter(h => h.star_category === pkrHotelCat && h.location === 'Pokhara');
+            
+            let twoBedPrice = 0, threeBedPrice = 0;
+            const twoBedHotel = catHotels.find(h => h.room_type && h.room_type.toLowerCase().includes('2'));
+            const threeBedHotel = catHotels.find(h => h.room_type && h.room_type.toLowerCase().includes('3'));
+            
+            if (twoBedHotel) twoBedPrice = parseFloat(twoBedHotel.price_per_night) || 0;
+            if (threeBedHotel) threeBedPrice = parseFloat(threeBedHotel.price_per_night) || 0;
+            
+            let roomPolicy = document.getElementById('calc-hotel-room-type').value;
+            if (!threeBedHotel) roomPolicy = 'Double Only';
+            
+            if (roomPolicy === 'Double Only') {
+                doubleRooms = Math.ceil(pax / 2);
+            } else {
+                if (pax === 1) { doubleRooms = 1; }
+                else if (pax % 2 === 0) { doubleRooms = pax / 2; }
+                else { doubleRooms = Math.floor(pax / 2) - 1; tripleRooms = 1; }
+            }
+
+            const nights = 2; // 2 nights in Pokhara
+            const dbCost = doubleRooms * twoBedPrice * nights;
+            const trCost = tripleRooms * threeBedPrice * nights;
+            pkrHotelTotal = dbCost + trCost;
+            
+            let hDetails = [];
+            if (doubleRooms > 0) hDetails.push(`${doubleRooms} Dbl (NPR ${twoBedPrice})`);
+            if (tripleRooms > 0) hDetails.push(`${tripleRooms} Trp (NPR ${threeBedPrice})`);
+            
+            const pkrHDet = document.getElementById('calc-pkr-hotel-details');
+            if (pkrHDet) pkrHDet.innerHTML = `(${hDetails.join(' + ')}) × ${nights} Nights = <strong>NPR ${pkrHotelTotal.toLocaleString()}</strong>`;
+            const pkrHDisp = document.getElementById('calc-pkr-hotel-cost-display');
+            if (pkrHDisp) pkrHDisp.textContent = `NPR ${pkrHotelTotal.toLocaleString()}`;
+        } else {
+            const pkrHDet = document.getElementById('calc-pkr-hotel-details');
+            if (pkrHDet) pkrHDet.innerHTML = `No hotel needed in Pokhara.`;
+            const pkrHDisp = document.getElementById('calc-pkr-hotel-cost-display');
+            if (pkrHDisp) pkrHDisp.textContent = `NPR 0`;
+        }
+        total += pkrHotelTotal;
+
+    } else {
+        const ctDisp = document.getElementById('calc-transfers-cost-display');
+        if (ctDisp) ctDisp.textContent = `NPR ${transfersTotal.toLocaleString()}`;
+        total += transfersTotal;
+    }
+
+    // ----------------------------------------------------
+    // GLOBAL HOTEL LOGIC
+    // ----------------------------------------------------
+    const hotelCat = document.getElementById('calc-hotel-cat').value;
+    let hotelTotal = 0;
+    if (hotelCat !== '0') {
+        let doubleRooms = 0, tripleRooms = 0;
+        
+        // Find hotels for this category in Kathmandu
+        const catHotels = costingCache.cloudHotels.filter(h => h.star_category === hotelCat && h.location === 'Kathmandu');
+        
+        // Find specific room prices
+        let twoBedPrice = 0;
+        let threeBedPrice = 0;
+        
+        const twoBedHotel = catHotels.find(h => h.room_type && h.room_type.toLowerCase().includes('2'));
+        const threeBedHotel = catHotels.find(h => h.room_type && h.room_type.toLowerCase().includes('3'));
+        
+        if (twoBedHotel) twoBedPrice = parseFloat(twoBedHotel.price_per_night) || 0;
+        if (threeBedHotel) threeBedPrice = parseFloat(threeBedHotel.price_per_night) || 0;
+        
+        // Auto-enforce Double Only if no 3-bed room exists in this category
+        let roomPolicy = document.getElementById('calc-hotel-room-type').value;
+        if (!threeBedHotel) {
+            roomPolicy = 'Double Only';
+            document.getElementById('calc-hotel-room-type').value = 'Double Only';
+            document.getElementById('calc-hotel-room-type').disabled = true;
+        } else {
+            document.getElementById('calc-hotel-room-type').disabled = false;
+        }
+
+        if (roomPolicy === 'Double Only') {
+            doubleRooms = Math.ceil(pax / 2);
+            tripleRooms = 0;
+        } else {
+            if (pax === 1) {
+                doubleRooms = 1;
+            } else if (pax % 2 === 0) {
+                doubleRooms = pax / 2;
+            } else {
+                doubleRooms = Math.floor(pax / 2) - 1;
+                tripleRooms = 1;
+            }
+        }
+
+        const totalRooms = doubleRooms + tripleRooms;
+        document.getElementById('calc-hotel-rooms-rec').textContent = `(${doubleRooms} Double/Twin, ${tripleRooms} Triple)`;
+
+        hotelTotal = ((doubleRooms * twoBedPrice) + (tripleRooms * threeBedPrice)) * 2;
+        
+        let detailStr = [];
+        if (doubleRooms > 0) detailStr.push(`${doubleRooms} x 2-Bed (NPR ${twoBedPrice.toLocaleString()})`);
+        if (tripleRooms > 0) detailStr.push(`${tripleRooms} x 3-Bed (NPR ${threeBedPrice.toLocaleString()})`);
+        
+        document.getElementById('calc-hotel-details').innerHTML = detailStr.length > 0 ? `(${detailStr.join(' + ')}) × 2 Nights = <strong>NPR ${hotelTotal.toLocaleString()}</strong>` : 'No rooms assigned.';
+        document.getElementById('calc-hotel-cost-display').textContent = `NPR ${hotelTotal.toLocaleString()}`;
+        total += hotelTotal;
+    } else {
+        document.getElementById('calc-hotel-rooms-rec').textContent = '';
+        document.getElementById('calc-hotel-details').textContent = 'No hotel selected.';
+        document.getElementById('calc-hotel-cost-display').textContent = 'NPR 0';
+    }
+
+    const totalStr = `NPR ${total.toLocaleString()}`;
+    document.getElementById('calc-total-cost').textContent = totalStr;
+    const bottomTotal = document.getElementById('calc-total-cost-bottom');
+    if (bottomTotal) bottomTotal.textContent = totalStr;
+
+    // Convert to INR and USD (Grand Total)
+    const inrEl = document.getElementById('calc-total-inr');
+    const usdEl = document.getElementById('calc-total-usd');
+    if (inrEl && usdEl) {
+        const rateInr = window.liveRates?.INR || 0.625;
+        const rateUsd = window.liveRates?.USD || 0.0075;
+        const inrTotal = total * rateInr;
+        const usdTotal = total * rateUsd;
+        
+        inrEl.textContent = `INR ${inrTotal.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+        usdEl.textContent = `USD ${usdTotal.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+    }
+
+    // Per Person Calculations
+    const ppBottom = document.getElementById('calc-pp-cost-bottom');
+    const ppInr = document.getElementById('calc-pp-inr');
+    const ppUsd = document.getElementById('calc-pp-usd');
+
+    if (ppBottom && ppInr && ppUsd) {
+        const ppTotal = total / pax;
+        ppBottom.textContent = `NPR ${ppTotal.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+        
+        const rateInr = window.liveRates?.INR || 0.625;
+        const rateUsd = window.liveRates?.USD || 0.0075;
+        const ppInrTotal = ppTotal * rateInr;
+        const ppUsdTotal = ppTotal * rateUsd;
+
+        ppInr.textContent = `INR ${ppInrTotal.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+        ppUsd.textContent = `USD ${ppUsdTotal.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+    }
+};
+
+// Listeners for global inputs
+document.getElementById('calc-pax')?.addEventListener('input', calculateCostingTotal);
+document.getElementById('calc-days')?.addEventListener('input', calculateCostingTotal);
+document.getElementById('calc-meal-inclusion')?.addEventListener('change', calculateCostingTotal);
+document.getElementById('calc-flight-opt')?.addEventListener('change', (e) => {
+    document.getElementById('calc-ramechhap-mode-group').style.display = e.target.value === 'Ramechhap' ? 'block' : 'none';
+    calculateCostingTotal();
+});
+document.getElementById('calc-ramechhap-mode')?.addEventListener('change', calculateCostingTotal);
+document.getElementById('calc-hotel-cat')?.addEventListener('change', calculateCostingTotal);
+document.getElementById('calc-hotel-room-type')?.addEventListener('change', calculateCostingTotal);
+document.getElementById('calc-ktm-pkr-transfer')?.addEventListener('change', calculateCostingTotal);
+document.getElementById('calc-pokhara-hotel-cat')?.addEventListener('change', calculateCostingTotal);
+document.getElementById('calc-pkr-ghandruk-mode')?.addEventListener('change', calculateCostingTotal);
+
+window.editCloudItem = (type, id) => {
+    const item = window.cloudDataCache[type][id];
+    if (!item) return;
+    
+    const setToggle = (btnId, formId) => {
+        document.getElementById(formId).style.display = 'block';
+        const btn = document.getElementById(btnId);
+        btn.innerHTML = `<i class="ph ph-x"></i> CANCEL`;
+        btn.style.background = 'rgba(255,255,255,0.2)';
+    };
+
+    if (type === 'hotels') {
+        setToggle('toggle-add-g-hotel-btn', 'add-global-hotel-form');
+        document.getElementById('gHotelEditId').value = item.id;
+        document.getElementById('gHotelLocation').value = item.location;
+        document.getElementById('gHotelName').value = item.hotel_name;
+        document.getElementById('gHotelStars').value = item.star_category || '';
+        document.getElementById('gHotelRoom').value = item.room_type;
+        document.getElementById('gHotelPrice').value = item.price_per_night;
+        document.getElementById('btn-add-g-hotel').textContent = 'UPDATE HOTEL';
+    } else if (type === 'transport') {
+        setToggle('toggle-add-g-transport-btn', 'add-global-transport-form');
+        document.getElementById('gTransportEditId').value = item.id;
+        document.getElementById('gTransportName').value = item.vehicle_name;
+        document.getElementById('gTransportCap').value = item.capacity;
+        document.getElementById('gTransportCap').value = item.capacity;
+        
+        let isStandard = false;
+        const selectEl = document.getElementById('gTransportRouteSelect');
+        Array.from(selectEl.options).forEach(opt => {
+            if (opt.value === item.route) isStandard = true;
+        });
+        
+        if (isStandard && item.route) {
+            selectEl.value = item.route;
+            document.getElementById('gTransportRouteOther').style.display = 'none';
+        } else {
+            selectEl.value = 'Other';
+            document.getElementById('gTransportRouteOther').style.display = 'block';
+            document.getElementById('gTransportRouteOther').value = item.route || '';
+        }
+        
+        document.getElementById('gTransportCost').value = item.cost_npr;
+        document.getElementById('btn-add-g-transport').textContent = 'UPDATE TRANSPORT';
+    } else if (type === 'transfers') {
+        setToggle('toggle-add-t-transfer-btn', 'add-t-transfer-form');
+        document.getElementById('tTransferEditId').value = item.id;
+        document.getElementById('gTransferType').value = item.transfer_type;
+        document.getElementById('gTransferMode').value = item.mode || '';
+        document.getElementById('gTransferFlightOpt').value = item.flight_option || '';
+        document.getElementById('gTransferDep').value = item.departure;
+        document.getElementById('gTransferArr').value = item.arrival;
+        document.getElementById('gTransferOccupancy').value = item.occupancy || '';
+        document.getElementById('gTransferCost').value = item.cost;
+        if (item.transfer_type !== 'flight') {
+            document.getElementById('gTransferVehicleGroup').style.display = 'block';
+            document.getElementById('gTransferVehicle').value = item.vehicle_details || '';
+        } else {
+            document.getElementById('gTransferVehicleGroup').style.display = 'none';
+        }
+        document.getElementById('btn-add-t-transfer').textContent = 'UPDATE TRANSFER';
+    } else if (type === 'permits') {
+        setToggle('toggle-add-t-permit-btn', 'add-trek-permit-form');
+        document.getElementById('tPermitEditId').value = item.id;
+        document.getElementById('tPermitName').value = item.permit_name;
+        document.getElementById('tPermitCost').value = item.cost;
+        document.getElementById('btn-add-t-permit').textContent = 'UPDATE PERMIT';
+    } else if (type === 'trails') {
+        setToggle('toggle-add-t-trail-btn', 'add-trek-trail-acc-form');
+        document.getElementById('tTrailEditId').value = item.id;
+        document.getElementById('tTrailLoc').value = item.location;
+        document.getElementById('tTrailCost').value = item.cost_per_day_per_person;
+        document.getElementById('btn-add-t-trail').textContent = 'UPDATE ACCOMMODATION';
+    } else if (type === 'guides') {
+        setToggle('toggle-add-t-guide-btn', 'add-t-guide-form');
+        document.getElementById('tGuideEditId').value = item.id;
+        document.getElementById('gGuideName').value = item.name;
+        document.getElementById('gGuideCost').value = item.cost_per_day;
+        document.getElementById('btn-add-t-guide').textContent = 'UPDATE GUIDE';
+    } else if (type === 'porters') {
+        setToggle('toggle-add-t-porter-btn', 'add-t-porter-form');
+        document.getElementById('tPorterEditId').value = item.id;
+        document.getElementById('gPorterType').value = item.porter_type;
+        document.getElementById('gPorterCost').value = item.cost_per_day;
+        document.getElementById('btn-add-t-porter').textContent = 'UPDATE PORTER';
+    } else if (type === 'lunches') {
+        setToggle('toggle-add-t-lunch-btn', 'add-t-lunch-form');
+        document.getElementById('tLunchEditId').value = item.id;
+        document.getElementById('gLunchPlace').value = item.place;
+        document.getElementById('gLunchCost').value = item.cost;
+        document.getElementById('btn-add-t-lunch').textContent = 'UPDATE LUNCH';
+    }
+};
+
+window.deleteCloudItem = async (type, id, tableName) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    try {
+        const { error } = await supabase.from(tableName).delete().eq('id', id);
+        if (error) throw error;
+        if (type === 'hotels') loadGlobalHotels();
+        else if (type === 'transport') loadGlobalTransport();
+        else loadTrekData(document.getElementById('cloudTrekId').value);
+    } catch (err) {
+        console.error(err);
+        alert('Error deleting item');
+    }
+};
+
+async function loadGlobalHotels() {
+    const tbody = document.getElementById('g-hotels-tbody');
+    if (!tbody) return;
+    try {
+        const { data, error } = await supabase.from('cloud_hotels').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 1rem; color: var(--text-secondary);">No hotels added yet.</td></tr>';
+            return;
+        }
+        data.forEach(hotel => {
+            window.cloudDataCache.hotels[hotel.id] = hotel;
+            tbody.innerHTML += `
+                <tr>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${hotel.location}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${hotel.hotel_name}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${hotel.star_category || '-'}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${hotel.room_type}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--admin-success);">NPR ${hotel.price_per_night}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right;">
+                        <button onclick="editCloudItem('hotels', '${hotel.id}')" style="background:transparent; border:none; color:var(--admin-primary); cursor:pointer; margin-right: 0.5rem;"><i class="ph ph-pencil"></i></button>
+                        <button onclick="deleteCloudItem('hotels', '${hotel.id}', 'cloud_hotels')" style="background:transparent; border:none; color:#ff4d4f; cursor:pointer;"><i class="ph ph-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="4" style="color:red;">Error loading hotels.</td></tr>';
+    }
+}
+
+async function loadGlobalTransport() {
+    const tbody = document.getElementById('g-transport-tbody');
+    if (!tbody) return;
+    try {
+        const { data, error } = await supabase.from('cloud_transport').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 1rem; color: var(--text-secondary);">No transport added yet.</td></tr>';
+            return;
+        }
+        data.forEach(t => {
+            window.cloudDataCache.transport[t.id] = t;
+            tbody.innerHTML += `
+                <tr>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${t.vehicle_name}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${t.route || '-'}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${t.capacity}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--admin-success);">NPR ${t.cost_npr}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right;">
+                        <button onclick="editCloudItem('transport', '${t.id}')" style="background:transparent; border:none; color:var(--admin-primary); cursor:pointer; margin-right: 0.5rem;"><i class="ph ph-pencil"></i></button>
+                        <button onclick="deleteCloudItem('transport', '${t.id}', 'cloud_transport')" style="background:transparent; border:none; color:#ff4d4f; cursor:pointer;"><i class="ph ph-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="3" style="color:red;">Error loading transport.</td></tr>';
+    }
+}
+
+async function loadCloudTreks() {
+    loadGlobalHotels();
+    loadGlobalTransport();
+    const container = document.getElementById('trek-cards-container');
+    if (!container) return;
+
+    try {
+        const { data, error } = await supabase.from('trek_destinations').select('*').order('created_at');
+        if (error) throw error;
+
+        container.innerHTML = '';
+        data.forEach(trek => {
+            const card = document.createElement('div');
+            card.className = 'trek-card';
+            card.style.cssText = `
+                background: rgba(0,0,0,0.5); 
+                border: 1px solid var(--admin-border); 
+                padding: 1.5rem; 
+                border-radius: 10px; 
+                cursor: pointer; 
+                transition: transform 0.2s, background 0.2s;
+                text-align: center;
+            `;
+            card.innerHTML = `<h3 style="color: white; margin: 0;">${trek.name}</h3>`;
+            
+            card.addEventListener('mouseenter', () => { card.style.background = 'rgba(255, 107, 53, 0.1)'; card.style.transform = 'translateY(-2px)'; });
+            card.addEventListener('mouseleave', () => { card.style.background = 'rgba(0,0,0,0.5)'; card.style.transform = 'translateY(0)'; });
+            
+            card.addEventListener('click', () => {
+                openTrekDetailView(trek);
+            });
+
+            container.appendChild(card);
+        });
+    } catch (err) {
+        console.error('Error loading treks:', err);
+        container.innerHTML = '<p style="color: red;">Error loading treks. Did you run the SQL script?</p>';
+    }
+}
+
+function openTrekDetailView(trek) {
+    document.getElementById('cloud-master-list').style.display = 'none';
+    document.getElementById('cloud-detail-view').style.display = 'block';
+    
+    document.getElementById('current-trek-title').textContent = trek.name;
+    document.getElementById('cloudTrekId').value = trek.id;
+    document.getElementById('cloudTrekDays').value = trek.days || 14;
+    
+    loadTrekData(trek.id);
+}
+
+async function loadTrekData(trekId) {
+    // Transfers
+    const tBodyT = document.getElementById('t-transfers-tbody');
+    if (tBodyT) {
+        tBodyT.innerHTML = '';
+        const { data: tData } = await supabase.from('trek_transfers').select('*').eq('trek_id', trekId).order('created_at', { ascending: false });
+        if (tData && tData.length > 0) {
+            tData.forEach(item => {
+                window.cloudDataCache.transfers[item.id] = item;
+                tBodyT.innerHTML += `<tr>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${item.transfer_type}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${item.mode || '-'}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${item.departure} - ${item.arrival}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${item.vehicle_details || '-'}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${item.occupancy || '-'}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--admin-success);">NPR ${item.cost}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right;">
+                        <button onclick="editCloudItem('transfers', '${item.id}')" style="background:transparent; border:none; color:var(--admin-primary); cursor:pointer; margin-right: 0.5rem;"><i class="ph ph-pencil"></i></button>
+                        <button onclick="deleteCloudItem('transfers', '${item.id}', 'trek_transfers')" style="background:transparent; border:none; color:#ff4d4f; cursor:pointer;"><i class="ph ph-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+        } else {
+            tBodyT.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 1rem; color: var(--text-secondary);">No transfers added.</td></tr>';
+        }
+    }
+
+    // Permits
+    const pBody = document.getElementById('t-permits-tbody');
+    if (pBody) {
+        pBody.innerHTML = '';
+        const { data: pData } = await supabase.from('trek_permits').select('*').eq('trek_id', trekId).order('created_at', { ascending: false });
+        if (pData && pData.length > 0) {
+            pData.forEach(item => {
+                window.cloudDataCache.permits[item.id] = item;
+                pBody.innerHTML += `<tr>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${item.permit_name}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--admin-success);">NPR ${item.cost}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right;">
+                        <button onclick="editCloudItem('permits', '${item.id}')" style="background:transparent; border:none; color:var(--admin-primary); cursor:pointer; margin-right: 0.5rem;"><i class="ph ph-pencil"></i></button>
+                        <button onclick="deleteCloudItem('permits', '${item.id}', 'trek_permits')" style="background:transparent; border:none; color:#ff4d4f; cursor:pointer;"><i class="ph ph-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+        } else {
+            pBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 1rem; color: var(--text-secondary);">No permits added.</td></tr>';
+        }
+    }
+
+    // Trails
+    const trBody = document.getElementById('t-trails-tbody');
+    if (trBody) {
+        trBody.innerHTML = '';
+        const { data: trData } = await supabase.from('trek_trail_accommodations').select('*').eq('trek_id', trekId).order('created_at', { ascending: false });
+        if (trData && trData.length > 0) {
+            let totalCost = 0;
+            trData.forEach(item => {
+                totalCost += parseFloat(item.cost_per_day_per_person) || 0;
+                window.cloudDataCache.trails[item.id] = item;
+                trBody.innerHTML += `<tr>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${item.location}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--admin-success);">NPR ${item.cost_per_day_per_person}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right;">
+                        <button onclick="editCloudItem('trails', '${item.id}')" style="background:transparent; border:none; color:var(--admin-primary); cursor:pointer; margin-right: 0.5rem;"><i class="ph ph-pencil"></i></button>
+                        <button onclick="deleteCloudItem('trails', '${item.id}', 'trek_trail_accommodations')" style="background:transparent; border:none; color:#ff4d4f; cursor:pointer;"><i class="ph ph-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            trBody.innerHTML += `<tr>
+                <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary);"><strong>Total</strong></td>
+                <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--admin-success);"><strong>NPR ${totalCost.toLocaleString()}</strong></td>
+                <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);"></td>
+            </tr>`;
+        } else {
+            trBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 1rem; color: var(--text-secondary);">No accommodations added.</td></tr>';
+        }
+    }
+
+    // Guides
+    const gBody = document.getElementById('t-guides-tbody');
+    if (gBody) {
+        gBody.innerHTML = '';
+        const { data: gData } = await supabase.from('trek_guides').select('*').eq('trek_id', trekId).order('created_at', { ascending: false });
+        if (gData && gData.length > 0) {
+            gData.forEach(item => {
+                window.cloudDataCache.guides[item.id] = item;
+                gBody.innerHTML += `<tr>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${item.name}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--admin-success);">NPR ${item.cost_per_day}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right;">
+                        <button onclick="editCloudItem('guides', '${item.id}')" style="background:transparent; border:none; color:var(--admin-primary); cursor:pointer; margin-right: 0.5rem;"><i class="ph ph-pencil"></i></button>
+                        <button onclick="deleteCloudItem('guides', '${item.id}', 'trek_guides')" style="background:transparent; border:none; color:#ff4d4f; cursor:pointer;"><i class="ph ph-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+        } else {
+            gBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 1rem; color: var(--text-secondary);">No guides added.</td></tr>';
+        }
+    }
+
+    // Porters
+    const poBody = document.getElementById('t-porters-tbody');
+    if (poBody) {
+        poBody.innerHTML = '';
+        const { data: poData } = await supabase.from('trek_porters').select('*').eq('trek_id', trekId).order('created_at', { ascending: false });
+        if (poData && poData.length > 0) {
+            poData.forEach(item => {
+                window.cloudDataCache.porters[item.id] = item;
+                poBody.innerHTML += `<tr>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${item.porter_type}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--admin-success);">NPR ${item.cost_per_day}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right;">
+                        <button onclick="editCloudItem('porters', '${item.id}')" style="background:transparent; border:none; color:var(--admin-primary); cursor:pointer; margin-right: 0.5rem;"><i class="ph ph-pencil"></i></button>
+                        <button onclick="deleteCloudItem('porters', '${item.id}', 'trek_porters')" style="background:transparent; border:none; color:#ff4d4f; cursor:pointer;"><i class="ph ph-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+        } else {
+            poBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 1rem; color: var(--text-secondary);">No porters added.</td></tr>';
+        }
+    }
+
+    // Lunches
+    const lBody = document.getElementById('t-lunches-tbody');
+    if (lBody) {
+        lBody.innerHTML = '';
+        const { data: lData } = await supabase.from('trek_lunches').select('*').eq('trek_id', trekId).order('created_at', { ascending: false });
+        if (lData && lData.length > 0) {
+            let totalCost = 0;
+            lData.forEach(item => {
+                totalCost += parseFloat(item.cost) || 0;
+                window.cloudDataCache.lunches[item.id] = item;
+                lBody.innerHTML += `<tr>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: white;">${item.place}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--admin-success);">NPR ${item.cost}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right;">
+                        <button onclick="editCloudItem('lunches', '${item.id}')" style="background:transparent; border:none; color:var(--admin-primary); cursor:pointer; margin-right: 0.5rem;"><i class="ph ph-pencil"></i></button>
+                        <button onclick="deleteCloudItem('lunches', '${item.id}', 'trek_lunches')" style="background:transparent; border:none; color:#ff4d4f; cursor:pointer;"><i class="ph ph-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            lBody.innerHTML += `<tr>
+                <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary);"><strong>Total</strong></td>
+                <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--admin-success);"><strong>NPR ${totalCost.toLocaleString()}</strong></td>
+                <td style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);"></td>
+            </tr>`;
+        } else {
+            lBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 1rem; color: var(--text-secondary);">No lunches added.</td></tr>';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const backBtn = document.getElementById('back-to-cloud-list');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            document.getElementById('cloud-master-list').style.display = 'block';
+            document.getElementById('cloud-detail-view').style.display = 'none';
+        });
+    }
+
+    const saveDaysBtn = document.getElementById('btn-save-trek-days');
+    if (saveDaysBtn) {
+        saveDaysBtn.addEventListener('click', async (e) => {
+            const btn = e.target;
+            btn.textContent = '...';
+            btn.disabled = true;
+            try {
+                const id = document.getElementById('cloudTrekId').value;
+                const days = parseInt(document.getElementById('cloudTrekDays').value) || 14;
+                const { error } = await supabase.from('trek_destinations').update({ days }).eq('id', id);
+                if (error) throw error;
+                
+                btn.style.background = 'var(--admin-success)';
+                setTimeout(() => btn.style.background = 'var(--admin-primary)', 2000);
+            } catch(err) {
+                console.error(err);
+                alert('Error updating days');
+            } finally {
+                btn.textContent = 'SAVE';
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // ------------------------------------
+    // GLOBAL FORMS
+    // ------------------------------------
+    
+    // Toggle Buttons
+    const toggleGHotelBtn = document.getElementById('toggle-add-g-hotel-btn');
+    if (toggleGHotelBtn) {
+        toggleGHotelBtn.addEventListener('click', () => {
+            const form = document.getElementById('add-global-hotel-form');
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                toggleGHotelBtn.innerHTML = '<i class="ph ph-x"></i> CANCEL';
+                toggleGHotelBtn.style.background = 'rgba(255,255,255,0.2)';
+            } else {
+                form.style.display = 'none';
+                toggleGHotelBtn.innerHTML = '<i class="ph ph-plus"></i> ADD HOTEL';
+                toggleGHotelBtn.style.background = 'var(--admin-primary)';
+            }
+        });
+    }
+
+    const toggleGTransportBtn = document.getElementById('toggle-add-g-transport-btn');
+    if (toggleGTransportBtn) {
+        toggleGTransportBtn.addEventListener('click', () => {
+            const form = document.getElementById('add-global-transport-form');
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                toggleGTransportBtn.innerHTML = '<i class="ph ph-x"></i> CANCEL';
+                toggleGTransportBtn.style.background = 'rgba(255,255,255,0.2)';
+            } else {
+                form.style.display = 'none';
+                toggleGTransportBtn.innerHTML = '<i class="ph ph-plus"></i> ADD TRANSPORT';
+                toggleGTransportBtn.style.background = 'var(--admin-primary)';
+            }
+        });
+    }
+    
+    // Transfer logic (conditional fields)
+    const gTransferType = document.getElementById('gTransferType');
+    const gTransferVehicleGroup = document.getElementById('gTransferVehicleGroup');
+    if (gTransferType && gTransferVehicleGroup) {
+        gTransferType.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val === 'flight') {
+                gTransferVehicleGroup.style.display = 'none';
+            } else {
+                gTransferVehicleGroup.style.display = 'block';
+            }
+        });
+    }
+
+    // Add Global Transport
+    const addGTransportForm = document.getElementById('add-global-transport-form');
+    if (addGTransportForm) {
+        addGTransportForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-add-g-transport');
+            btn.textContent = 'SAVING...';
+            btn.disabled = true;
+            try {
+                const editId = document.getElementById('gTransportEditId').value;
+                let routeVal = document.getElementById('gTransportRouteSelect').value;
+                if (routeVal === 'Other') routeVal = document.getElementById('gTransportRouteOther').value;
+
+                const payload = {
+                    vehicle_name: document.getElementById('gTransportName').value,
+                    capacity: parseInt(document.getElementById('gTransportCap').value),
+                    route: routeVal,
+                    cost_npr: parseFloat(document.getElementById('gTransportCost').value)
+                };
+                
+                let error;
+                if (editId) {
+                    const res = await supabase.from('cloud_transport').update(payload).eq('id', editId);
+                    error = res.error;
+                } else {
+                    const res = await supabase.from('cloud_transport').insert([payload]);
+                    error = res.error;
+                }
+                if (error) throw error;
+                
+                addGTransportForm.reset();
+                document.getElementById('gTransportRouteOther').style.display = 'none';
+                document.getElementById('gTransportEditId').value = '';
+                addGTransportForm.style.display = 'none';
+                const toggleBtn = document.getElementById('toggle-add-g-transport-btn');
+                toggleBtn.innerHTML = '<i class="ph ph-plus"></i> ADD TRANSPORT';
+                toggleBtn.style.background = 'var(--admin-primary)';
+                
+                loadGlobalTransport();
+            } catch (err) {
+                console.error(err);
+                alert('Error saving transport');
+            } finally {
+                btn.textContent = 'SAVE TRANSPORT';
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // Add Global Hotel
+    const addGHotelForm = document.getElementById('add-global-hotel-form');
+    if (addGHotelForm) {
+        addGHotelForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-add-g-hotel');
+            btn.textContent = 'SAVING...';
+            btn.disabled = true;
+            try {
+                const editId = document.getElementById('gHotelEditId').value;
+                const payload = {
+                    location: document.getElementById('gHotelLocation').value,
+                    hotel_name: document.getElementById('gHotelName').value,
+                    star_category: document.getElementById('gHotelStars').value || null,
+                    room_type: document.getElementById('gHotelRoom').value,
+                    price_per_night: parseFloat(document.getElementById('gHotelPrice').value)
+                };
+                
+                let error;
+                if (editId) {
+                    const res = await supabase.from('cloud_hotels').update(payload).eq('id', editId);
+                    error = res.error;
+                } else {
+                    const res = await supabase.from('cloud_hotels').insert([payload]);
+                    error = res.error;
+                }
+                if (error) throw error;
+                
+                addGHotelForm.reset();
+                document.getElementById('gHotelEditId').value = '';
+                addGHotelForm.style.display = 'none';
+                const toggleBtn = document.getElementById('toggle-add-g-hotel-btn');
+                toggleBtn.innerHTML = '<i class="ph ph-plus"></i> ADD HOTEL';
+                toggleBtn.style.background = 'var(--admin-primary)';
+                
+                loadGlobalHotels();
+            } catch (err) {
+                console.error(err);
+                alert('Error saving hotel');
+            } finally {
+                btn.textContent = 'SAVE HOTEL';
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // ------------------------------------
+    // TREK SPECIFIC FORMS
+    // ------------------------------------
+
+    // Toggles for Trek Specific Forms
+    const setupToggle = (btnId, formId, defaultText) => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', () => {
+                const form = document.getElementById(formId);
+                if (form.style.display === 'none') {
+                    form.style.display = 'block';
+                    btn.innerHTML = '<i class="ph ph-x"></i> CANCEL';
+                    btn.style.background = 'rgba(255,255,255,0.2)';
+                } else {
+                    form.style.display = 'none';
+                    btn.innerHTML = `<i class="ph ph-plus"></i> ${defaultText}`;
+                    btn.style.background = 'var(--admin-primary)';
+                }
+            });
+        }
+    };
+
+    setupToggle('toggle-add-t-transfer-btn', 'add-t-transfer-form', 'ADD TRANSFER');
+    setupToggle('toggle-add-t-permit-btn', 'add-trek-permit-form', 'ADD PERMIT');
+    setupToggle('toggle-add-t-trail-btn', 'add-trek-trail-acc-form', 'ADD LOCATION');
+    setupToggle('toggle-add-t-guide-btn', 'add-t-guide-form', 'ADD GUIDE');
+    setupToggle('toggle-add-t-porter-btn', 'add-t-porter-form', 'ADD PORTER');
+    setupToggle('toggle-add-t-lunch-btn', 'add-t-lunch-form', 'ADD LUNCH');
+
+    
+    // Add Trek Transfer
+    const addTTransferForm = document.getElementById('add-t-transfer-form');
+    if (addTTransferForm) {
+        addTTransferForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-add-t-transfer');
+            btn.textContent = 'SAVING...';
+            btn.disabled = true;
+
+            const tType = document.getElementById('gTransferType').value;
+            const tDep = document.getElementById('gTransferDep').value;
+            const tArr = document.getElementById('gTransferArr').value;
+            const tOcc = document.getElementById('gTransferOccupancy').value;
+            const tCost = parseFloat(document.getElementById('gTransferCost').value);
+            const tVeh = tType !== 'flight' ? document.getElementById('gTransferVehicle').value : null;
+            const trekId = document.getElementById('cloudTrekId').value;
+            const editId = document.getElementById('tTransferEditId').value;
+
+            try {
+                const payload = {
+                    trek_id: trekId,
+                    transfer_type: tType,
+                    mode: document.getElementById('gTransferMode').value,
+                    departure: tDep,
+                    arrival: tArr,
+                    vehicle_details: tVeh,
+                    occupancy: tOcc ? parseInt(tOcc) : null,
+                    cost: tCost,
+                    flight_option: document.getElementById('gTransferFlightOpt').value || null
+                };
+                
+                let error;
+                if (editId) {
+                    const res = await supabase.from('trek_transfers').update(payload).eq('id', editId);
+                    error = res.error;
+                } else {
+                    const res = await supabase.from('trek_transfers').insert([payload]);
+                    error = res.error;
+                }
+                
+                if (error) throw error;
+                addTTransferForm.reset();
+                document.getElementById('tTransferEditId').value = '';
+                addTTransferForm.style.display = 'none';
+                const toggleBtn = document.getElementById('toggle-add-t-transfer-btn');
+                toggleBtn.innerHTML = '<i class="ph ph-plus"></i> ADD TRANSFER';
+                toggleBtn.style.background = 'var(--admin-primary)';
+                document.getElementById('gTransferVehicleGroup').style.display = 'none';
+                loadTrekData(trekId);
+            } catch (err) {
+                console.error(err);
+                alert('Error saving transfer');
+            } finally {
+                btn.textContent = 'SAVE TRANSFER';
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // Add Trek Permit
+    const addTPermitForm = document.getElementById('add-trek-permit-form');
+    if (addTPermitForm) {
+        addTPermitForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-add-t-permit');
+            btn.textContent = 'SAVING...';
+            btn.disabled = true;
+            try {
+                const trekId = document.getElementById('cloudTrekId').value;
+                const editId = document.getElementById('tPermitEditId').value;
+                const payload = {
+                    trek_id: trekId,
+                    permit_name: document.getElementById('tPermitName').value,
+                    cost: parseFloat(document.getElementById('tPermitCost').value)
+                };
+                
+                let error;
+                if (editId) {
+                    const res = await supabase.from('trek_permits').update(payload).eq('id', editId);
+                    error = res.error;
+                } else {
+                    const res = await supabase.from('trek_permits').insert([payload]);
+                    error = res.error;
+                }
+                
+                if (error) throw error;
+                addTPermitForm.reset();
+                document.getElementById('tPermitEditId').value = '';
+                addTPermitForm.style.display = 'none';
+                const toggleBtn = document.getElementById('toggle-add-t-permit-btn');
+                toggleBtn.innerHTML = '<i class="ph ph-plus"></i> ADD PERMIT';
+                toggleBtn.style.background = 'var(--admin-primary)';
+                loadTrekData(trekId);
+            } catch (err) {
+                console.error(err);
+                alert('Error saving permit');
+            } finally {
+                btn.textContent = 'SAVE PERMIT';
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // Add Trek Trail Accommodation
+    const addTTrailForm = document.getElementById('add-trek-trail-acc-form');
+    if (addTTrailForm) {
+        addTTrailForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-add-t-trail');
+            btn.textContent = 'SAVING...';
+            btn.disabled = true;
+            try {
+                const trekId = document.getElementById('cloudTrekId').value;
+                const editId = document.getElementById('tTrailEditId').value;
+                const payload = {
+                    trek_id: trekId,
+                    location: document.getElementById('tTrailLoc').value,
+                    cost_per_day_per_person: parseFloat(document.getElementById('tTrailCost').value)
+                };
+                
+                let error;
+                if (editId) {
+                    const res = await supabase.from('trek_trail_accommodations').update(payload).eq('id', editId);
+                    error = res.error;
+                } else {
+                    const res = await supabase.from('trek_trail_accommodations').insert([payload]);
+                    error = res.error;
+                }
+                
+                if (error) throw error;
+                addTTrailForm.reset();
+                document.getElementById('tTrailEditId').value = '';
+                addTTrailForm.style.display = 'none';
+                const toggleBtn = document.getElementById('toggle-add-t-trail-btn');
+                toggleBtn.innerHTML = '<i class="ph ph-plus"></i> ADD LOCATION';
+                toggleBtn.style.background = 'var(--admin-primary)';
+                loadTrekData(trekId);
+            } catch (err) {
+                console.error(err);
+                alert('Error saving trail accommodation');
+            } finally {
+                btn.textContent = 'SAVE ACCOMMODATION';
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // Add Trek Guide
+    const addGGuideForm = document.getElementById('add-t-guide-form');
+    if (addGGuideForm) {
+        addGGuideForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-add-t-guide');
+            btn.textContent = 'SAVING...';
+            btn.disabled = true;
+            try {
+                const trekId = document.getElementById('cloudTrekId').value;
+                const editId = document.getElementById('tGuideEditId').value;
+                const payload = {
+                    trek_id: trekId,
+                    name: document.getElementById('gGuideName').value,
+                    cost_per_day: parseFloat(document.getElementById('gGuideCost').value)
+                };
+                
+                let error;
+                if (editId) {
+                    const res = await supabase.from('trek_guides').update(payload).eq('id', editId);
+                    error = res.error;
+                } else {
+                    const res = await supabase.from('trek_guides').insert([payload]);
+                    error = res.error;
+                }
+                
+                if (error) throw error;
+                addGGuideForm.reset();
+                document.getElementById('tGuideEditId').value = '';
+                addGGuideForm.style.display = 'none';
+                const toggleBtn = document.getElementById('toggle-add-t-guide-btn');
+                toggleBtn.innerHTML = '<i class="ph ph-plus"></i> ADD GUIDE';
+                toggleBtn.style.background = 'var(--admin-primary)';
+                loadTrekData(trekId);
+            } catch (err) {
+                console.error(err);
+                alert('Error saving guide');
+            } finally {
+                btn.textContent = 'SAVE GUIDE';
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // Add Trek Porter
+    const addGPorterForm = document.getElementById('add-t-porter-form');
+    if (addGPorterForm) {
+        addGPorterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-add-t-porter');
+            btn.textContent = 'SAVING...';
+            btn.disabled = true;
+            try {
+                const trekId = document.getElementById('cloudTrekId').value;
+                const editId = document.getElementById('tPorterEditId').value;
+                const payload = {
+                    trek_id: trekId,
+                    porter_type: document.getElementById('gPorterType').value,
+                    cost_per_day: parseFloat(document.getElementById('gPorterCost').value)
+                };
+                
+                let error;
+                if (editId) {
+                    const res = await supabase.from('trek_porters').update(payload).eq('id', editId);
+                    error = res.error;
+                } else {
+                    const res = await supabase.from('trek_porters').insert([payload]);
+                    error = res.error;
+                }
+                
+                if (error) throw error;
+                addGPorterForm.reset();
+                document.getElementById('tPorterEditId').value = '';
+                addGPorterForm.style.display = 'none';
+                const toggleBtn = document.getElementById('toggle-add-t-porter-btn');
+                toggleBtn.innerHTML = '<i class="ph ph-plus"></i> ADD PORTER';
+                toggleBtn.style.background = 'var(--admin-primary)';
+                loadTrekData(trekId);
+            } catch (err) {
+                console.error(err);
+                alert('Error saving porter');
+            } finally {
+                btn.textContent = 'SAVE PORTER';
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // Add Trek Lunch
+    const addTLunchForm = document.getElementById('add-t-lunch-form');
+    if (addTLunchForm) {
+        addTLunchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-add-t-lunch');
+            btn.textContent = 'SAVING...';
+            btn.disabled = true;
+            try {
+                const trekId = document.getElementById('cloudTrekId').value;
+                const editId = document.getElementById('tLunchEditId').value;
+                const payload = {
+                    trek_id: trekId,
+                    place: document.getElementById('gLunchPlace').value,
+                    cost: parseFloat(document.getElementById('gLunchCost').value)
+                };
+                
+                let error;
+                if (editId) {
+                    const res = await supabase.from('trek_lunches').update(payload).eq('id', editId);
+                    error = res.error;
+                } else {
+                    const res = await supabase.from('trek_lunches').insert([payload]);
+                    error = res.error;
+                }
+                
+                if (error) throw error;
+                addTLunchForm.reset();
+                document.getElementById('tLunchEditId').value = '';
+                addTLunchForm.style.display = 'none';
+                const toggleBtn = document.getElementById('toggle-add-t-lunch-btn');
+                toggleBtn.innerHTML = '<i class="ph ph-plus"></i> ADD LUNCH';
+                toggleBtn.style.background = 'var(--admin-primary)';
+                loadTrekData(trekId);
+            } catch (err) {
+                console.error(err);
+                alert('Error saving lunch');
+            } finally {
+                btn.textContent = 'SAVE LUNCH';
                 btn.disabled = false;
             }
         });
