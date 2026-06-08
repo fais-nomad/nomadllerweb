@@ -3,6 +3,12 @@
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/guest-form", "destination": "/guest-form.html" }
+    { "source": "/guest-form", "destination": "/guest-form.html" },
+    { "source": "/agent-login", "destination": "/agent-login.html" },
+    { "source": "/agent-dashboard", "destination": "/agent-dashboard.html" },
+    { "source": "/agent-fixed-departures", "destination": "/agent-fixed-departures.html" },
+    { "source": "/agent-bookings", "destination": "/agent-bookings.html" },
+    { "source": "/agent-costing", "destination": "/agent-costing.html" },
+    { "source": "/policies", "destination": "/policies.html" }
   ]
 }
