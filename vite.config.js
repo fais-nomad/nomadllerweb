@@ -17,6 +17,8 @@ export default defineConfig({
         agentDashboard: resolve(__dirname, 'agent-dashboard.html'),
         agentFixedDepartures: resolve(__dirname, 'agent-fixed-departures.html'),
         agentBookings: resolve(__dirname, 'agent-bookings.html'),
+        agentCosting: resolve(__dirname, 'agent-costing.html'),
+        policies: resolve(__dirname, 'policies.html'),
       },
     },
   },
