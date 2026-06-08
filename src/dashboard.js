@@ -2696,6 +2696,31 @@ async function loadTrekData(trekId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Inject Copy buttons to all textarea labels
+    document.querySelectorAll('textarea').forEach(textarea => {
+        const label = document.querySelector(`label[for="${textarea.id}"]`);
+        if (label) {
+            label.style.display = 'flex';
+            label.style.justifyContent = 'space-between';
+            label.style.alignItems = 'center';
+            
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.innerHTML = '<i class="ph ph-copy"></i> Copy';
+            btn.style.cssText = 'background: transparent; border: none; color: var(--admin-primary); cursor: pointer; display: flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; padding: 0;';
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                textarea.select();
+                document.execCommand('copy');
+                btn.innerHTML = '<i class="ph ph-check"></i> Copied';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="ph ph-copy"></i> Copy';
+                }, 2000);
+            });
+            label.appendChild(btn);
+        }
+    });
+
     const backBtn = document.getElementById('back-to-cloud-list');
     if (backBtn) {
         backBtn.addEventListener('click', () => {
