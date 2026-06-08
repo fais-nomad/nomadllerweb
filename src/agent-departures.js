@@ -651,8 +651,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div style="margin-top: 40px; position: relative; z-index: 2;">
                     <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #1a1a1a; border-bottom: 1px solid rgba(212,175,55,0.4); padding-bottom: 12px; margin-bottom: 35px; font-weight: 700;">Expedition Intelligence</h2>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 35px;">
-                        <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 35px;">
+                        <div style="width: calc(50% - 10px); box-sizing: border-box; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 20px;">
                             <div style="display: flex; align-items: center; margin-bottom: 12px;">
                                 <div style="background: rgba(212,175,55,0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
                                     <img crossorigin="anonymous" src="https://api.iconify.design/ph:mountains-fill.svg?color=%23d4af37" style="width: 20px; height: 20px;">
@@ -661,7 +661,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                             <p style="font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; margin: 0; font-weight: 600; padding-left: 52px;">5,545 m / 18,192 ft</p>
                         </div>
-                        <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                        <div style="width: calc(50% - 10px); box-sizing: border-box; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 20px;">
                             <div style="display: flex; align-items: center; margin-bottom: 12px;">
                                 <div style="background: rgba(212,175,55,0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
                                     <img crossorigin="anonymous" src="https://api.iconify.design/ph:chart-line-up-fill.svg?color=%23d4af37" style="width: 20px; height: 20px;">
@@ -670,7 +670,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                             <p style="font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; margin: 0; font-weight: 600; padding-left: 52px;">Challenging Expedition</p>
                         </div>
-                        <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                        <div style="width: calc(50% - 10px); box-sizing: border-box; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 20px;">
                             <div style="display: flex; align-items: center; margin-bottom: 12px;">
                                 <div style="background: rgba(212,175,55,0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
                                     <img crossorigin="anonymous" src="https://api.iconify.design/ph:sun-fill.svg?color=%23d4af37" style="width: 20px; height: 20px;">
@@ -679,7 +679,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                             <p style="font-family: 'Playfair Display', serif; font-size: 20px; color: #1a1a1a; margin: 0; font-weight: 600; padding-left: 52px;">Mar-May & Sep-Nov</p>
                         </div>
-                        <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                        <div style="width: calc(50% - 10px); box-sizing: border-box; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 20px;">
                             <div style="display: flex; align-items: center; margin-bottom: 12px;">
                                 <div style="background: rgba(212,175,55,0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
                                     <img crossorigin="anonymous" src="https://api.iconify.design/ph:house-line-fill.svg?color=%23d4af37" style="width: 20px; height: 20px;">
