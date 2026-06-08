@@ -2696,13 +2696,70 @@ async function loadTrekData(trekId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Inject Copy buttons to all textarea labels
+    // Helper to map textarea ID to DB field name
+    function getDbFieldFromId(id) {
+        if (!id) return null;
+        if (id.includes('Highlights')) return 'trip_highlights';
+        if (id.includes('Itinerary')) return 'detailed_itinerary';
+        if (id.includes('Inclusions')) return 'inclusions';
+        if (id.includes('Exclusions')) return 'exclusions';
+        if (id.includes('ImportantNotes') || id.includes('notes')) return 'important_notes';
+        if (id.includes('ThingsToRemember') || id.includes('remember')) return 'things_to_remember';
+        if (id.includes('Terms') || id.includes('terms')) return 'terms_and_conditions';
+        if (id.includes('Risk') || id.includes('risk')) return 'risk_liabilities';
+        if (id.includes('Health') || id.includes('health')) return 'health_and_fitness';
+        if (id.includes('Insurance') || id.includes('insurance')) return 'travel_insurance';
+        if (id.includes('Cancellation') || id.includes('cancellation')) return 'cancellation_policy';
+        return null;
+    }
+
+    // Inject Copy buttons & Pull From dropdowns to all textarea labels
     document.querySelectorAll('textarea').forEach(textarea => {
         const label = document.querySelector(`label[for="${textarea.id}"]`);
         if (label) {
             label.style.display = 'flex';
             label.style.justifyContent = 'space-between';
             label.style.alignItems = 'center';
+            label.style.flexWrap = 'wrap';
+            label.style.gap = '0.5rem';
+            
+            const controlsDiv = document.createElement('div');
+            controlsDiv.style.display = 'flex';
+            controlsDiv.style.gap = '0.8rem';
+            controlsDiv.style.alignItems = 'center';
+
+            const dbField = getDbFieldFromId(textarea.id);
+            if (dbField) {
+                const select = document.createElement('select');
+                select.innerHTML = '<option value="" disabled selected>Pull from...</option>';
+                select.style.cssText = 'background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: var(--text-secondary); border-radius: 3px; font-size: 0.7rem; padding: 0.2rem; cursor: pointer; max-width: 120px;';
+                
+                select.addEventListener('focus', () => {
+                    if (select.children.length <= 1 && window.fdsData) {
+                        window.fdsData.forEach(fd => {
+                            const option = document.createElement('option');
+                            option.value = fd.id;
+                            option.textContent = fd.destination;
+                            select.appendChild(option);
+                        });
+                    }
+                });
+
+                select.addEventListener('change', () => {
+                    if (!select.value) return;
+                    const fd = window.fdsData?.find(f => f.id === select.value);
+                    if (fd && fd[dbField]) {
+                        textarea.value = fd[dbField];
+                        textarea.style.transition = 'background 0.3s';
+                        textarea.style.background = 'rgba(46, 196, 182, 0.2)';
+                        setTimeout(() => { textarea.style.background = 'rgba(0,0,0,0.5)'; }, 500);
+                    } else if (fd && !fd[dbField]) {
+                        alert('This departure does not have data for this field.');
+                    }
+                    select.value = '';
+                });
+                controlsDiv.appendChild(select);
+            }
             
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -2717,7 +2774,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.innerHTML = '<i class="ph ph-copy"></i> Copy';
                 }, 2000);
             });
-            label.appendChild(btn);
+            controlsDiv.appendChild(btn);
+
+            label.appendChild(controlsDiv);
         }
     });
 
