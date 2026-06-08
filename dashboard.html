@@ -253,8 +253,14 @@
             <div id="fixed-departures-view-section" style="display: none;">
                 <!-- Add Fixed Departure Form -->
                 <div class="trip-form">
-                    <div class="section-header">
-                        <h3>Add New Fixed Departure</h3>
+                    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <h3 style="margin: 0;">Add New Fixed Departure</h3>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <select id="copy-fd-add-select" style="padding: 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; width: 250px; max-width: 100%;">
+                                <option value="" disabled selected>Copy data from...</option>
+                            </select>
+                            <button type="button" id="copy-fd-add-btn" class="btn" style="background: var(--admin-primary); margin: 0; padding: 0.5rem 1rem;">COPY</button>
+                        </div>
                     </div>
                     <form id="add-fixed-departure-form">
                         <div class="form-grid">

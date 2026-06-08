@@ -1249,6 +1249,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (fds && fds.length > 0) {
                 window.fdsData = fds;
 
+                const copySelect = document.getElementById('copy-fd-add-select');
+                if (copySelect) {
+                    copySelect.innerHTML = '<option value="" disabled selected>Copy data from...</option>';
+                    fds.forEach(fd => {
+                        const dateStr = new Date(fd.start_date).toLocaleDateString();
+                        copySelect.innerHTML += `<option value="${fd.id}">${fd.destination} (${dateStr})</option>`;
+                    });
+                }
+
                 fds.forEach(fd => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
@@ -1331,6 +1340,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             console.error('Error fetching fixed departures:', error);
         }
+    }
+
+    const copyFdAddBtn = document.getElementById('copy-fd-add-btn');
+    if (copyFdAddBtn) {
+        copyFdAddBtn.addEventListener('click', () => {
+            const fdId = document.getElementById('copy-fd-add-select').value;
+            if (!fdId) {
+                alert('Please select a fixed departure to copy from.');
+                return;
+            }
+            const fd = window.fdsData?.find(f => f.id === fdId);
+            if (!fd) return;
+
+            // Fill the add form fields
+            document.getElementById('fdDestination').value = fd.destination || '';
+            document.getElementById('fdTotalSlots').value = fd.total_slots || '';
+            
+            const parseUsd = str => str ? parseFloat(str.replace('$', '').replace(',', '')) : '';
+            document.getElementById('fdPrice').value = parseUsd(fd.b2b_price) || '';
+            document.getElementById('fdMaxSellingPrice').value = parseUsd(fd.max_selling_price) || '';
+            
+            document.getElementById('fdStatus').value = fd.status || 'Available';
+            
+            document.getElementById('fdCoverImage').value = fd.cover_image_url || '';
+            document.getElementById('fdMapImage').value = fd.map_image_url || '';
+            document.getElementById('fdAltitudeImage').value = fd.altitude_image_url || '';
+            
+            document.getElementById('fdHighlights').value = fd.trip_highlights || '';
+            document.getElementById('fdItinerary').value = fd.detailed_itinerary || '';
+            document.getElementById('fdInclusions').value = fd.inclusions || '';
+            document.getElementById('fdExclusions').value = fd.exclusions || '';
+            document.getElementById('fdImportantNotes').value = fd.important_notes || '';
+            document.getElementById('fdThingsToRemember').value = fd.things_to_remember || '';
+            document.getElementById('fdTerms').value = fd.terms_and_conditions || '';
+            document.getElementById('fdRisk').value = fd.risk_liabilities || '';
+            document.getElementById('fdHealth').value = fd.health_and_fitness || '';
+            document.getElementById('fdInsurance').value = fd.travel_insurance || '';
+            document.getElementById('fdCancellation').value = fd.cancellation_policy || '';
+            
+            // Trigger input events to update the currency converter spans
+            document.getElementById('fdPrice').dispatchEvent(new Event('input'));
+            document.getElementById('fdMaxSellingPrice').dispatchEvent(new Event('input'));
+
+            alert('Data copied successfully! Please set the Start Date and End Date manually.');
+        });
     }
 
     const addFdForm = document.getElementById('add-fixed-departure-form');
