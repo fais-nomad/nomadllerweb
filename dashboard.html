@@ -26,12 +26,11 @@
         }
         .form-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
             gap: 1.5rem;
         }
         @media (max-width: 768px) {
             .form-grid {
-                grid-template-columns: 1fr;
                 gap: 1rem;
             }
         }
@@ -353,7 +352,7 @@
                             </div>
                         </div>
                         <div class="form-group full-width" style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" id="fdAddToUpcoming" style="width: auto;">
+                            <input type="checkbox" id="fdAddToUpcoming" style="width: 20px; height: 20px; appearance: auto; cursor: pointer; margin: 0;">
                             <label for="fdAddToUpcoming" style="margin: 0; cursor: pointer;">Automatically add this to "Upcoming Trips" for guests</label>
                         </div>
                         <button type="submit" class="submit-btn" id="create-fd-btn">CREATE DEPARTURE</button>
@@ -395,7 +394,7 @@
                         <p style="color: var(--text-secondary); font-size: 0.9rem;">Manage common data that applies across all treks</p>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+                    <div class="admin-two-col-grid" style="margin-bottom: 3rem;">
                         
                         <!-- Global Hotels -->
                         <div class="trip-form" style="margin: 0; display: flex; flex-direction: column;">
@@ -553,7 +552,7 @@
 
                     <input type="hidden" id="cloudTrekId">
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="admin-two-col-grid">
                         
                         <!-- Trek Transfers -->
                         <div class="trip-form" style="margin: 0; display: flex; flex-direction: column;">
@@ -1080,7 +1079,7 @@
                     <button id="close-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin-left: 0.5rem;"><i class="ph ph-x"></i></button>
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <div class="admin-two-col-grid">
                 <button id="download-flight-data" class="btn" style="padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); font-size: 0.8rem;"><i class="ph ph-airplane-landing"></i> Flight Info</button>
                 <button id="download-passport-data" class="btn" style="padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); font-size: 0.8rem;"><i class="ph ph-identification-card"></i> Passport Info</button>
                 <button id="plan-pickups-btn" class="btn" style="padding: 0.8rem; background: var(--admin-primary); border: none; font-size: 0.8rem;"><i class="ph ph-magic-wand"></i> AI Pickup Plan</button>
@@ -1104,7 +1103,7 @@
                 <input type="hidden" id="edit-guest-id">
                 
                 <h3 style="color: var(--accent); margin-bottom: 1rem;">1. Personal Details</h3>
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="form-grid" class="admin-two-col-grid">
                     <div style="grid-column: 1 / -1;">
                         <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Full Name</label>
                         <input type="text" id="edit-g-name" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
@@ -1124,7 +1123,7 @@
                 </div>
 
                 <h3 style="color: var(--accent); margin-bottom: 1rem;">2. Passport Details</h3>
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="form-grid" class="admin-two-col-grid">
                     <div style="grid-column: 1 / -1;">
                         <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Name on Passport</label>
                         <input type="text" id="edit-p-name" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
@@ -1141,7 +1140,7 @@
 
                 <h3 style="color: var(--accent); margin-bottom: 1rem;">3. Flight Details</h3>
                 <h4 style="color: white; margin-bottom: 0.5rem;">Arrival Flight</h4>
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
                         <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Flight No</label>
                         <input type="text" id="edit-arr-flight-no" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
@@ -1174,7 +1173,7 @@
                 </div>
 
                 <h4 style="color: white; margin-bottom: 0.5rem;">Departure Flight</h4>
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div>
                         <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Flight No</label>
                         <input type="text" id="edit-dep-flight-no" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;">
@@ -1220,7 +1219,7 @@
             </div>
             <form id="edit-trip-form">
                 <input type="hidden" id="edit-trip-id">
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="form-grid" class="admin-two-col-grid">
                     <div style="grid-column: 1 / -1;">
                         <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Trip Name</label>
                         <input type="text" id="edit-trip-name" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>
@@ -1275,7 +1274,7 @@
             </div>
             <form id="edit-fd-form">
                 <input type="hidden" id="edit-fd-id">
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="form-grid" class="admin-two-col-grid">
                     <div style="grid-column: 1 / -1;">
                         <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Destination</label>
                         <input type="text" id="edit-fd-destination" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" required>

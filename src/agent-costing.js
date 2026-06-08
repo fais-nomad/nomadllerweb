@@ -82,13 +82,14 @@ async function openCostingDetail(trek) {
     document.getElementById('calc-days').value = trek.days || 14;
 
     // Show/hide EBC logic
-    const isEbc = trek.code === 'ebc' || trek.code === 'ebc-gokyo';
+    const tc = (trek.code || '').toLowerCase();
+    const isEbc = tc === 'ebc' || tc === 'ebc-gokyo' || tc === 'gokyo';
     document.querySelectorAll('.ebc-specific-input, .ebc-specific-view').forEach(el => {
         el.style.display = isEbc ? (el.tagName === 'DIV' && el.classList.contains('form-group') && el.id !== 'calc-ramechhap-mode-group' ? 'block' : (el.id === 'calc-ramechhap-mode-group' ? 'none' : 'block')) : 'none';
     });
     
     // Show/hide Annapurna logic
-    const isAnnapurna = trek.code.includes('abc') || trek.code.includes('annapurna');
+    const isAnnapurna = tc.includes('abc') || tc.includes('annapurna');
     document.querySelectorAll('.annapurna-specific-input, .annapurna-specific-view').forEach(el => {
         el.style.display = isAnnapurna ? 'block' : 'none';
     });
@@ -156,6 +157,7 @@ function renderCostingUI() {
 window.calculateCostingTotal = () => {
     const pax = parseInt(document.getElementById('calc-pax').value) || 0;
     const days = parseInt(document.getElementById('calc-days').value) || 0;
+    const cCode = (costingCache.trekCode || '').toLowerCase();
     let total = 0;
 
     // Guide Allocation
@@ -194,7 +196,7 @@ window.calculateCostingTotal = () => {
     if (costingCache.porters.length > 0) {
         porterCostPerDay = parseFloat(costingCache.porters[0].cost_per_day) || 0;
     }
-    const porterDays = Math.max(1, days - 3);
+    const porterDays = (cCode === 'gokyo' || cCode === 'ebc-gokyo') ? Math.max(1, days - 1) : Math.max(1, days - 3);
     const porterTotal = porterCostPerDay * porterCount * porterDays;
     
     const pPaxEl = document.getElementById('calc-porter-pax');
@@ -316,8 +318,7 @@ window.calculateCostingTotal = () => {
 
     // Transfers (Flat Cost for now - excluding EBC specific flights/long routes handled below)
     let transfersTotal = airportTotal;
-    const cCode = (costingCache.trekCode || '').toLowerCase();
-    if (!(cCode.includes('ebc') || cCode.includes('ebc-gokyo') || cCode.includes('abc') || cCode.includes('annapurna'))) {
+    if (!(cCode.includes('ebc') || cCode.includes('ebc-gokyo') || cCode.includes('gokyo') || cCode.includes('abc') || cCode.includes('annapurna'))) {
         transfersTotal += sumCheckboxes('transfer-chk');
     }
 
@@ -325,7 +326,7 @@ window.calculateCostingTotal = () => {
     // EBC SPECIFIC LOGIC (Flights & Ramechhap Transfers)
     // ----------------------------------------------------
     let ebcFlightTotal = 0;
-    if (cCode === 'ebc' || cCode === 'ebc-gokyo') {
+    if (cCode === 'ebc' || cCode === 'ebc-gokyo' || cCode === 'gokyo') {
         const flightOpt = document.getElementById('calc-flight-opt').value; // 'Kathmandu' or 'Ramechhap'
         let flightCostPerPax = 0;
         

@@ -200,9 +200,13 @@ body.admin-body {
 
 .main-content {
   flex: 1;
-  margin-left: var(--admin-sidebar-width);
+  margin-left: 0;
   padding: 2rem 3rem;
-  transition: margin-left 0.3s ease;
+  padding-left: calc(var(--admin-sidebar-width) + 3rem);
+  transition: padding-left 0.3s ease;
+  min-width: 0;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 @media (max-width: 1024px) {
@@ -388,6 +392,13 @@ body.admin-body {
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px; /* Globally prevent squishing */
+}
+
+@media (max-width: 768px) {
+  table {
+    min-width: 400px;
+  }
 }
 
 th, td {
@@ -440,13 +451,12 @@ tbody tr:hover {
 /* Responsive Grids */
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 1.5rem;
 }
 
 @media (max-width: 600px) {
   .form-grid {
-    grid-template-columns: 1fr;
     gap: 1rem;
   }
 }
@@ -500,25 +510,24 @@ tbody tr:hover {
   transition: all 0.3s;
   font-size: 1rem;
 }
-
-.edit-trip-btn {
+.edit-trip-btn, .edit-fd-btn {
   background: rgba(255, 107, 53, 0.1);
   color: var(--admin-primary);
   border: 1px solid rgba(255, 107, 53, 0.2);
 }
 
-.edit-trip-btn:hover {
+.edit-trip-btn:hover, .edit-fd-btn:hover {
   background: var(--admin-primary);
   color: white;
 }
 
-.delete-trip-btn {
+.delete-trip-btn, .delete-fd-btn {
   background: rgba(230, 57, 70, 0.1);
   color: var(--admin-danger);
   border: 1px solid rgba(230, 57, 70, 0.2);
 }
 
-.delete-trip-btn:hover {
+.delete-trip-btn:hover, .delete-fd-btn:hover {
   background: var(--admin-danger);
   color: white;
 }
@@ -528,3 +537,40 @@ tbody tr:hover {
   gap: 0.8rem;
   align-items: center;
 }
+
+/* Responsive Grid and Table Layouts to Prevent Truncation */
+.admin-two-col-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 550px), 1fr));
+  gap: 2rem;
+}
+
+/* Ensure data list containers scroll horizontally instead of squishing tables */
+[id$="-list-container"] {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+/* Set minimum widths for the tables to prevent column squishing */
+#g-hotels-list-container table,
+#g-transport-list-container table,
+#t-transfers-list-container table {
+  min-width: 550px;
+}
+
+#t-permits-list-container table,
+#t-trails-list-container table,
+#t-guides-list-container table,
+#t-porters-list-container table,
+#t-lunches-list-container table {
+  min-width: 400px;
+}
+
+/* Ensure buttons in section headers never shrink or wrap text */
+.section-header button.btn {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  margin-top: 0 !important;
+}
+

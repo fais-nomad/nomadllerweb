@@ -651,7 +651,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div style="margin-top: 40px; position: relative; z-index: 2;">
                     <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #1a1a1a; border-bottom: 1px solid rgba(212,175,55,0.4); padding-bottom: 12px; margin-bottom: 35px; font-weight: 700;">Expedition Intelligence</h2>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px;">
+                    <div class="admin-two-col-grid">
                         <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
                             <div style="display: flex; align-items: center; margin-bottom: 12px;">
                                 <div style="background: rgba(212,175,55,0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">

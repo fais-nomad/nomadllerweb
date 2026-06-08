@@ -661,7 +661,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             
                             <!-- Body (Hidden by default) -->
                             <div class="guest-card-body" style="padding: 1.5rem; border-top: 1px solid var(--admin-border); display: none;">
-                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                                <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
                                     <div>
                                         <p style="margin: 0; color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Emergency</p>
                                         <p style="margin: 0.2rem 0; color: white;">${g.emergency_contact_no || 'N/A'}</p>
@@ -1263,7 +1263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </td>
                         <td>
                             <div class="actions-cell">
-                                <button class="action-btn edit-fd-btn" data-id="${fd.id}" title="Edit Departure"><i class="ph ph-pencil-simple"></i></button>
+                                <button class="action-btn edit-fd-btn" data-id="${fd.id}" title="Edit Departure"><i class="ph ph-pencil"></i></button>
                                 <button class="action-btn delete-fd-btn" data-id="${fd.id}" title="Delete Departure"><i class="ph ph-trash"></i></button>
                             </div>
                         </td>
@@ -1648,7 +1648,7 @@ async function openCostingDetail(trek) {
 
     // Show/hide EBC logic
     const tc = (trek.code || '').toLowerCase();
-    const isEbc = tc === 'ebc' || tc === 'ebc-gokyo';
+    const isEbc = tc === 'ebc' || tc === 'ebc-gokyo' || tc === 'gokyo';
     document.querySelectorAll('.ebc-specific-input, .ebc-specific-view').forEach(el => {
         el.style.display = isEbc ? (el.tagName === 'DIV' && el.classList.contains('form-group') && el.id !== 'calc-ramechhap-mode-group' ? 'block' : (el.id === 'calc-ramechhap-mode-group' ? 'none' : 'block')) : 'none';
     });
@@ -1722,6 +1722,7 @@ function renderCostingUI() {
 window.calculateCostingTotal = () => {
     const pax = parseInt(document.getElementById('calc-pax').value) || 0;
     const days = parseInt(document.getElementById('calc-days').value) || 0;
+    const cCode = (costingCache.trekCode || '').toLowerCase();
     let total = 0;
 
     // Guide Allocation
@@ -1760,7 +1761,7 @@ window.calculateCostingTotal = () => {
     if (costingCache.porters.length > 0) {
         porterCostPerDay = parseFloat(costingCache.porters[0].cost_per_day) || 0;
     }
-    const porterDays = Math.max(1, days - 3);
+    const porterDays = (cCode === 'gokyo' || cCode === 'ebc-gokyo') ? Math.max(1, days - 1) : Math.max(1, days - 3);
     const porterTotal = porterCostPerDay * porterCount * porterDays;
     
     const pPaxEl = document.getElementById('calc-porter-pax');
@@ -1882,8 +1883,7 @@ window.calculateCostingTotal = () => {
 
     // Transfers (Flat Cost for now - excluding EBC specific flights/long routes handled below)
     let transfersTotal = airportTotal;
-    const cCode = (costingCache.trekCode || '').toLowerCase();
-    if (!(cCode.includes('ebc') || cCode.includes('ebc-gokyo') || cCode.includes('abc') || cCode.includes('annapurna'))) {
+    if (!(cCode.includes('ebc') || cCode.includes('ebc-gokyo') || cCode.includes('gokyo') || cCode.includes('abc') || cCode.includes('annapurna'))) {
         transfersTotal += sumCheckboxes('transfer-chk');
     }
 
@@ -1891,7 +1891,7 @@ window.calculateCostingTotal = () => {
     // EBC SPECIFIC LOGIC (Flights & Ramechhap Transfers)
     // ----------------------------------------------------
     let ebcFlightTotal = 0;
-    if (cCode === 'ebc' || cCode === 'ebc-gokyo') {
+    if (cCode === 'ebc' || cCode === 'ebc-gokyo' || cCode === 'gokyo') {
         const flightOpt = document.getElementById('calc-flight-opt').value; // 'Kathmandu' or 'Ramechhap'
         let flightCostPerPax = 0;
         
