@@ -90,17 +90,13 @@ async function openCostingDetail(trek) {
     
     // Show/hide Annapurna logic
     const isAnnapurna = tc.includes('abc') || tc.includes('annapurna');
-    const isAbcOnly = tc.includes('abc');
     document.querySelectorAll('.annapurna-specific-input, .annapurna-specific-view').forEach(el => {
         el.style.display = isAnnapurna ? 'block' : 'none';
-    });
-    document.querySelectorAll('.abc-specific-input, .abc-specific-view').forEach(el => {
-        el.style.display = isAbcOnly ? 'block' : 'none';
     });
     
     const transfersSection = document.getElementById('calc-transfers-section');
     if (transfersSection) {
-        transfersSection.style.display = (isEbc || isAbcOnly) ? 'none' : 'block';
+        transfersSection.style.display = (isEbc || isAnnapurna) ? 'none' : 'block';
     }
 
     if (isEbc) {
@@ -322,7 +318,7 @@ window.calculateCostingTotal = () => {
 
     // Transfers (Flat Cost for now - excluding EBC specific flights/long routes handled below)
     let transfersTotal = airportTotal;
-    if (!(cCode.includes('ebc') || cCode.includes('ebc-gokyo') || cCode.includes('gokyo') || cCode.includes('abc'))) {
+    if (!(cCode.includes('ebc') || cCode.includes('ebc-gokyo') || cCode.includes('gokyo') || cCode.includes('abc') || cCode.includes('annapurna'))) {
         transfersTotal += sumCheckboxes('transfer-chk');
     }
 
@@ -424,92 +420,10 @@ window.calculateCostingTotal = () => {
         total += ebcFlightTotal;
     } else if (cCode.includes('abc') || cCode.includes('annapurna')) {
         let annapurnaTotal = 0;
+        let annapurnaTotal = 0;
         let detailsText = '';
 
-        if (cCode.includes('abc')) {
-            // 1. KTM to Pokhara Transfer
-            const kpMode = document.getElementById('calc-ktm-pkr-transfer').value; 
-            let kpCostPerPax = 0;
-            costingCache.transfers.forEach(t => {
-                if ((t.transfer_type || '').toLowerCase() === kpMode.toLowerCase() && (t.departure || '').toLowerCase().includes('kathmandu') && (t.arrival || '').toLowerCase().includes('pokhara')) {
-                    kpCostPerPax += parseFloat(t.cost) || 0;
-                }
-            });
-            // Multiply by 2 for return trip based on requirement "if flight take cost kathmandu pokhara, pokhra to kathamndu"
-            kpCostPerPax = kpCostPerPax * 2;
-            const kpTotal = kpCostPerPax * pax;
-            annapurnaTotal += kpTotal;
-            detailsText += `KTM ⇄ PKR (${kpMode}): ${pax} Pax × NPR ${kpCostPerPax.toLocaleString()} = <strong>NPR ${kpTotal.toLocaleString()}</strong>`;
-
-            // 2. Pokhara to Ghandruk & Jhinu to Pokhara Transfers
-            const ghandrukMode = document.getElementById('calc-pkr-ghandruk-mode').value;
-            const gRec = document.getElementById('calc-ghandruk-rec');
-            if (gRec) gRec.textContent = pax <= 4 ? "(Recommended: Sharing)" : "(Recommended: Pvt)";
-
-            let pkrToGhandrukShare = 0, jhinuToPkrShare = 0;
-            let pkrToGhandrukJeep = 0, jhinuToPkrJeep = 0;
-            let pkrToGhandrukBus = 0, jhinuToPkrBus = 0;
-
-            costingCache.transfers.forEach(t => {
-                const arr = (t.arrival || '').toLowerCase();
-                const dep = (t.departure || '').toLowerCase();
-                const mode = (t.mode || '');
-                const type = (t.transfer_type || '').toLowerCase();
-                const details = (t.vehicle_details || '').toLowerCase();
-                const cost = parseFloat(t.cost) || 0;
-
-                if (type === 'long_route') {
-                    if (dep.includes('pokhara') && (arr.includes('ghandruk') || arr.includes('gangdruk'))) {
-                        if (mode === 'Sharing') pkrToGhandrukShare += cost;
-                        else if (mode === 'Pvt') {
-                            if (details.includes('jeep')) pkrToGhandrukJeep += cost;
-                            if (details.includes('bus')) pkrToGhandrukBus += cost;
-                        }
-                    }
-                    if (dep.includes('jhinu') && arr.includes('pokhara')) {
-                        if (mode === 'Sharing') jhinuToPkrShare += cost;
-                        else if (mode === 'Pvt') {
-                            if (details.includes('jeep')) jhinuToPkrJeep += cost;
-                            if (details.includes('bus')) jhinuToPkrBus += cost;
-                        }
-                    }
-                }
-            });
-
-            let ghandrukTotal = 0;
-            if (ghandrukMode === 'Sharing') {
-                let shareCostPerPax = pkrToGhandrukShare + jhinuToPkrShare;
-                ghandrukTotal = shareCostPerPax * pax;
-                detailsText += `<br>PKR ➔ Ghandruk + Jhinu ➔ PKR (Sharing): ${pax} Pax × NPR ${shareCostPerPax.toLocaleString()} = <strong>NPR ${ghandrukTotal.toLocaleString()}</strong>`;
-            } else if (ghandrukMode === 'Pvt') {
-                let jeepCount = 0;
-                let busCount = 0;
-                
-                if (pax >= 1 && pax <= 7) { jeepCount = 1; }
-                else if (pax >= 8 && pax <= 14) { jeepCount = 2; }
-                else if (pax >= 15 && pax <= 18) { busCount = 1; }
-                else if (pax >= 19 && pax <= 24) { busCount = 1; jeepCount = 1; }
-                else if (pax >= 25 && pax <= 30) { busCount = 2; }
-                else {
-                    busCount = Math.floor(pax / 15);
-                    const rem = pax % 15;
-                    if (rem > 7) busCount++;
-                    else if (rem > 0) jeepCount++;
-                }
-
-                let jeepCost = pkrToGhandrukJeep + jhinuToPkrJeep;
-                let busCost = pkrToGhandrukBus + jhinuToPkrBus;
-
-                ghandrukTotal = (jeepCount * jeepCost) + (busCount * busCost);
-                let pvtMath = [];
-                if (jeepCount > 0) pvtMath.push(`${jeepCount} Jeep × NPR ${jeepCost.toLocaleString()}`);
-                if (busCount > 0) pvtMath.push(`${busCount} Bus × NPR ${busCost.toLocaleString()}`);
-                detailsText += `<br>PKR ➔ Ghandruk + Jhinu ➔ PKR (Pvt): (${pvtMath.join(' + ')}) = <strong>NPR ${ghandrukTotal.toLocaleString()}</strong>`;
-            }
-            annapurnaTotal += ghandrukTotal;
-        }
-
-        // 3. Pokhara Airport/Bus Park Transfer (Pick up & Drop off)
+        // Removed Transfer costs for Annapurna Circuit based on requirements.
         let pkrCarPrice = 0, pkrHiacePrice = 0;
         costingCache.cloudTransports.forEach(t => {
             const tr = (t.route || '').toLowerCase();
