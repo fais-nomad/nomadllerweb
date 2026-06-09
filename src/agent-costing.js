@@ -436,72 +436,7 @@ window.calculateCostingTotal = () => {
         annapurnaTotal += kpTotal;
         detailsText += `PKR ➔ KTM (${kpMode}): ${pax} Pax × NPR ${kpCostPerPax.toLocaleString()} = <strong>NPR ${kpTotal.toLocaleString()}</strong>`;
 
-        // 2. Pokhara to Ghandruk & Jhinu to Pokhara Transfers
-        const ghandrukMode = document.getElementById('calc-pkr-ghandruk-mode').value;
-        const gRec = document.getElementById('calc-ghandruk-rec');
-        if (gRec) gRec.textContent = pax <= 4 ? "(Recommended: Sharing)" : "(Recommended: Pvt)";
 
-        let pkrToGhandrukShare = 0, jhinuToPkrShare = 0;
-        let pkrToGhandrukJeep = 0, jhinuToPkrJeep = 0;
-        let pkrToGhandrukBus = 0, jhinuToPkrBus = 0;
-
-        costingCache.transfers.forEach(t => {
-            const arr = (t.arrival || '').toLowerCase();
-            const dep = (t.departure || '').toLowerCase();
-            const mode = (t.mode || '');
-            const type = (t.transfer_type || '').toLowerCase();
-            const details = (t.vehicle_details || '').toLowerCase();
-            const cost = parseFloat(t.cost) || 0;
-
-            if (type === 'long_route') {
-                if (dep.includes('pokhara') && (arr.includes('ghandruk') || arr.includes('gangdruk'))) {
-                    if (mode === 'Sharing') pkrToGhandrukShare += cost;
-                    else if (mode === 'Pvt') {
-                        if (details.includes('jeep')) pkrToGhandrukJeep += cost;
-                        if (details.includes('bus')) pkrToGhandrukBus += cost;
-                    }
-                }
-                if (dep.includes('jhinu') && arr.includes('pokhara')) {
-                    if (mode === 'Sharing') jhinuToPkrShare += cost;
-                    else if (mode === 'Pvt') {
-                        if (details.includes('jeep')) jhinuToPkrJeep += cost;
-                        if (details.includes('bus')) jhinuToPkrBus += cost;
-                    }
-                }
-            }
-        });
-
-        let ghandrukTotal = 0;
-        if (ghandrukMode === 'Sharing') {
-            let shareCostPerPax = pkrToGhandrukShare + jhinuToPkrShare;
-            ghandrukTotal = shareCostPerPax * pax;
-            detailsText += `<br>PKR ➔ Ghandruk + Jhinu ➔ PKR (Sharing): ${pax} Pax × NPR ${shareCostPerPax.toLocaleString()} = <strong>NPR ${ghandrukTotal.toLocaleString()}</strong>`;
-        } else if (ghandrukMode === 'Pvt') {
-            let jeepCount = 0;
-            let busCount = 0;
-            
-            if (pax >= 1 && pax <= 7) { jeepCount = 1; }
-            else if (pax >= 8 && pax <= 14) { jeepCount = 2; }
-            else if (pax >= 15 && pax <= 18) { busCount = 1; }
-            else if (pax >= 19 && pax <= 24) { busCount = 1; jeepCount = 1; }
-            else if (pax >= 25 && pax <= 30) { busCount = 2; }
-            else {
-                busCount = Math.floor(pax / 15);
-                const rem = pax % 15;
-                if (rem > 7) busCount++;
-                else if (rem > 0) jeepCount++;
-            }
-
-            let jeepCost = pkrToGhandrukJeep + jhinuToPkrJeep;
-            let busCost = pkrToGhandrukBus + jhinuToPkrBus;
-
-            ghandrukTotal = (jeepCount * jeepCost) + (busCount * busCost);
-            let pvtMath = [];
-            if (jeepCount > 0) pvtMath.push(`${jeepCount} Jeep × NPR ${jeepCost.toLocaleString()}`);
-            if (busCount > 0) pvtMath.push(`${busCount} Bus × NPR ${busCost.toLocaleString()}`);
-            detailsText += `<br>PKR ➔ Ghandruk + Jhinu ➔ PKR (Pvt): (${pvtMath.join(' + ')}) = <strong>NPR ${ghandrukTotal.toLocaleString()}</strong>`;
-        }
-        annapurnaTotal += ghandrukTotal;
         let pkrCarPrice = 0, pkrHiacePrice = 0;
         costingCache.cloudTransports.forEach(t => {
             const tr = (t.route || '').toLowerCase();
