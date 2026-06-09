@@ -2072,17 +2072,15 @@ window.calculateCostingTotal = () => {
                 const mode = (t.mode || '').toLowerCase();
                 const details = (t.vehicle_details || '').toLowerCase();
                 const type = (t.transfer_type || '').toLowerCase();
-                if (dep.includes('kathmandu') && arr.includes('besisahar') && 
+                if (dep.includes('kathmandu') && arr.includes('besi') && 
                     (mode.includes('bus') || details.includes('bus') || type.includes('bus') || mode.includes('sharing'))) {
                     ktmToBesCost = parseFloat(t.cost) || 0;
                 }
             });
-            const ktmToBesPerPax = ktmToBesCost > 0 ? ktmToBesCost + 500 : 0;
-            if (ktmToBesPerPax > 0) {
-                const ktmToBesTotal = ktmToBesPerPax * pax;
-                annapurnaTotal += ktmToBesTotal;
-                detailsText += `<br>KTM ➔ Besisahar (Bus + Drop): ${pax} Pax × NPR ${ktmToBesPerPax.toLocaleString()} = <strong>NPR ${ktmToBesTotal.toLocaleString()}</strong>`;
-            }
+            const ktmToBesPerPax = ktmToBesCost + 500; // Always add 500 even if base is 0, so it shows up
+            const ktmToBesTotal = ktmToBesPerPax * pax;
+            annapurnaTotal += ktmToBesTotal;
+            detailsText += `<br>KTM ➔ Besisahar (Bus + Drop): ${pax} Pax × NPR ${ktmToBesPerPax.toLocaleString()} = <strong>NPR ${ktmToBesTotal.toLocaleString()}</strong>`;
 
             // Muktinath to Pokhara Bus + 500 Drop
             let mukToPkrCost = 0;
@@ -2092,17 +2090,15 @@ window.calculateCostingTotal = () => {
                 const mode = (t.mode || '').toLowerCase();
                 const details = (t.vehicle_details || '').toLowerCase();
                 const type = (t.transfer_type || '').toLowerCase();
-                if (dep.includes('muktinath') && arr.includes('pokhara') && 
+                if ((dep.includes('mukti') || dep.includes('mukthi')) && arr.includes('pokhara') && 
                     (mode.includes('bus') || details.includes('bus') || type.includes('bus') || mode.includes('sharing'))) {
                     mukToPkrCost = parseFloat(t.cost) || 0;
                 }
             });
-            const mukToPkrPerPax = mukToPkrCost > 0 ? mukToPkrCost + 500 : 0;
-            if (mukToPkrPerPax > 0) {
-                const mukToPkrTotal = mukToPkrPerPax * pax;
-                annapurnaTotal += mukToPkrTotal;
-                detailsText += `<br>Muktinath ➔ PKR (Bus + Drop): ${pax} Pax × NPR ${mukToPkrPerPax.toLocaleString()} = <strong>NPR ${mukToPkrTotal.toLocaleString()}</strong>`;
-            }
+            const mukToPkrPerPax = mukToPkrCost + 500; // Always add 500 even if base is 0, so it shows up
+            const mukToPkrTotal = mukToPkrPerPax * pax;
+            annapurnaTotal += mukToPkrTotal;
+            detailsText += `<br>Muktinath ➔ PKR (Bus + Drop): ${pax} Pax × NPR ${mukToPkrPerPax.toLocaleString()} = <strong>NPR ${mukToPkrTotal.toLocaleString()}</strong>`;
         }
         // 3. Pokhara Airport/Bus Park Transfer (Pick up & Drop off)
         let pkrCarPrice = 0, pkrHiacePrice = 0;
