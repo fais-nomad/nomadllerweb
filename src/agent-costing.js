@@ -420,7 +420,6 @@ window.calculateCostingTotal = () => {
         total += ebcFlightTotal;
     } else if (cCode.includes('abc') || cCode.includes('annapurna')) {
         let annapurnaTotal = 0;
-        let annapurnaTotal = 0;
         let detailsText = '';
 
         // 1. Pokhara to KTM Transfer
