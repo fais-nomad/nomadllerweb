@@ -536,6 +536,9 @@ window.calculateCostingTotal = () => {
             detailsText += `<br>PKR Pick/Drop: (1 ${pkrVehicleName} × NPR ${pkrVehicleCost.toLocaleString()}) = <strong>NPR ${pkrVehicleCost.toLocaleString()}</strong>`;
         }
 
+        const paxTransferTotal = annapurnaTotal;
+        detailsText += `<br><br><strong>Pax Transfer Cost: NPR ${paxTransferTotal.toLocaleString()}</strong>`;
+
         const staffCount = mainGuides + asstGuides + porterCount;
         if (staffCount > 0) {
             let staffVehicleCost = 0;
