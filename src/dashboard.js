@@ -1575,7 +1575,7 @@ window.openCopyDataModal = async (type) => {
         transfers: 'Transfers', permits: 'Permits', trails: 'Trail Accommodations',
         guides: 'Guides', porters: 'Porters', lunches: 'Lunches'
     };
-    document.getElementById('copy-modal-title').textContent = `Copy ${titleMap[type]} to Trek`;
+    document.getElementById('copy-modal-title').textContent = `Copy ${titleMap[type]} from Trek`;
     
     const select = document.getElementById('copy-target-trek');
     select.innerHTML = '<option value="" disabled selected>Loading...</option>';
@@ -1584,7 +1584,7 @@ window.openCopyDataModal = async (type) => {
     try {
         const { data, error } = await supabase.from('trek_destinations').select('*').order('name');
         if (error) throw error;
-        select.innerHTML = '<option value="" disabled selected>Select destination trek</option>';
+        select.innerHTML = '<option value="" disabled selected>Select source trek</option>';
         data.forEach(t => {
             if (t.id !== currentTrekId) {
                 select.innerHTML += `<option value="${t.id}">${t.name}</option>`;
@@ -1604,8 +1604,8 @@ document.getElementById('copy-data-form')?.addEventListener('submit', async (e) 
 
     try {
         const sourceType = document.getElementById('copy-source-type').value;
-        const targetTrekId = document.getElementById('copy-target-trek').value;
-        const sourceTrekId = document.getElementById('cloudTrekId').value;
+        const selectedSourceTrekId = document.getElementById('copy-target-trek').value;
+        const currentTargetTrekId = document.getElementById('cloudTrekId').value;
 
         const tableMap = {
             transfers: 'trek_transfers', permits: 'trek_permits', trails: 'trek_trail_accommodations',
@@ -1613,7 +1613,7 @@ document.getElementById('copy-data-form')?.addEventListener('submit', async (e) 
         };
         const tableName = tableMap[sourceType];
 
-        const { data: items, error: fetchErr } = await supabase.from(tableName).select('*').eq('trek_id', sourceTrekId);
+        const { data: items, error: fetchErr } = await supabase.from(tableName).select('*').eq('trek_id', selectedSourceTrekId);
         if (fetchErr) throw fetchErr;
 
         if (!items || items.length === 0) {
@@ -1626,7 +1626,7 @@ document.getElementById('copy-data-form')?.addEventListener('submit', async (e) 
             const newItem = { ...item };
             delete newItem.id;
             delete newItem.created_at;
-            newItem.trek_id = targetTrekId;
+            newItem.trek_id = currentTargetTrekId;
             return newItem;
         });
 
