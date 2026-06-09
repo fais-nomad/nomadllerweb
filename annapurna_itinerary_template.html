@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annapurna Circuit Expedition Itinerary</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Syne:wght@700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #222;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f8;
+            -webkit-print-color-adjust: exact;
+        }
+        .page {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            page-break-after: always;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #ff6b35;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-family: 'Syne', sans-serif;
+            color: #ff6b35;
+            font-size: 32px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .header p {
+            color: #666;
+            font-size: 16px;
+            margin: 0;
+            font-style: italic;
+        }
+        .hero-img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            font-family: 'Syne', sans-serif;
+            color: #2ec4b6;
+            font-size: 24px;
+            border-left: 5px solid #ff6b35;
+            padding-left: 15px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            margin: 20px 0;
+            padding-left: 30px;
+            border-left: 3px solid #eee;
+        }
+        .day-card {
+            position: relative;
+            margin-bottom: 30px;
+            background: #fdfdfd;
+            border: 1px solid #eaeaea;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            page-break-inside: avoid;
+        }
+        .day-card::before {
+            content: '';
+            position: absolute;
+            left: -39px;
+            top: 20px;
+            width: 16px;
+            height: 16px;
+            background: #ff6b35;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 0 0 2px #eaeaea;
+        }
+        .day-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ff6b35;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .day-title span.day-num {
+            background: #ff6b35;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-right: 15px;
+        }
+        .day-desc {
+            font-size: 15px;
+            color: #444;
+            margin-bottom: 15px;
+        }
+        .day-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #0a0a0a;
+            font-weight: 600;
+            background: #f0f7f7;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 3px solid #2ec4b6;
+        }
+        .day-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Lists */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            page-break-inside: avoid;
+        }
+        .list-box {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .list-box.inclusions {
+            border-top: 5px solid #2ec4b6;
+        }
+        .list-box.exclusions {
+            border-top: 5px solid #ff6b35;
+        }
+        .list-box h3 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+        .inclusions h3 { color: #2ec4b6; }
+        .exclusions h3 { color: #ff6b35; }
+        ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+        li {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .policies {
+            background: #fcfcfc;
+            border: 1px solid #eee;
+            padding: 25px;
+            border-radius: 12px;
+            page-break-inside: avoid;
+        }
+        .policies h4 {
+            color: #ff6b35;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .policies p, .policies li {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #888;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <h1>🏔️ Annapurna Circuit Expedition</h1>
+            <p>14-Day Adventure • Nomadller Adventures</p>
+        </div>
+
+        <img src="http://localhost:5173/images/annapurna.png" alt="Annapurna Circuit" class="hero-img">
+
+        <h2>Expedition Timeline</h2>
+        <div class="timeline">
+            <!-- Day 1 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 01</span> Arrival in Kathmandu</div>
+                <div class="day-desc">Upon arrival at Tribhuvan International Airport in Kathmandu, you will be transferred to your hotel. Spend the day exploring the vibrant city, preparing for your Annapurna Circuit Trek. Overnight stay at a hotel.</div>
+                <div class="day-meta">
+                    <span>🛣️ Airport to hotel (5-7 km)</span>
+                    <span>⏱️ 30 minutes</span>
+                </div>
+            </div>
+
+            <!-- Day 2 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 02</span> Kathmandu to Besi Sahar</div>
+                <div class="day-desc">After breakfast, start your journey with a scenic drive from Kathmandu to Besi Sahar. The drive offers beautiful views of terraced fields, rivers, and villages. This is where your trekking adventure officially begins! Overnight stay at a lodge.</div>
+                <div class="day-meta">
+                    <span>🛣️ 173 km</span>
+                    <span>⏱️ 6-7 hours</span>
+                </div>
+            </div>
+
+            <!-- Day 3 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 03</span> Besi Sahar to Upper Pisang</div>
+                <div class="day-desc">From Besi Sahar, take a thrilling 4WD Jeep ride to Pisang. You'll travel through rough, rugged terrain as the scenery transforms into lush forests and snow-capped mountains. This marks the start of the Annapurna Circuit trek in the higher altitude regions. Overnight stay at a lodge in Pisang.</div>
+                <div class="day-meta">
+                    <span>🛣️ 70 km</span>
+                    <span>⏱️ 6-7 hours</span>
+                </div>
+            </div>
+
+            <!-- Day 4 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 04</span> Pisang to Manang</div>
+                <div class="day-desc">Begin your trek from Pisang to Manang, a beautiful village nestled in the Annapurna Conservation Area. The trail offers stunning views of Annapurna II, III, and IV, as well as Gangapurna. The route passes through small villages like Bhraka, rich in Tibetan culture. Overnight stay at a lodge.</div>
+                <div class="day-meta">
+                    <span>🥾 15 km</span>
+                    <span>⏱️ 6-7 hours</span>
+                </div>
+            </div>
+            
+            <!-- Day 5 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 05</span> Manang Acclimatization</div>
+                <div class="day-desc">
+                    Spend the day in Manang for essential acclimatization. Options:<br><br>
+                    <strong>Hike to Gangapurna Lake (3,540m):</strong> A short hike to the beautiful glacial-fed turquoise lake.<br><br>
+                    <strong>Optional Hike to Ice Lake (4,600m):</strong> A challenging trek up to Ice Lake (Kicho Tal) offering breathtaking panoramic vistas of Annapurna III, Annapurna IV, Gangapurna, and Tilicho Peak.
+                </div>
+                <div class="day-meta">
+                    <span>🥾 Gangapurna: 3km (1-2h) | Ice Lake: 10km (6-7h)</span>
+                </div>
+            </div>
+
+            <!-- Day 6 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 06</span> Manang to Shree Kharka</div>
+                <div class="day-desc">Today’s trek takes you from Manang to Shree Kharka, a small settlement on the way to Tilicho Lake. You will experience dramatic landscape changes, from lush green forests to barren, rocky trails. The views of Tilicho Peak and the Annapurna Range are breathtaking. Overnight stay at a lodge.</div>
+                <div class="day-meta">
+                    <span>🥾 8-10 km</span>
+                    <span>⏱️ 4-5 hours</span>
+                </div>
+            </div>
+
+            <!-- Day 7 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 07</span> Shree Kharka to Tilicho Base Camp</div>
+                <div class="day-desc">Trek from Shree Kharka to Tilicho Base Camp, the starting point for visiting Tilicho Lake. This part of the trail can be challenging, with narrow paths along the mountainside, but the stunning views make it all worthwhile. Overnight stay at a lodge.</div>
+                <div class="day-meta">
+                    <span>🥾 6-7 km</span>
+                    <span>⏱️ 4-5 hours</span>
+                </div>
+            </div>
+
+            <!-- Day 8 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 08</span> Tilicho Base Camp to Tilicho Lake</div>
+                <div class="day-desc">Begin an early morning trek to Tilicho Lake, one of the highest lakes in the world, situated at an altitude of 4,920 meters. After spending time at the lake, return to Shree Kharka for an overnight stay. The journey offers panoramic views of Tilicho Peak and surrounding mountains.</div>
+                <div class="day-meta">
+                    <span>🥾 14-15 km</span>
+                    <span>⏱️ 8-9 hours</span>
+                </div>
+            </div>
+
+            <!-- Day 9 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 09</span> Shree Kharka to Letdar</div>
+                <div class="day-desc">From Shree Kharka, trek to Letdar, a key stop leading to the Thorong La Pass. The trek will take you through alpine meadows and past yak pastures, with stunning views of the Annapurna range in the background. Overnight stay at a lodge.</div>
+                <div class="day-meta">
+                    <span>🥾 10-11 km</span>
+                    <span>⏱️ 5-6 hours</span>
+                </div>
+            </div>
+
+            <!-- Day 10 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 10</span> Letdar to Thorong Phedi / High Camp</div>
+                <div class="day-desc">
+                    <strong>Option 1 (Thorong Phedi - 4,420m):</strong> Ascend through rugged terrain and alpine meadows with views of Gungang Himal. Overnight at lodge.<br><br>
+                    <strong>Option 2 (High Camp - 4,850m):</strong> For well-acclimatized trekkers, continue past Phedi to High Camp. A steeper, demanding climb but provides a head start for the pass crossing. Overnight at lodge.
+                </div>
+                <div class="day-meta">
+                    <span>🥾 Phedi: 6-7 km (3-4h) | High Camp: 8 km (4-5h)</span>
+                </div>
+            </div>
+
+            <!-- Day 11 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 11</span> Thorong La Pass to Muktinath</div>
+                <div class="day-desc">This is the most challenging yet rewarding day of the trek. Start early to cross the Thorong-La Pass (5,416m), the highest point of the trek. The pass offers spectacular views of the Dhaulagiri and Annapurna ranges. After crossing the pass, descend to Muktinath, a sacred pilgrimage site. Overnight stay at a lodge.</div>
+                <div class="day-meta">
+                    <span>🥾 16-18 km</span>
+                    <span>⏱️ 8-10 hours</span>
+                </div>
+            </div>
+
+            <!-- Day 12 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 12</span> Muktinath to Pokhara</div>
+                <div class="day-desc">Travel by comfortable sofa bus from the high-altitude spiritual hub of Muktinath down to the lakeside city of Pokhara. Enjoy the transition from arid desert landscapes to lush subtropical greenery. Overnight stay in Pokhara.</div>
+            </div>
+
+            <!-- Day 13 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 13</span> Pokhara to Kathmandu</div>
+                <div class="day-desc">Board a sofa bus for the scenic drive back to Kathmandu, following the winding Trishuli River and terraced farmlands. Spend your last night in Nepal enjoying the vibrant energy of Thamel. Overnight stay in Kathmandu.</div>
+            </div>
+
+            <!-- Day 14 -->
+            <div class="day-card">
+                <div class="day-title"><span class="day-num">DAY 14</span> Departure</div>
+                <div class="day-desc">After breakfast, you will be transferred to Tribhuvan International Airport for your onward flight, concluding an unforgettable Himalayan adventure.</div>
+            </div>
+        </div>
+
+    </div> <!-- End Page 1 -->
+
+    <div class="page">
+        <h2>🎒 Package Logistics</h2>
+        
+        <div class="grid-2">
+            <div class="list-box inclusions">
+                <h3>✅ Inclusions</h3>
+                <ul>
+                    <li>Airport pick up and drop-off</li>
+                    <li>All ground transfers</li>
+                    <li>Kathmandu to Besisahar: Sofa Bus</li>
+                    <li>Besisahar to Upper Pisang: 4x4 Jeep</li>
+                    <li>Thorong Phedi to Muktinath: 4x4 Jeep</li>
+                    <li>Muktinath to Pokhara: Sofa Bus</li>
+                    <li>Pokhara to Kathmandu: Sofa Bus</li>
+                    <li>Professional Guide & Porter</li>
+                    <li>All required Trekking Permits</li>
+                    <li>2 Nights stay in Kathmandu</li>
+                    <li>1 Night stay in Pokhara</li>
+                    <li>Meals during stay (Breakfast, Lunch, Dinner + Tea/Coffee)</li>
+                    <li>Wi-Fi and Charging facilities</li>
+                </ul>
+            </div>
+            
+            <div class="list-box exclusions">
+                <h3>❌ Exclusions</h3>
+                <ul>
+                    <li>Visa fees (if applicable)</li>
+                    <li>International flights</li>
+                    <li>Personal expenses</li>
+                    <li>Meals during transport</li>
+                    <li>Travel insurance (Highly Recommended)</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>📋 Important Information & Policies</h2>
+        <div class="policies">
+            <h4>🛡️ Insurance Requirements</h4>
+            <p>Travel insurance is strongly recommended and should include:</p>
+            <ul>
+                <li>Medical coverage</li>
+                <li>Personal accident coverage</li>
+                <li>Air ambulance & Helicopter rescue services</li>
+            </ul>
+            <p><em>Note: Cancellation insurance is strongly recommended. Please carry proof of insurance during the trek.</em></p>
+
+            <h4>💳 Cancellation Policy</h4>
+            <ul>
+                <li><strong>Initial booking amount:</strong> No refund.</li>
+                <li><strong>30 days before trek:</strong> 50% of trek cost charged.</li>
+                <li><strong>15–30 days before trek:</strong> 75% of trek cost charged.</li>
+                <li><strong>0–15 days before trek:</strong> 100% of trek cost charged.</li>
+                <li><strong>Rescheduling:</strong> Allowed up to 1 month before the trek (Rescheduling charge: ₹10,000).</li>
+            </ul>
+
+            <h4>⚠️ Risk & Liabilities / Health & Fitness</h4>
+            <p>Trekking in the Himalayas involves inherent risks including altitude sickness and unpredictable weather. We require all participants to be in excellent physical condition. Cardiovascular training is recommended at least 2 months prior to the trek. Please consult your physician before undertaking high-altitude expeditions.</p>
+        </div>
+
+        <div class="footer">
+            <p><strong>Nomadller Adventures</strong><br>Experience the raw beauty of the Himalayas.</p>
+        </div>
+    </div>
+</body>
+</html>

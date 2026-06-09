@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annapurna Circuit Ultra Premium Editorial</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+        :root {
+            --ivory: #F4EFE6;
+            --paper-light: #F9F8F6;
+            --navy: #0B1120;
+            --charcoal: #1C2331;
+            --stone: #8E9BAE;
+            --orange: #D35400; /* Richer earthy orange */
+            --teal: #1A5F7A;
+            --white: #FFFFFF;
+            
+            --font-display: 'Playfair Display', serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: #e0e0e0; /* Just for web preview */
+            color: var(--charcoal);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* PDF Page Sizing (A4 dimensions at 96 DPI) */
+        .page {
+            width: 210mm;
+            height: 296.8mm;
+            background: var(--paper-light);
+            position: relative;
+            overflow: hidden;
+            page-break-after: always;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin: 0 auto 20px;
+        }
+
+        /* Texture Grain Overlay */
+        .page::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.04"/%3E%3C/svg%3E');
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Global Typography Classes */
+        .t-serif { font-family: var(--font-display); }
+        .t-sans { font-family: var(--font-body); }
+        .t-micro {
+            font-family: var(--font-body);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--stone);
+        }
+
+        /* Micro-Luxury Elements */
+        .gps-coords {
+            position: absolute;
+            transform: rotate(-90deg);
+            transform-origin: left bottom;
+            left: 20px;
+            bottom: 60px;
+            font-size: 0.6rem;
+            letter-spacing: 4px;
+            color: rgba(28,35,49,0.3);
+            text-transform: uppercase;
+        }
+
+        .dark-page .gps-coords {
+            color: rgba(255,255,255,0.2);
+        }
+
+        .altitude-stamp {
+            border: 1px solid var(--orange);
+            color: var(--orange);
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 50px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .seal {
+            position: absolute;
+            top: 40px; left: 40px;
+            width: 80px; height: 80px;
+            border: 1px dashed rgba(28,35,49,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.55rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--charcoal);
+        }
+        .dark-page .seal {
+            border-color: rgba(255,255,255,0.2);
+            color: var(--white);
+        }
+
+        /* Standard Page Structure */
+        .page-content {
+            padding: 80px 60px;
+            height: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .page-footer {
+            position: absolute;
+            bottom: 40px;
+            left: 60px;
+            right: 60px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: rgba(28,35,49,0.4);
+            border-top: 1px solid rgba(28,35,49,0.1);
+            padding-top: 20px;
+            z-index: 10;
+        }
+
+        .dark-page .page-footer {
+            color: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* Cover Page Redesign */
+        .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 80px 60px;
+            background-size: cover;
+            background-position: center;
+            color: var(--white);
+            position: relative;
+        }
+
+        .cover-page::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(11,17,32,0.2) 0%, rgba(11,17,32,0.8) 100%);
+        }
+
+        .brand-badge {
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cover-title {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            line-height: 1.05;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 2;
+            font-weight: 400;
+        }
+
+        .cover-subtitle {
+            font-family: var(--font-body);
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            color: rgba(255,255,255,0.8);
+            position: relative;
+            z-index: 2;
+            margin-bottom: 60px;
+        }
+
+        /* Price Card */
+        .price-card {
+            position: absolute;
+            top: 60px;
+            right: 60px;
+            background: rgba(11, 17, 32, 0.45);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 25px 35px;
+            border-radius: 4px;
+            text-align: right;
+            color: var(--white);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .price-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--stone);
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+        }
+        .price-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .price-item {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            color: var(--white);
+            line-height: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+        }
+        .price-item span {
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            color: var(--orange);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Quote Page */
+        .quote-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 100px;
+            background: var(--navy);
+        }
+        .large-quote {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            line-height: 1.3;
+            color: var(--white);
+            font-weight: 400;
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+        .large-quote span { color: var(--orange); }
+        .quote-author {
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--stone);
+        }
+
+        /* Map Infographic Page */
+        .map-page {
+            background: var(--paper-light);
+            color: var(--charcoal);
+        }
+        .map-title {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            color: var(--charcoal);
+        }
+
+        /* Editorial Headers */
+        .section-heading {
+            font-family: var(--font-display);
+            font-size: 3.2rem;
+            color: var(--charcoal);
+            line-height: 1.1;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+        .section-subheading {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--orange);
+            margin-bottom: 50px;
+        }
+
+        /* Day Formatting */
+        .day-container {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 50px;
+            position: relative;
+        }
+        .day-container::after {
+            content: '';
+            position: absolute;
+            bottom: -25px; left: 100px; right: 0;
+            height: 1px;
+            background: rgba(28,35,49,0.05);
+        }
+        .day-number {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            color: rgba(28,35,49,0.1);
+            line-height: 0.8;
+            min-width: 60px;
+        }
+        .day-details { flex: 1; }
+        .day-title {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            color: var(--charcoal);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .day-desc {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: #4A5568;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+        .day-metrics {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .metric-badge {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 6px 12px;
+            border: 1px solid rgba(28,35,49,0.1);
+            color: var(--charcoal);
+            border-radius: 4px;
+        }
+
+        /* Split Pages & Experience Spreads */
+        .split-page {
+            display: flex;
+            flex-direction: row;
+        }
+        .split-content {
+            flex: 1;
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .split-image {
+            flex: 1.2;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .spread-page {
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .spread-box {
+            background: rgba(255,255,255,0.95);
+            padding: 50px;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        /* Philosophy Dark Page */
+        .philosophy-page {
+            background: var(--navy);
+            color: var(--white);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 100px;
+        }
+        .phil-title {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            line-height: 1.1;
+            margin-bottom: 40px;
+        }
+        .phil-text {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: rgba(255,255,255,0.7);
+            max-width: 600px;
+            margin: 0 auto 50px;
+            font-weight: 300;
+        }
+
+        /* Climax Page Restyling */
+        .climax-page {
+            background: var(--navy);
+            color: var(--white);
+        }
+        .c-metric { border-left: 2px solid var(--orange); padding-left: 15px; }
+
+        /* Data Grids */
+        .data-grid { display: flex; gap: 30px; }
+        .data-card {
+            flex: 1;
+            background: #FFFFFF;
+            border: 1px solid rgba(0,0,0,0.05);
+            padding: 30px;
+        }
+        .data-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: var(--charcoal);
+        }
+        .data-card ul { list-style: none; }
+        .data-card li {
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            color: #555;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.5;
+        }
+        .data-card li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--orange);
+        }
+
+        .policy-h4 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: var(--charcoal);
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. Cover Page -->
+    <div class="page cover-page" style="background-image: url('http://localhost:5173/images/annapurna.png');">
+        <div class="gps-coords">28°47'N 83°59'E</div>
+        <div class="price-card">
+            <div class="price-title">Expedition Cost</div>
+            <div class="price-list">
+                <div class="price-item"><span>INR</span> ₹76,500</div>
+                <div class="price-item"><span>USD</span> $800</div>
+                <div class="price-item"><span>AED</span> 2,942</div>
+            </div>
+        </div>
+        <div class="brand-badge">NOMADLLER EXPEDITIONS</div>
+        <h1 class="cover-title">Annapurna<br>Circuit</h1>
+        <div class="cover-subtitle">A Luxury Himalayan Journey</div>
+    </div>
+
+    <!-- 2. Quote Page -->
+    <div class="page quote-page dark-page">
+        <div class="gps-coords">ANNAPURNA CONSERVATION AREA</div>
+        <h2 class="large-quote">“To walk in the Himalayas is to strip away the noise of the world, leaving only <span>the mountain and the soul</span>.”</h2>
+        <div class="quote-author">Nomadller Philosophy</div>
+    </div>
+
+
+
+    <!-- 5. Days 1-3 -->
+    <div class="page">
+        <div class="page-content">
+            <div class="gps-coords">KATHMANDU TO PISANG</div>
+            <h2 class="section-heading">The Departure</h2>
+            <div class="section-subheading">Days 01 - 03</div>
+
+            <div class="day-container">
+                <div class="day-number">01</div>
+                <div class="day-details">
+                    <h3 class="day-title">Arrival in Kathmandu</h3>
+                    <p class="day-desc">Arrive at Tribhuvan International Airport. Our luxury concierge will transfer you to a premium heritage hotel. Spend the evening reviewing the expedition brief over a welcome dinner.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🏨 5-Star Hotel</div>
+                        <div class="metric-badge">🏔️ Elev: 1,400m</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-container">
+                <div class="day-number">02</div>
+                <div class="day-details">
+                    <h3 class="day-title">Kathmandu to Besisahar</h3>
+                    <p class="day-desc">Board a premium private coach for a scenic drive along the Trishuli River. The transition from chaotic city to terraced hillsides marks the true beginning of the journey.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🚌 Private Coach</div>
+                        <div class="metric-badge">⏱️ 6-7 hours</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-container">
+                <div class="day-number">03</div>
+                <div class="day-details">
+                    <h3 class="day-title">Besisahar to Upper Pisang</h3>
+                    <p class="day-desc">Switch to rugged 4x4 Jeeps to navigate the dramatic cliffside roads. The scenery shifts rapidly from sub-tropical jungle into pine forests and massive alpine rock walls.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🚙 4x4 Jeep</div>
+                        <div class="metric-badge">🏔️ Elev: 3,300m</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Nomadller Luxury Expeditions</span>
+            <span>Page 05</span>
+        </div>
+    </div>
+
+    <!-- 6. Days 4-6 -->
+    <div class="page">
+        <div class="page-content">
+            <h2 class="section-heading">Acclimatization</h2>
+            <div class="section-subheading">Days 04 - 06</div>
+
+            <div class="day-container">
+                <div class="day-number">04</div>
+                <div class="day-details">
+                    <h3 class="day-title">Pisang to Manang</h3>
+                    <p class="day-desc">Begin the foot-trek into the arid high desert. Passing through the ancient Tibetan village of Bhraka, the colossal peaks of Annapurna II and Gangapurna dominate the skyline.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🥾 15 km</div>
+                        <div class="metric-badge">⏱️ 6-7 hours</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-container">
+                <div class="day-number">05</div>
+                <div class="day-details">
+                    <h3 class="day-title">Manang Rest Day</h3>
+                    <p class="day-desc">Critical acclimatization. Choose between a short hike to the turquoise Gangapurna Lake or a steep climb to Ice Lake (4,600m). Rest, hydrate, and prepare the body for the thin air.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🫁 Acclimatization</div>
+                        <div class="metric-badge">🏔️ Elev: 3,540m</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-container">
+                <div class="day-number">06</div>
+                <div class="day-details">
+                    <h3 class="day-title">Manang to Shree Kharka</h3>
+                    <p class="day-desc">Leaving the main trail, we ascend towards the Tilicho region. The landscape becomes a barren lunar expanse of loose scree and profound silence.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🥾 10 km</div>
+                        <div class="metric-badge">⏱️ 4-5 hours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Nomadller Luxury Expeditions</span>
+            <span>Page 06</span>
+        </div>
+    </div>
+
+    <!-- 7. Days 7-9 -->
+    <div class="page">
+        <div class="page-content">
+            <h2 class="section-heading">The High Lakes</h2>
+            <div class="section-subheading">Days 07 - 09</div>
+
+            <div class="day-container">
+                <div class="day-number">07</div>
+                <div class="day-details">
+                    <h3 class="day-title">Shree Kharka to Tilicho Base Camp</h3>
+                    <p class="day-desc">Navigate narrow trails carved into the mountainside. The sheer drops require focus, but the dramatic isolation is breathtaking.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🥾 7 km</div>
+                        <div class="metric-badge">⏱️ 4-5 hours</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-container">
+                <div class="day-number">08</div>
+                <div class="day-details">
+                    <h3 class="day-title">Tilicho Lake Excursion</h3>
+                    <p class="day-desc">An early push to Tilicho Lake, one of the highest lakes in the world (4,920m). The glacial blue waters set against massive white peaks is an unforgettable reward.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🥾 15 km</div>
+                        <div class="metric-badge">🏔️ Elev: 4,920m</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-container">
+                <div class="day-number">09</div>
+                <div class="day-details">
+                    <h3 class="day-title">Shree Kharka to Letdar</h3>
+                    <p class="day-desc">Return to the main Thorong La route, ascending steadily past alpine meadows and yak pastures as the altitude pushes past 4,200m.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🥾 11 km</div>
+                        <div class="metric-badge">⏱️ 5-6 hours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Nomadller Luxury Expeditions</span>
+            <span>Page 07</span>
+        </div>
+    </div>
+
+    <!-- 8. Day 10 - Redesigned Approach -->
+    <div class="page split-page">
+        <div class="split-content" style="background: var(--navy); color: var(--white);">
+            <div class="altitude-stamp">ELEV: 4,850m</div>
+            <h2 class="section-heading" style="color: var(--white);">The Approach</h2>
+            <div class="section-subheading">Day 10 &bull; High Camp</div>
+            
+            <p style="font-size: 1.1rem; color: rgba(255,255,255,0.7); line-height: 1.9; margin-bottom: 30px; font-weight: 300;">
+                The air grows thinner with every step. Beyond Letdar, the Himalayas begin testing endurance, patience, and spirit. We push steeply up to Thorong Phedi, and if conditions allow, to High Camp.
+            </p>
+
+            <div style="display: flex; gap: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <div>
+                    <div class="t-micro">Oxygen Level</div>
+                    <div class="t-serif" style="font-size: 1.5rem;">55%</div>
+                </div>
+                <div>
+                    <div class="t-micro">Terrain</div>
+                    <div class="t-serif" style="font-size: 1.5rem;">Glacial Moraine</div>
+                </div>
+            </div>
+        </div>
+        <div class="split-image" style="background-image: url('http://localhost:5173/images/langtang.png');"></div>
+    </div>
+
+    <!-- 9. The Philosophy Page -->
+    <div class="page philosophy-page">
+        <div class="seal">Safety<br>First</div>
+        <h2 class="phil-title">THE MOUNTAINS<br>DEMAND RESPECT</h2>
+        <p class="phil-text">At extreme altitudes, arrogance is dangerous. We trek with reverence. We listen to the wind, we respect the ice, and above all, we listen to our bodies. True luxury at 5,000 meters is knowing you are guided by elite experts prioritizing your safety over the summit.</p>
+        <div class="t-micro" style="color: var(--orange);">Nomadller Safety Protocol</div>
+    </div>
+
+    <!-- 10. Day 11 - The Climax -->
+    <div class="page climax-page split-page">
+        <div class="split-image" style="background-image: linear-gradient(135deg, rgba(11,17,32,0.6) 0%, transparent 100%), url('http://localhost:5173/images/manaslu.png');">
+            <div class="seal" style="top: 40px; right: 40px; left: auto; border-color: rgba(255,255,255,0.4);">5,416M</div>
+        </div>
+        
+        <div class="split-content" style="background: #080C17;">
+            <div class="t-micro" style="color: rgba(255,255,255,0.2); font-size: 5rem; line-height: 1; margin-bottom: -30px; font-family: var(--font-display);">11</div>
+            <h2 class="section-heading" style="color: var(--white); font-size: 4rem;">Thorong La Pass</h2>
+            <div class="section-subheading">The Highest Point</div>
+            
+            <p style="font-size: 1rem; color: rgba(255,255,255,0.6); line-height: 1.9; margin-bottom: 40px;">
+                Start before dawn. The cold is piercing, the air is vanishingly thin. As the sun breaks over the Himalayas, the prayer flags of the pass emerge. A moment of pure, emotional triumph.
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="c-metric">
+                    <span class="t-micro">Distance</span>
+                    <span style="font-size: 1.2rem; font-family: var(--font-display);">18 km</span>
+                </div>
+                <div class="c-metric">
+                    <span class="t-micro">Duration</span>
+                    <span style="font-size: 1.2rem; font-family: var(--font-display);">10 hrs</span>
+                </div>
+                <div class="c-metric" style="grid-column: 1 / -1;">
+                    <span class="t-micro">Temperature</span>
+                    <span style="font-size: 1.2rem; font-family: var(--font-display);">-10°C to 5°C</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 11. Days 12-14 -->
+    <div class="page">
+        <div class="page-content">
+            <h2 class="section-heading">The Descent</h2>
+            <div class="section-subheading">Days 12 - 14</div>
+
+            <div class="day-container">
+                <div class="day-number">12</div>
+                <div class="day-details">
+                    <h3 class="day-title">Muktinath to Pokhara</h3>
+                    <p class="day-desc">Descend rapidly from the arid Mustang region down to the subtropical lakeside paradise of Pokhara via private coach.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🚌 Private Coach</div>
+                        <div class="metric-badge">🏨 Luxury Hotel</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-container">
+                <div class="day-number">13</div>
+                <div class="day-details">
+                    <h3 class="day-title">Pokhara to Kathmandu</h3>
+                    <p class="day-desc">A scenic highway journey along the Trishuli River back to the capital. Celebrate the expedition's success with a farewell dinner.</p>
+                    <div class="day-metrics">
+                        <div class="metric-badge">🚌 Private Coach</div>
+                        <div class="metric-badge">🏨 5-Star Hotel</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-container">
+                <div class="day-number">14</div>
+                <div class="day-details">
+                    <h3 class="day-title">International Departure</h3>
+                    <p class="day-desc">Private airport transfer for your journey home, carrying the Himalayas in your heart.</p>
+                </div>
+            </div>
+
+            <!-- Upgrade Add-ons -->
+            <div style="margin-top: 30px; padding: 25px; border: 1px solid var(--orange); border-radius: 4px; background: rgba(211, 84, 0, 0.03);">
+                <div class="t-micro" style="color: var(--orange); margin-bottom: 10px;">Exclusive Add-Ons</div>
+                <h4 style="font-family: var(--font-display); font-size: 1.4rem; color: var(--charcoal); margin-bottom: 15px;">Flight Upgrade Options</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 8px;">
+                        <span style="font-size: 0.9rem; color: #555;">✈️ Jomsom to Pokhara Flight</span>
+                        <span style="font-family: var(--font-display); color: var(--charcoal); font-weight: 600;">+ ₹12,500 NPR</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size: 0.9rem; color: #555;">✈️ Pokhara to Kathmandu Flight</span>
+                        <span style="font-family: var(--font-display); color: var(--charcoal); font-weight: 600;">+ ₹5,500 NPR</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <span>Nomadller Luxury Expeditions</span>
+            <span>Page 11</span>
+        </div>
+    </div>
+
+    <!-- 12. Logistics & Policies -->
+    <div class="page">
+        <div class="page-content">
+            <h2 class="section-heading">Logistics</h2>
+            <div class="section-subheading">Inclusions & Guidelines</div>
+
+            <div class="data-grid" style="margin-bottom: 20px;">
+                <div class="data-card">
+                    <h3>Inclusions</h3>
+                    <ul>
+                        <li>All ground transfers & 4x4 Jeeps</li>
+                        <li>Professional Guide & Porters</li>
+                        <li>All Trekking Permits</li>
+                        <li>Premium Kathmandu & Pokhara Hotels</li>
+                        <li>Full board meals on trek</li>
+                    </ul>
+                </div>
+                <div class="data-card">
+                    <h3>Exclusions</h3>
+                    <ul>
+                        <li>International flights & Visas</li>
+                        <li>Personal expenses</li>
+                        <li>Travel insurance (Mandatory)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="data-grid">
+                <div class="data-card" style="padding: 20px;">
+                    <h4 class="policy-h4">Health & Fitness</h4>
+                    <p style="font-size: 0.85rem; color: #555; line-height: 1.6;">Requires excellent physical condition and prior cardiovascular training. High-altitude trekking involves inherent risks.</p>
+                </div>
+                <div class="data-card" style="padding: 20px;">
+                    <h4 class="policy-h4">Cancellation</h4>
+                    <p style="font-size: 0.85rem; color: #555; line-height: 1.6;">Initial booking is non-refundable. 30 days prior: 50% charge. Comprehensive cancellation insurance is strongly advised.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 13. Final Page -->
+    <div class="page cover-page" style="background-image: linear-gradient(180deg, rgba(11,17,32,0.1) 0%, rgba(11,17,32,0.95) 100%), url('http://localhost:5173/images/kyrgyzstan.png'); text-align: center; justify-content: center; align-items: center;">
+        <h2 class="t-serif" style="font-size: 2.5rem; font-weight: 400; line-height: 1.4; max-width: 600px; margin-bottom: 40px; color: var(--white);">
+            "Some journeys end at the destination.<br><span style="color: var(--orange);">This one stays with you forever.</span>"
+        </h2>
+        <div class="brand-badge" style="letter-spacing: 4px; color: rgba(255,255,255,0.4);">NOMADLLER LUXURY EXPEDITIONS</div>
+    </div>
+
+</body>
+</html>
