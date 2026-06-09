@@ -2099,6 +2099,32 @@ window.calculateCostingTotal = () => {
             const mukToPkrTotal = mukToPkrPerPax * pax;
             annapurnaTotal += mukToPkrTotal;
             detailsText += `<br>Muktinath ➔ PKR (Bus + Drop): ${pax} Pax × NPR ${mukToPkrPerPax.toLocaleString()} = <strong>NPR ${mukToPkrTotal.toLocaleString()}</strong>`;
+
+            // Besisahar to Upper Pisang (Jeep)
+            let besiToPisangCost = 0;
+            costingCache.transfers.forEach(t => {
+                const dep = (t.departure || '').toLowerCase();
+                const arr = (t.arrival || '').toLowerCase();
+                if (dep.includes('besi') && (arr.includes('pisong') || arr.includes('pisang'))) {
+                    besiToPisangCost = parseFloat(t.cost) || 0;
+                }
+            });
+            const besiToPisangTotal = besiToPisangCost * pax;
+            annapurnaTotal += besiToPisangTotal;
+            detailsText += `<br>Besisahar ➔ Upper Pisang (Jeep): ${pax} Pax × NPR ${besiToPisangCost.toLocaleString()} = <strong>NPR ${besiToPisangTotal.toLocaleString()}</strong>`;
+
+            // Thorang Phedi to Muktinath (Jeep)
+            let thorangToMuktiCost = 0;
+            costingCache.transfers.forEach(t => {
+                const dep = (t.departure || '').toLowerCase();
+                const arr = (t.arrival || '').toLowerCase();
+                if ((dep.includes('thorang') || dep.includes('thorong')) && (arr.includes('mukti') || arr.includes('mukthi'))) {
+                    thorangToMuktiCost = parseFloat(t.cost) || 0;
+                }
+            });
+            const thorangToMuktiTotal = thorangToMuktiCost * pax;
+            annapurnaTotal += thorangToMuktiTotal;
+            detailsText += `<br>Thorang Phedi ➔ Muktinath (Jeep): ${pax} Pax × NPR ${thorangToMuktiCost.toLocaleString()} = <strong>NPR ${thorangToMuktiTotal.toLocaleString()}</strong>`;
         }
         // 3. Pokhara Airport/Bus Park Transfer (Pick up & Drop off)
         let pkrCarPrice = 0, pkrHiacePrice = 0;
