@@ -2063,6 +2063,8 @@ window.calculateCostingTotal = () => {
         annapurnaTotal += kpTotal;
         detailsText += `PKR ➔ KTM (${kpMode}): ${pax} Pax × NPR ${kpCostPerPax.toLocaleString()} = <strong>NPR ${kpTotal.toLocaleString()}</strong>`;
 
+        let ktmToBesPerPax = 0, mukToPkrPerPax = 0, besiToPisangCost = 0, thorangToMuktiCost = 0;
+
         if (cCode.includes('annapurna') && !cCode.includes('abc')) {
             // Kathmandu to Besisahar Bus + 500 Drop
             let ktmToBesCost = 0;
@@ -2077,7 +2079,7 @@ window.calculateCostingTotal = () => {
                     ktmToBesCost = parseFloat(t.cost) || 0;
                 }
             });
-            const ktmToBesPerPax = ktmToBesCost + 500; // Always add 500 even if base is 0, so it shows up
+            ktmToBesPerPax = ktmToBesCost + 500; // Always add 500 even if base is 0, so it shows up
             const ktmToBesTotal = ktmToBesPerPax * pax;
             annapurnaTotal += ktmToBesTotal;
             detailsText += `<br>KTM ➔ Besisahar (Bus + Drop): ${pax} Pax × NPR ${ktmToBesPerPax.toLocaleString()} = <strong>NPR ${ktmToBesTotal.toLocaleString()}</strong>`;
@@ -2095,13 +2097,12 @@ window.calculateCostingTotal = () => {
                     mukToPkrCost = parseFloat(t.cost) || 0;
                 }
             });
-            const mukToPkrPerPax = mukToPkrCost + 500; // Always add 500 even if base is 0, so it shows up
+            mukToPkrPerPax = mukToPkrCost + 500; // Always add 500 even if base is 0, so it shows up
             const mukToPkrTotal = mukToPkrPerPax * pax;
             annapurnaTotal += mukToPkrTotal;
             detailsText += `<br>Muktinath ➔ PKR (Bus + Drop): ${pax} Pax × NPR ${mukToPkrPerPax.toLocaleString()} = <strong>NPR ${mukToPkrTotal.toLocaleString()}</strong>`;
 
             // Besisahar to Upper Pisang (Jeep)
-            let besiToPisangCost = 0;
             costingCache.transfers.forEach(t => {
                 const dep = (t.departure || '').toLowerCase();
                 const arr = (t.arrival || '').toLowerCase();
@@ -2114,7 +2115,6 @@ window.calculateCostingTotal = () => {
             detailsText += `<br>Besisahar ➔ Upper Pisang (Jeep): ${pax} Pax × NPR ${besiToPisangCost.toLocaleString()} = <strong>NPR ${besiToPisangTotal.toLocaleString()}</strong>`;
 
             // Thorang Phedi to Muktinath (Jeep)
-            let thorangToMuktiCost = 0;
             costingCache.transfers.forEach(t => {
                 const dep = (t.departure || '').toLowerCase();
                 const arr = (t.arrival || '').toLowerCase();
@@ -2137,17 +2137,56 @@ window.calculateCostingTotal = () => {
             }
         });
 
-        // Multiply by 2 for both pick up and drop off
-        pkrCarPrice = pkrCarPrice * 2;
-        pkrHiacePrice = pkrHiacePrice * 2;
-        
-        let pkrTransferTotal = (carsNeeded * pkrCarPrice) + (hiaceNeeded * pkrHiacePrice);
-        if (pkrTransferTotal > 0) {
-            annapurnaTotal += pkrTransferTotal;
-            let pkrMath = [];
-            if (carsNeeded > 0) pkrMath.push(`${carsNeeded} Car × NPR ${pkrCarPrice.toLocaleString()}`);
-            if (hiaceNeeded > 0) pkrMath.push(`${hiaceNeeded} Hiace × NPR ${pkrHiacePrice.toLocaleString()}`);
-            detailsText += `<br>PKR Pick/Drop: (${pkrMath.join(' + ')}) = <strong>NPR ${pkrTransferTotal.toLocaleString()}</strong>`;
+        let pkrVehicleCost = 0;
+        let pkrVehicleName = '';
+        if (pax >= 1 && pax <= 3) {
+            pkrVehicleCost = pkrCarPrice;
+            pkrVehicleName = 'Car';
+        } else if (pax >= 4 && pax <= 7) {
+            pkrVehicleCost = pkrHiacePrice;
+            pkrVehicleName = 'Hiace';
+        } else if (pax >= 8) {
+            pkrVehicleCost = pkrHiacePrice * 2;
+            pkrVehicleName = '2 Hiaces';
+        }
+
+        if (pkrVehicleCost > 0) {
+            annapurnaTotal += pkrVehicleCost;
+            detailsText += `<br>PKR Pick/Drop: (1 ${pkrVehicleName} × NPR ${pkrVehicleCost.toLocaleString()}) = <strong>NPR ${pkrVehicleCost.toLocaleString()}</strong>`;
+        }
+
+        const staffCount = mainGuides + asstGuides + porterCount;
+        if (staffCount > 0) {
+            let staffVehicleCost = 0;
+            let staffVehicleName = '';
+            if (staffCount >= 1 && staffCount <= 3) { staffVehicleCost = pkrCarPrice; staffVehicleName = 'Car'; }
+            else if (staffCount >= 4 && staffCount <= 7) { staffVehicleCost = pkrHiacePrice; staffVehicleName = 'Hiace'; }
+            else if (staffCount >= 8) { staffVehicleCost = pkrHiacePrice * 2; staffVehicleName = '2 Hiaces'; }
+
+            const staffKpTotal = kpCostPerPax * staffCount;
+            const staffKtmToBesTotal = ktmToBesPerPax * staffCount;
+            const staffMukToPkrTotal = mukToPkrPerPax * staffCount;
+            const staffBesiToPisangTotal = besiToPisangCost * staffCount;
+            const staffThorangToMuktiTotal = thorangToMuktiCost * staffCount;
+
+            const staffTransfersTotal = staffKpTotal + staffKtmToBesTotal + staffMukToPkrTotal + staffBesiToPisangTotal + staffThorangToMuktiTotal + staffVehicleCost;
+            
+            annapurnaTotal += staffTransfersTotal;
+            
+            detailsText += `<br><br><strong style="color: var(--admin-primary);">STAFF TRANSFERS</strong>`;
+            detailsText += `<br>PKR ➔ KTM (${kpMode}): ${staffCount} Staff × NPR ${kpCostPerPax.toLocaleString()} = <strong>NPR ${staffKpTotal.toLocaleString()}</strong>`;
+            
+            if (cCode.includes('annapurna') && !cCode.includes('abc')) {
+                detailsText += `<br>KTM ➔ Besisahar (Bus + Drop): ${staffCount} Staff × NPR ${ktmToBesPerPax.toLocaleString()} = <strong>NPR ${staffKtmToBesTotal.toLocaleString()}</strong>`;
+                detailsText += `<br>Besisahar ➔ Upper Pisang (Jeep): ${staffCount} Staff × NPR ${besiToPisangCost.toLocaleString()} = <strong>NPR ${staffBesiToPisangTotal.toLocaleString()}</strong>`;
+                detailsText += `<br>Thorang Phedi ➔ Muktinath (Jeep): ${staffCount} Staff × NPR ${thorangToMuktiCost.toLocaleString()} = <strong>NPR ${staffThorangToMuktiTotal.toLocaleString()}</strong>`;
+                detailsText += `<br>Muktinath ➔ PKR (Bus + Drop): ${staffCount} Staff × NPR ${mukToPkrPerPax.toLocaleString()} = <strong>NPR ${staffMukToPkrTotal.toLocaleString()}</strong>`;
+            }
+
+            if (staffVehicleCost > 0) {
+                detailsText += `<br>PKR Pick/Drop: (1 ${staffVehicleName} × NPR ${staffVehicleCost.toLocaleString()}) = <strong>NPR ${staffVehicleCost.toLocaleString()}</strong>`;
+            }
+            detailsText += `<br><strong>Staff Transfer Cost: NPR ${staffTransfersTotal.toLocaleString()}</strong>`;
         }
         
         const annTrDet = document.getElementById('calc-annapurna-transfers-details');
