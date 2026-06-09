@@ -2063,6 +2063,47 @@ window.calculateCostingTotal = () => {
         annapurnaTotal += kpTotal;
         detailsText += `PKR ➔ KTM (${kpMode}): ${pax} Pax × NPR ${kpCostPerPax.toLocaleString()} = <strong>NPR ${kpTotal.toLocaleString()}</strong>`;
 
+        if (cCode.includes('circuit')) {
+            // Kathmandu to Besisahar Bus + 500 Drop
+            let ktmToBesCost = 0;
+            costingCache.transfers.forEach(t => {
+                const dep = (t.departure || '').toLowerCase();
+                const arr = (t.arrival || '').toLowerCase();
+                const mode = (t.mode || '').toLowerCase();
+                const details = (t.vehicle_details || '').toLowerCase();
+                const type = (t.transfer_type || '').toLowerCase();
+                if (dep.includes('kathmandu') && arr.includes('besisahar') && 
+                    (mode.includes('bus') || details.includes('bus') || type.includes('bus') || mode.includes('sharing'))) {
+                    ktmToBesCost = parseFloat(t.cost) || 0;
+                }
+            });
+            const ktmToBesPerPax = ktmToBesCost > 0 ? ktmToBesCost + 500 : 0;
+            if (ktmToBesPerPax > 0) {
+                const ktmToBesTotal = ktmToBesPerPax * pax;
+                annapurnaTotal += ktmToBesTotal;
+                detailsText += `<br>KTM ➔ Besisahar (Bus + Drop): ${pax} Pax × NPR ${ktmToBesPerPax.toLocaleString()} = <strong>NPR ${ktmToBesTotal.toLocaleString()}</strong>`;
+            }
+
+            // Muktinath to Pokhara Bus + 500 Drop
+            let mukToPkrCost = 0;
+            costingCache.transfers.forEach(t => {
+                const dep = (t.departure || '').toLowerCase();
+                const arr = (t.arrival || '').toLowerCase();
+                const mode = (t.mode || '').toLowerCase();
+                const details = (t.vehicle_details || '').toLowerCase();
+                const type = (t.transfer_type || '').toLowerCase();
+                if (dep.includes('muktinath') && arr.includes('pokhara') && 
+                    (mode.includes('bus') || details.includes('bus') || type.includes('bus') || mode.includes('sharing'))) {
+                    mukToPkrCost = parseFloat(t.cost) || 0;
+                }
+            });
+            const mukToPkrPerPax = mukToPkrCost > 0 ? mukToPkrCost + 500 : 0;
+            if (mukToPkrPerPax > 0) {
+                const mukToPkrTotal = mukToPkrPerPax * pax;
+                annapurnaTotal += mukToPkrTotal;
+                detailsText += `<br>Muktinath ➔ PKR (Bus + Drop): ${pax} Pax × NPR ${mukToPkrPerPax.toLocaleString()} = <strong>NPR ${mukToPkrTotal.toLocaleString()}</strong>`;
+            }
+        }
         // 3. Pokhara Airport/Bus Park Transfer (Pick up & Drop off)
         let pkrCarPrice = 0, pkrHiacePrice = 0;
         costingCache.cloudTransports.forEach(t => {
