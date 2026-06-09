@@ -1796,7 +1796,10 @@ window.calculateCostingTotal = () => {
     if (aGuide) asstGuideCost = parseFloat(aGuide.cost_per_day) || 0;
     else if (costingCache.guides.length > 1) asstGuideCost = parseFloat(costingCache.guides[1].cost_per_day) || 0;
 
-    const guideDays = Math.max(1, days - 2);
+    let guideDays = Math.max(1, days - 2);
+    if (cCode.includes('abc') || cCode.includes('annapurna')) {
+        guideDays = 15;
+    }
     const guideTotal = ((mainGuides * mainGuideCost) + (asstGuides * asstGuideCost)) * guideDays;
     
     const gPaxEl = document.getElementById('calc-guide-pax');
@@ -1815,7 +1818,10 @@ window.calculateCostingTotal = () => {
     if (costingCache.porters.length > 0) {
         porterCostPerDay = parseFloat(costingCache.porters[0].cost_per_day) || 0;
     }
-    const porterDays = (cCode === 'gokyo' || cCode === 'ebc-gokyo') ? Math.max(1, days - 1) : Math.max(1, days - 3);
+    let porterDays = (cCode === 'gokyo' || cCode === 'ebc-gokyo') ? Math.max(1, days - 1) : Math.max(1, days - 3);
+    if (cCode.includes('abc') || cCode.includes('annapurna')) {
+        porterDays = 15;
+    }
     const porterTotal = porterCostPerDay * porterCount * porterDays;
     
     const pPaxEl = document.getElementById('calc-porter-pax');
