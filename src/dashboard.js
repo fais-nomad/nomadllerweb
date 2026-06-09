@@ -2063,7 +2063,7 @@ window.calculateCostingTotal = () => {
         annapurnaTotal += kpTotal;
         detailsText += `PKR ➔ KTM (${kpMode}): ${pax} Pax × NPR ${kpCostPerPax.toLocaleString()} = <strong>NPR ${kpTotal.toLocaleString()}</strong>`;
 
-        if (cCode.includes('circuit')) {
+        if (cCode.includes('annapurna') && !cCode.includes('abc')) {
             // Kathmandu to Besisahar Bus + 500 Drop
             let ktmToBesCost = 0;
             costingCache.transfers.forEach(t => {
