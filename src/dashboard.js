@@ -2050,8 +2050,12 @@ window.calculateCostingTotal = () => {
         const kpMode = document.getElementById('calc-ktm-pkr-transfer').value; 
         let kpCostPerPax = 0;
         costingCache.transfers.forEach(t => {
-            if ((t.transfer_type || '').toLowerCase() === kpMode.toLowerCase() && (t.departure || '').toLowerCase().includes('kathmandu') && (t.arrival || '').toLowerCase().includes('pokhara')) {
-                kpCostPerPax += parseFloat(t.cost) || 0;
+            const dep = (t.departure || '').toLowerCase();
+            const arr = (t.arrival || '').toLowerCase();
+            if ((t.transfer_type || '').toLowerCase() === kpMode.toLowerCase() && 
+                ((dep.includes('pokhara') && arr.includes('kathmandu')) || 
+                 (dep.includes('kathmandu') && arr.includes('pokhara')))) {
+                kpCostPerPax = parseFloat(t.cost) || 0; // Assignment instead of += to avoid summing both if both exist
             }
         });
         // One way trip from Pokhara back to Kathmandu
