@@ -73,6 +73,33 @@ async function loadItinerary() {
             
             <div style="margin-top: 60px;"></div> <!-- Spacer -->
 
+            <style>
+                @media (max-width: 820px) {
+                    body {
+                        overflow-x: hidden;
+                        background: #111;
+                    }
+                    #pdf-wrapper {
+                        transform: scale(calc(100vw / 794));
+                        transform-origin: top center;
+                        width: 794px;
+                        margin: 0 auto;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    }
+                    .page {
+                        margin-bottom: 0 !important; /* The scaling handles the gap naturally if they are block elements, wait no, scale leaves gaps. We'll use zoom instead of transform for perfect layout on mobile Safari! */
+                    }
+                    #pdf-wrapper {
+                        zoom: calc(100vw / 794);
+                        transform: none;
+                    }
+                }
+            </style>
+
+            <div id="pdf-wrapper">
+
             <!-- 1. Cover Page -->
             <div class="page cover-page" id="pdf-content-start" style="background-image: url('${coverImage}');">
                 <div class="gps-coords">NOMADLLER LUXURY</div>
@@ -448,7 +475,8 @@ async function loadItinerary() {
                     "Some journeys end at the destination.<br><span style="color: var(--orange);">This one stays with you forever.</span>"
                 </h2>
                 <div class="brand-badge" style="letter-spacing: 4px; color: rgba(255,255,255,0.4);">NOMADLLER LUXURY EXPEDITIONS</div>
-            </div>
+            </div> <!-- End of Brand Badge Container -->
+            </div> <!-- End of PDF Wrapper -->
         `;
 
         root.outerHTML = html;
@@ -505,6 +533,10 @@ async function generatePDF() {
             jsPDF:        { unit: 'px', format: [794, 1123], orientation: 'portrait' }
         };
 
+        const pdfWrapper = document.getElementById('pdf-wrapper');
+        const originalZoom = pdfWrapper ? pdfWrapper.style.zoom : '';
+        if (pdfWrapper) pdfWrapper.style.zoom = '1';
+
         const container = document.createElement('div');
         pages.forEach(p => {
             const clone = p.cloneNode(true);
@@ -515,6 +547,9 @@ async function generatePDF() {
             // but we'll manually feed them to html2pdf for safety.
             container.appendChild(clone);
         });
+
+        // Restore zoom
+        if (pdfWrapper) pdfWrapper.style.zoom = originalZoom;
 
         // Use the robust html2pdf library
         let worker = html2pdf().set(opt).from(container.children[0]).toPdf();
