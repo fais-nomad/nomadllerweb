@@ -501,17 +501,31 @@ async function generatePDF() {
 
         for (let i = 0; i < pages.length; i++) {
             const page = pages[i];
+            
+            // CRITICAL FIX: iOS Safari graphics engine instantly crashes and returns a blank canvas 
+            // if it tries to render large elements with 'overflow: hidden', 'box-shadow', or 'border-radius'.
+            const originalOverflow = page.style.overflow;
+            const originalBoxShadow = page.style.boxShadow;
+            const originalBorderRadius = page.style.borderRadius;
+            
+            page.style.overflow = 'visible';
+            page.style.boxShadow = 'none';
+            page.style.borderRadius = '0';
+
             const canvas = await html2canvas(page, { 
                 scale: renderScale, 
                 useCORS: true, 
                 scrollY: 0,
                 allowTaint: true,
-                // CRITICAL FIX: Force html2canvas to render at the exact A4 pixel width (210mm = ~794px).
-                // If this is missing, mobile Safari will clip the canvas to the phone's narrow screen width (e.g. 390px)
-                // and output a completely blank/white page!
                 windowWidth: 794,
                 width: 794
             });
+            
+            // Restore original styles
+            page.style.overflow = originalOverflow;
+            page.style.boxShadow = originalBoxShadow;
+            page.style.borderRadius = originalBorderRadius;
+
             const imgData = canvas.toDataURL('image/jpeg', isMobile ? 0.8 : 1.0);
             
             const pdfWidth = doc.internal.pageSize.getWidth();
