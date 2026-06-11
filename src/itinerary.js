@@ -249,184 +249,85 @@ async function loadItinerary() {
             `;
         }
 
+        // Helper to safely chunk lists into pages
+        function renderDataCardsIntoPages(sectionHeading, subheading, cards, maxItemsPerPage = 12) {
+            let pagesHtml = '';
+            let currentItems = 0;
+            let currentPageHtml = '';
+
+            const closePage = () => {
+                if (currentPageHtml) {
+                    pagesHtml += `
+                    <div class="page">
+                        <div class="page-content">
+                            <h2 class="section-heading">${sectionHeading}</h2>
+                            <div class="section-subheading">${subheading}</div>
+                            <div class="data-grid" style="margin-bottom: 20px;">
+                                ${currentPageHtml}
+                            </div>
+                        </div>
+                        <div class="page-footer">
+                            <span>Nomadller Luxury Expeditions</span>
+                        </div>
+                    </div>`;
+                    currentPageHtml = '';
+                    currentItems = 0;
+                }
+            };
+
+            cards.forEach(card => {
+                if (!card.items || card.items.length === 0 || card.items[0].trim() === '') return;
+                
+                let remainingItems = [...card.items];
+                let isFirstChunk = true;
+
+                while(remainingItems.length > 0) {
+                    let chunk = remainingItems.splice(0, maxItemsPerPage - currentItems);
+                    if (chunk.length > 0) {
+                        currentPageHtml += `
+                        <div class="data-card" style="margin-bottom: 20px;">
+                            <h3>${card.title} ${!isFirstChunk ? '(Cont.)' : ''}</h3>
+                            <ul style="font-size: 0.8rem; line-height: 1.5; padding-left: 20px;">
+                                ${chunk.map(item => `<li style="margin-bottom: 8px;">${item.trim()}</li>`).join('')}
+                            </ul>
+                        </div>
+                        `;
+                        currentItems += chunk.length;
+                        isFirstChunk = false;
+                    }
+                    if (currentItems >= maxItemsPerPage) {
+                        closePage();
+                    }
+                }
+            });
+            closePage();
+            return pagesHtml;
+        }
+
         // Render Inclusions / Exclusions
-        if ((trip.inclusions && trip.inclusions.length > 0) || (trip.exclusions && trip.exclusions.length > 0)) {
-            const incList = Array.isArray(trip.inclusions) ? trip.inclusions : trip.inclusions.split('\n');
-            const excList = Array.isArray(trip.exclusions) ? trip.exclusions : trip.exclusions.split('\n');
-            
-            html += `
-            <div class="page">
-                <div class="page-content">
-                    <h2 class="section-heading">Logistics</h2>
-                    <div class="section-subheading">Inclusions & Exclusions</div>
-                    <div class="data-grid" style="margin-bottom: 20px;">
-            `;
-
-            if (incList && incList.length > 0 && incList[0].trim() !== '') {
-                html += `
-                    <div class="data-card">
-                        <h3>Inclusions</h3>
-                        <ul style="font-size: 0.8rem;">
-                            ${incList.map(item => `<li>${item.trim()}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-
-            if (excList && excList.length > 0 && excList[0].trim() !== '') {
-                html += `
-                    <div class="data-card">
-                        <h3>Exclusions</h3>
-                        <ul style="font-size: 0.8rem;">
-                            ${excList.map(item => `<li>${item.trim()}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-
-            html += `
-                    </div>
-                </div>
-                <div class="page-footer">
-                    <span>Nomadller Luxury Expeditions</span>
-                    <span>Page</span>
-                </div>
-            </div>
-            `;
+        const logisticsCards = [];
+        if (trip.inclusions && trip.inclusions.length > 0) {
+            logisticsCards.push({ title: 'Inclusions', items: Array.isArray(trip.inclusions) ? trip.inclusions : trip.inclusions.split('\n') });
         }
-
-        // 1. Render Policies Page (Health, Cancel, Insurance, Notes)
-        const hasHealth = trip.health_and_fitness && trip.health_and_fitness.length > 0;
-        const hasCancel = trip.cancellation_policy && trip.cancellation_policy.length > 0;
-        const hasInsurance = trip.travel_insurance && trip.travel_insurance.length > 0;
-        const hasNotes = trip.important_notes && trip.important_notes.length > 0;
-
-        if (hasHealth || hasCancel || hasInsurance || hasNotes) {
-            html += `
-            <div class="page">
-                <div class="page-content">
-                    <h2 class="section-heading">Policies</h2>
-                    <div class="section-subheading">ESSENTIAL GUIDELINES</div>
-                    <div class="data-grid" style="margin-bottom: 20px;">
-            `;
-
-            if (hasHealth) {
-                const arr = Array.isArray(trip.health_and_fitness) ? trip.health_and_fitness : trip.health_and_fitness.split('\n');
-                html += `
-                    <div class="data-card">
-                        <h3>Health & Fitness</h3>
-                        <ul style="font-size: 0.8rem;">
-                            ${arr.map(item => `<li>${item.trim()}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-            if (hasCancel) {
-                const arr = Array.isArray(trip.cancellation_policy) ? trip.cancellation_policy : trip.cancellation_policy.split('\n');
-                html += `
-                    <div class="data-card">
-                        <h3>Cancellation Policy</h3>
-                        <ul style="font-size: 0.8rem;">
-                            ${arr.map(item => `<li>${item.trim()}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-            if (hasInsurance) {
-                const arr = Array.isArray(trip.travel_insurance) ? trip.travel_insurance : trip.travel_insurance.split('\n');
-                html += `
-                    <div class="data-card">
-                        <h3>Insurance</h3>
-                        <ul style="font-size: 0.8rem;">
-                            ${arr.map(item => `<li>${item.trim()}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-            if (hasNotes) {
-                const arr = Array.isArray(trip.important_notes) ? trip.important_notes : trip.important_notes.split('\n');
-                html += `
-                    <div class="data-card">
-                        <h3>Important Notes</h3>
-                        <ul style="font-size: 0.8rem;">
-                            ${arr.map(item => `<li>${item.trim()}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-
-            html += `
-                    </div>
-                </div>
-                <div class="page-footer">
-                    <span>Nomadller Luxury Expeditions</span>
-                    <span>Page</span>
-                </div>
-            </div>
-            `;
+        if (trip.exclusions && trip.exclusions.length > 0) {
+            logisticsCards.push({ title: 'Exclusions', items: Array.isArray(trip.exclusions) ? trip.exclusions : trip.exclusions.split('\n') });
         }
+        html += renderDataCardsIntoPages('Logistics', 'Inclusions & Exclusions', logisticsCards, 12);
 
-        // 2. Render Agreements Page (Terms, Risk, Remember)
-        const hasTerms = trip.terms_and_conditions && trip.terms_and_conditions.length > 0;
-        const hasRisk = trip.risk_liabilities && trip.risk_liabilities.length > 0;
-        const hasRemember = trip.things_to_remember && trip.things_to_remember.length > 0;
+        // Render Policies Page (Health, Cancel, Insurance, Notes)
+        const policyCards = [];
+        if (trip.health_and_fitness && trip.health_and_fitness.length > 0) policyCards.push({ title: 'Health & Fitness', items: Array.isArray(trip.health_and_fitness) ? trip.health_and_fitness : trip.health_and_fitness.split('\n') });
+        if (trip.cancellation_policy && trip.cancellation_policy.length > 0) policyCards.push({ title: 'Cancellation Policy', items: Array.isArray(trip.cancellation_policy) ? trip.cancellation_policy : trip.cancellation_policy.split('\n') });
+        if (trip.travel_insurance && trip.travel_insurance.length > 0) policyCards.push({ title: 'Insurance', items: Array.isArray(trip.travel_insurance) ? trip.travel_insurance : trip.travel_insurance.split('\n') });
+        if (trip.important_notes && trip.important_notes.length > 0) policyCards.push({ title: 'Important Notes', items: Array.isArray(trip.important_notes) ? trip.important_notes : trip.important_notes.split('\n') });
+        html += renderDataCardsIntoPages('Policies', 'ESSENTIAL GUIDELINES', policyCards, 12);
 
-        if (hasTerms || hasRisk || hasRemember) {
-            html += `
-            <div class="page">
-                <div class="page-content">
-                    <h2 class="section-heading">Agreements</h2>
-                    <div class="section-subheading">TERMS & CONDITIONS</div>
-                    <div class="data-grid" style="margin-bottom: 20px;">
-            `;
-
-            if (hasTerms) {
-                const arr = Array.isArray(trip.terms_and_conditions) ? trip.terms_and_conditions : trip.terms_and_conditions.split('\n');
-                html += `
-                    <div class="data-card">
-                        <h3>Terms & Conditions</h3>
-                        <ul style="font-size: 0.8rem;">
-                            ${arr.map(item => `<li>${item.trim()}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-            if (hasRisk) {
-                const arr = Array.isArray(trip.risk_liabilities) ? trip.risk_liabilities : trip.risk_liabilities.split('\n');
-                html += `
-                    <div class="data-card">
-                        <h3>Risk & Liabilities</h3>
-                        <ul style="font-size: 0.8rem;">
-                            ${arr.map(item => `<li>${item.trim()}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-            
-            html += `</div>`; // Close grid for top 2
-
-            // Things to remember spans full width usually or just sits in a card
-            if (hasRemember) {
-                const arr = Array.isArray(trip.things_to_remember) ? trip.things_to_remember : trip.things_to_remember.split('\n');
-                html += `
-                    <div class="data-card" style="margin-top: 20px;">
-                        <h3>Things to Remember</h3>
-                        <ul style="font-size: 0.8rem;">
-                            ${arr.map(item => `<li>${item.trim()}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-
-            html += `
-                </div>
-                <div class="page-footer">
-                    <span>Nomadller Luxury Expeditions</span>
-                    <span>Page</span>
-                </div>
-            </div>
-            `;
-        }
+        // Render Agreements Page (Terms, Risk, Remember)
+        const agreementCards = [];
+        if (trip.terms_and_conditions && trip.terms_and_conditions.length > 0) agreementCards.push({ title: 'Terms & Conditions', items: Array.isArray(trip.terms_and_conditions) ? trip.terms_and_conditions : trip.terms_and_conditions.split('\n') });
+        if (trip.risk_liabilities && trip.risk_liabilities.length > 0) agreementCards.push({ title: 'Risk & Liabilities', items: Array.isArray(trip.risk_liabilities) ? trip.risk_liabilities : trip.risk_liabilities.split('\n') });
+        if (trip.things_to_remember && trip.things_to_remember.length > 0) agreementCards.push({ title: 'Things to Remember', items: Array.isArray(trip.things_to_remember) ? trip.things_to_remember : trip.things_to_remember.split('\n') });
+        html += renderDataCardsIntoPages('Agreements', 'TERMS & CONDITIONS', agreementCards, 12);
 
         // Render Things to Carry
         if (trip.things_to_carry) {
