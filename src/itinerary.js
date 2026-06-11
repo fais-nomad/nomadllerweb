@@ -31,6 +31,23 @@ async function loadItinerary() {
         const coverImage = trip.cover_image_url || '/images/placeholder.jpg';
         const costStr = parseFloat(trip.cost).toLocaleString('en-IN');
 
+        let usdStr = '';
+        let aedStr = '';
+        try {
+            const fxRes = await fetch('https://open.er-api.com/v6/latest/INR');
+            if (fxRes.ok) {
+                const fxData = await fxRes.json();
+                if (fxData && fxData.rates) {
+                    const usdCost = Math.round(parseFloat(trip.cost) * fxData.rates.USD);
+                    const aedCost = Math.round(parseFloat(trip.cost) * fxData.rates.AED);
+                    usdStr = usdCost.toLocaleString('en-US');
+                    aedStr = aedCost.toLocaleString('en-AE');
+                }
+            }
+        } catch(err) {
+            console.error('Failed to fetch fx rates:', err);
+        }
+
             // Find the first quote in the itinerary to use for the main philosophy page
             let tripQuote = "To walk in the mountains is to step into a vibrant canvas, where nature blooms in full glory.";
             if (trip.itinerary) {
@@ -63,6 +80,8 @@ async function loadItinerary() {
                     <div class="price-title">Expedition Cost</div>
                     <div class="price-list">
                         <div class="price-item"><span>INR</span> ₹${costStr}</div>
+                        ${usdStr ? `<div class="price-item"><span>USD</span> $${usdStr}</div>` : ''}
+                        ${aedStr ? `<div class="price-item"><span>AED</span> د.إ ${aedStr}</div>` : ''}
                     </div>
                 </div>
                 <div class="brand-badge">NOMADLLER EXPEDITIONS</div>
