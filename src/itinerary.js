@@ -495,16 +495,30 @@ async function generatePDF() {
         // We must reset the scroll position to the top before capturing.
         window.scrollTo(0, 0);
 
+        // Detect mobile to lower canvas scale and prevent iOS Safari memory limits (which cause blank white pages)
+        const isMobile = window.innerWidth <= 768;
+        const renderScale = isMobile ? 1.2 : 2;
+
         for (let i = 0; i < pages.length; i++) {
             const page = pages[i];
-            const canvas = await html2canvas(page, { scale: 2, useCORS: true, scrollY: 0 });
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const canvas = await html2canvas(page, { 
+                scale: renderScale, 
+                useCORS: true, 
+                scrollY: 0,
+                allowTaint: true 
+            });
+            const imgData = canvas.toDataURL('image/jpeg', isMobile ? 0.8 : 1.0);
             
             const pdfWidth = doc.internal.pageSize.getWidth();
             const pdfHeight = doc.internal.pageSize.getHeight();
             
             if (i > 0) doc.addPage();
             doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+
+            // CRITICAL FIX FOR iOS: Explicitly destroy the canvas to free up memory immediately
+            // Otherwise, Safari hits a hard memory limit and silently outputs completely white pages.
+            canvas.width = 0;
+            canvas.height = 0;
         }
         
         doc.save('Nomadller_Itinerary.pdf');
