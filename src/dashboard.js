@@ -3677,7 +3677,20 @@ document.addEventListener('DOMContentLoaded', () => {
             aiBtn.disabled = true;
 
             try {
+                let existingDataPrompt = '';
+                const hasExistingData = window.currentItineraryDays && window.currentItineraryDays.some(d => d.title.trim() || d.desc.trim());
+                if (hasExistingData) {
+                    existingDataPrompt = `
+                    CRITICAL INSTRUCTION: The user has already provided raw data/notes for the itinerary below. 
+                    You MUST read this data and use it as the factual foundation. Structure it, expand the descriptions beautifully into luxury travel prose, add appropriate metrics, and determine the climax. DO NOT invent a completely new itinerary route, stick to the locations and events provided by the user:
+                    
+                    ${JSON.stringify(window.currentItineraryDays, null, 2)}
+                    `;
+                }
+
                 const prompt = `You are an expert luxury travel itinerary generator. The user is creating a new premium trip named "${title}" which lasts for "${duration || 'unknown days'}".
+                
+                ${existingDataPrompt}
                 
                 Generate a comprehensive, day-by-day luxury itinerary. Return ONLY a valid, raw JSON array of objects without any markdown formatting, no backticks, just the JSON string starting with [ and ending with ]. 
                 
