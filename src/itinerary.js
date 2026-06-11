@@ -26,9 +26,13 @@ async function loadItinerary() {
             .single();
 
         if (error) throw error;
-        if (!trip) throw new Error("Trip not found");
-
-        const coverImage = trip.cover_image_url || '/images/placeholder.jpg';
+        let coverImage = '/images/default-cover.jpg';
+        let backCoverImage = '/images/nomadller_back_cover.png';
+        if (trip.cover_image_url) {
+            const parts = trip.cover_image_url.split('|');
+            if (parts[0] && parts[0].trim() !== '') coverImage = parts[0];
+            if (parts[1] && parts[1].trim() !== '') backCoverImage = parts[1];
+        }
         const costStr = parseFloat(trip.cost).toLocaleString('en-IN');
 
         let usdStr = '';
@@ -388,7 +392,7 @@ async function loadItinerary() {
 
         html += `
             <!-- Final Page -->
-            <div class="page cover-page" style="background-image: linear-gradient(180deg, rgba(11,17,32,0.1) 0%, rgba(11,17,32,0.95) 100%), url('/images/nomadller_back_cover.png'); text-align: center; justify-content: center; align-items: center;">
+            <div class="page cover-page" style="background-image: linear-gradient(180deg, rgba(11,17,32,0.1) 0%, rgba(11,17,32,0.95) 100%), url('${backCoverImage}'); text-align: center; justify-content: center; align-items: center;">
                 <h2 class="t-serif" style="font-size: 2.5rem; font-weight: 400; line-height: 1.4; max-width: 600px; margin-bottom: 40px; color: var(--white);">
                     "Some journeys end at the destination.<br><span style="color: var(--orange);">This one stays with you forever.</span>"
                 </h2>

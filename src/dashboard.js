@@ -987,7 +987,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                             document.getElementById('pkgDuration').value = trip.duration || '';
                             document.getElementById('pkgDifficulty').value = trip.difficulty || '';
                             document.getElementById('pkgCost').value = trip.cost || '';
-                            document.getElementById('pkgCoverImage').value = trip.cover_image_url || '';
+                            const coverParts = (trip.cover_image_url || '').split('|');
+                            document.getElementById('pkgCoverImage').value = coverParts[0] || '';
+                            document.getElementById('pkgBackCoverImage').value = coverParts[1] || '';
                             
                             document.getElementById('pkgHighlights').value = trip.highlights ? (Array.isArray(trip.highlights) ? trip.highlights.join(', ') : trip.highlights) : '';
                             
@@ -1098,6 +1100,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Back Cover Image Upload
+    const pkgBackCoverImageUpload = document.getElementById('pkgBackCoverImageUpload');
+    if (pkgBackCoverImageUpload) {
+        pkgBackCoverImageUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const btn = e.target.nextElementSibling;
+            const originalText = btn.innerText;
+            btn.innerText = 'Compressing...';
+            btn.disabled = true;
+
+            try {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        const MAX_WIDTH = 1920;
+                        const MAX_HEIGHT = 1080;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        document.getElementById('pkgBackCoverImage').value = dataUrl;
+                        
+                        btn.innerText = 'Uploaded!';
+                        setTimeout(() => {
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        }, 2000);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            } catch (err) {
+                console.error('Error compressing image:', err);
+                alert('Failed to process image.');
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+
     if (addPackageForm) {
         addPackageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1107,7 +1171,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const duration = document.getElementById('pkgDuration').value;
             const difficulty = document.getElementById('pkgDifficulty').value;
             const cost = document.getElementById('pkgCost').value;
-            const cover_image_url = document.getElementById('pkgCoverImage').value;
+            const front_cover = document.getElementById('pkgCoverImage').value;
+            const back_cover = document.getElementById('pkgBackCoverImage').value;
+            let cover_image_url = front_cover;
+            if (back_cover && back_cover.trim() !== '') {
+                cover_image_url += '|' + back_cover;
+            }
             const highlightsRaw = document.getElementById('pkgHighlights').value;
             const itineraryRaw = document.getElementById('pkgItinerary')?.value || '';
             const inclusionsRaw = document.getElementById('pkgInclusions')?.value || '';
