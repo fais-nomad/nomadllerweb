@@ -491,9 +491,13 @@ async function generatePDF() {
     document.body.appendChild(loadingDiv);
 
     try {
+        // Critical Fix: html2canvas captures blank pages if the user has scrolled down.
+        // We must reset the scroll position to the top before capturing.
+        window.scrollTo(0, 0);
+
         for (let i = 0; i < pages.length; i++) {
             const page = pages[i];
-            const canvas = await html2canvas(page, { scale: 2, useCORS: true });
+            const canvas = await html2canvas(page, { scale: 2, useCORS: true, scrollY: 0 });
             const imgData = canvas.toDataURL('image/jpeg', 1.0);
             
             const pdfWidth = doc.internal.pageSize.getWidth();
