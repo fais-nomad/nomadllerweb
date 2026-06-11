@@ -184,8 +184,8 @@ async function loadItinerary() {
                     `;
                     daysOnPage = 0;
                     isCurrentPageClimax = false;
-                } else if (daysOnPage >= 3) {
-                    // Standard pagination
+                } else if (daysOnPage >= 2) {
+                    // Standard pagination - Changed to 2 to prevent text overflow from long AI prose
                     html += `
                         </div>
                         <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
@@ -534,6 +534,7 @@ async function generatePDF() {
             html2canvas:  { 
                 scale: window.innerWidth <= 768 ? 1.5 : 2, 
                 useCORS: true, 
+                allowTaint: true,
                 letterRendering: true,
                 windowWidth: 794,
                 width: 794
