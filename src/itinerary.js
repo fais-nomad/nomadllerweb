@@ -150,7 +150,8 @@ async function loadItinerary() {
             `;
 
             days.forEach((d, idx) => {
-                if (d.is_highlight && !isCurrentPageClimax) {
+                // If it's a climax day, we force a new page EVERY time (1 climax day per page max)
+                if (d.is_highlight && (!isCurrentPageClimax || daysOnPage >= 1)) {
                     // Start new Climax Page
                     if (idx > 0 || daysOnPage > 0) {
                         html += `
@@ -184,8 +185,8 @@ async function loadItinerary() {
                     `;
                     daysOnPage = 0;
                     isCurrentPageClimax = false;
-                } else if (daysOnPage >= 2) {
-                    // Standard pagination - Changed to 2 to prevent text overflow from long AI prose
+                } else if (daysOnPage >= 2 && !isCurrentPageClimax) {
+                    // Standard pagination - max 2 regular days per page
                     html += `
                         </div>
                         <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
@@ -278,7 +279,15 @@ async function loadItinerary() {
             cards.forEach(card => {
                 if (!card.items || card.items.length === 0 || card.items[0].trim() === '') return;
                 
-                let remainingItems = [...card.items];
+                // CRITICAL FIX: If the user typed a massive single paragraph using '•' instead of hitting Enter, 
+                // we must manually split it into separate array items so the chunking algorithm can paginate it.
+                let normalizedItems = [];
+                card.items.forEach(item => {
+                    const splitItems = item.split(/[•\n]/).filter(s => s.trim().length > 0);
+                    normalizedItems.push(...splitItems);
+                });
+
+                let remainingItems = [...normalizedItems];
                 let isFirstChunk = true;
 
                 while(remainingItems.length > 0) {
