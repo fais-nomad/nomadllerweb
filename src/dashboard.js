@@ -921,15 +921,240 @@ document.addEventListener('DOMContentLoaded', async () => {
         plannerModal.style.display = 'flex';
     }
 
+    // --- PACKAGES / EXPEDITIONS LOGIC ---
+    const packagesTableBody = document.getElementById('packages-table-body');
+    const addPackageForm = document.getElementById('add-package-form');
+    const createPkgBtn = document.getElementById('create-pkg-btn');
+
+    async function loadPackages() {
+        if (!packagesTableBody) return;
+        try {
+            const { data: trips, error } = await supabase
+                .from('trips')
+                .select('*')
+                .order('created_at', { ascending: false });
+                
+            if (error) throw error;
+            
+            window.currentLoadedTrips = trips;
+            
+            packagesTableBody.innerHTML = '';
+            if (trips && trips.length > 0) {
+                trips.forEach(trip => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${trip.title}</strong></td>
+                        <td>${trip.duration}</td>
+                        <td>${trip.difficulty}</td>
+                        <td style="color: var(--admin-success); font-weight: bold;">₹${trip.cost}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn edit-pkg-btn" data-id="${trip.id}" title="Edit Package"><i class="ph ph-pencil-simple"></i></button>
+                                <button class="action-btn delete-pkg-btn" data-id="${trip.id}" title="Delete Package"><i class="ph ph-trash"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    packagesTableBody.appendChild(tr);
+                });
+
+                // Add delete listeners
+                document.querySelectorAll('.delete-pkg-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const tripId = e.target.closest('.delete-pkg-btn').getAttribute('data-id');
+                        if (confirm('Are you sure you want to delete this trip from the website?')) {
+                            try {
+                                const { error } = await supabase.from('trips').delete().eq('id', tripId);
+                                if (error) throw error;
+                                loadPackages();
+                            } catch (err) {
+                                console.error('Error deleting trip:', err);
+                                alert('Error deleting trip');
+                            }
+                        }
+                    });
+                });
+
+                // Add edit listeners
+                document.querySelectorAll('.edit-pkg-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const tripId = e.target.closest('.edit-pkg-btn').getAttribute('data-id');
+                        const trip = window.currentLoadedTrips.find(t => t.id == tripId);
+                        if (trip) {
+                            window.currentEditPkgId = trip.id;
+                            
+                            document.getElementById('pkgTitle').value = trip.title || '';
+                            document.getElementById('pkgSubtitle').value = trip.subtitle || '';
+                            document.getElementById('pkgDuration').value = trip.duration || '';
+                            document.getElementById('pkgDifficulty').value = trip.difficulty || '';
+                            document.getElementById('pkgCost').value = trip.cost || '';
+                            document.getElementById('pkgCoverImage').value = trip.cover_image_url || '';
+                            
+                            document.getElementById('pkgHighlights').value = trip.highlights ? (Array.isArray(trip.highlights) ? trip.highlights.join(', ') : trip.highlights) : '';
+                            
+                            let initItin = [];
+                            if (trip.itinerary) {
+                                if (typeof trip.itinerary === 'string') {
+                                    try { initItin = JSON.parse(trip.itinerary); } catch(e){}
+                                } else if (Array.isArray(trip.itinerary)) {
+                                    initItin = trip.itinerary;
+                                }
+                            }
+                            window.currentItineraryDays = [...initItin];
+                            if (window.syncItineraryBuilder) window.syncItineraryBuilder();
+                            document.getElementById('pkgInclusions').value = trip.inclusions ? (Array.isArray(trip.inclusions) ? trip.inclusions.join(', ') : trip.inclusions) : '';
+                            document.getElementById('pkgExclusions').value = trip.exclusions ? (Array.isArray(trip.exclusions) ? trip.exclusions.join(', ') : trip.exclusions) : '';
+                            document.getElementById('pkgCancellationPolicy').value = trip.cancellation_policy ? (Array.isArray(trip.cancellation_policy) ? trip.cancellation_policy.join(', ') : trip.cancellation_policy) : '';
+                            document.getElementById('pkgTerms').value = trip.terms_and_conditions ? (Array.isArray(trip.terms_and_conditions) ? trip.terms_and_conditions.join(', ') : trip.terms_and_conditions) : '';
+                            document.getElementById('pkgHealth').value = trip.health_and_fitness ? (Array.isArray(trip.health_and_fitness) ? trip.health_and_fitness.join(', ') : trip.health_and_fitness) : '';
+                            document.getElementById('pkgInsurance').value = trip.travel_insurance ? (Array.isArray(trip.travel_insurance) ? trip.travel_insurance.join(', ') : trip.travel_insurance) : '';
+                            document.getElementById('pkgNotes').value = trip.important_notes ? (Array.isArray(trip.important_notes) ? trip.important_notes.join(', ') : trip.important_notes) : '';
+                            document.getElementById('pkgRisk').value = trip.risk_liabilities ? (Array.isArray(trip.risk_liabilities) ? trip.risk_liabilities.join(', ') : trip.risk_liabilities) : '';
+                            document.getElementById('pkgRemember').value = trip.things_to_remember ? (Array.isArray(trip.things_to_remember) ? trip.things_to_remember.join(', ') : trip.things_to_remember) : '';
+                            
+                            let initCarry = [];
+                            if (trip.things_to_carry) {
+                                if (typeof trip.things_to_carry === 'string') {
+                                    try { initCarry = JSON.parse(trip.things_to_carry); } catch(e){}
+                                } else if (Array.isArray(trip.things_to_carry)) {
+                                    initCarry = trip.things_to_carry;
+                                }
+                            }
+                            window.currentCarryCategories = [...initCarry];
+                            if (window.syncCarryBuilder) window.syncCarryBuilder();
+                            
+                            document.getElementById('create-pkg-btn').textContent = 'UPDATE PACKAGE';
+                            document.getElementById('add-package-form').scrollIntoView({ behavior: 'smooth' });
+                        }
+                    });
+                });
+            } else {
+                packagesTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">No trips published yet.</td></tr>';
+            }
+        } catch (error) {
+            console.error('Error fetching trips:', error);
+        }
+    }
+
+    if (addPackageForm) {
+        addPackageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('pkgTitle').value;
+            const subtitle = document.getElementById('pkgSubtitle').value;
+            const duration = document.getElementById('pkgDuration').value;
+            const difficulty = document.getElementById('pkgDifficulty').value;
+            const cost = document.getElementById('pkgCost').value;
+            const cover_image_url = document.getElementById('pkgCoverImage').value;
+            const highlightsRaw = document.getElementById('pkgHighlights').value;
+            const itineraryRaw = document.getElementById('pkgItinerary')?.value || '';
+            const inclusionsRaw = document.getElementById('pkgInclusions')?.value || '';
+            const exclusionsRaw = document.getElementById('pkgExclusions')?.value || '';
+            const cancelPolicyRaw = document.getElementById('pkgCancellationPolicy')?.value || '';
+            const termsRaw = document.getElementById('pkgTerms')?.value || '';
+            const healthRaw = document.getElementById('pkgHealth')?.value || '';
+            const insuranceRaw = document.getElementById('pkgInsurance')?.value || '';
+            const notesRaw = document.getElementById('pkgNotes')?.value || '';
+            const riskRaw = document.getElementById('pkgRisk')?.value || '';
+            const rememberRaw = document.getElementById('pkgRemember')?.value || '';
+            const thingsToCarryRaw = document.getElementById('pkgThingsToCarry')?.value || '';
+            
+            const highlights = highlightsRaw.split(',').map(h => h.trim()).filter(h => h !== '');
+            const inclusions = inclusionsRaw.split(',').map(h => h.trim()).filter(h => h !== '');
+            const exclusions = exclusionsRaw.split(',').map(h => h.trim()).filter(h => h !== '');
+            const cancellation_policy = cancelPolicyRaw.split(',').map(h => h.trim()).filter(h => h !== '');
+            const terms_and_conditions = termsRaw.split(',').map(h => h.trim()).filter(h => h !== '');
+            const health_and_fitness = healthRaw.split(',').map(h => h.trim()).filter(h => h !== '');
+            const travel_insurance = insuranceRaw.split(',').map(h => h.trim()).filter(h => h !== '');
+            const important_notes = notesRaw.split(',').map(h => h.trim()).filter(h => h !== '');
+            const risk_liabilities = riskRaw.split(',').map(h => h.trim()).filter(h => h !== '');
+            const things_to_remember = rememberRaw.split(',').map(h => h.trim()).filter(h => h !== '');
+            
+            // Try parsing json for itinerary and things to carry
+            let itinerary = [];
+            try {
+                if (itineraryRaw.trim().startsWith('[')) itinerary = JSON.parse(itineraryRaw);
+                else itinerary = itineraryRaw;
+            } catch (e) { itinerary = itineraryRaw; }
+
+            let things_to_carry = [];
+            try {
+                if (thingsToCarryRaw.trim().startsWith('[')) things_to_carry = JSON.parse(thingsToCarryRaw);
+                else things_to_carry = thingsToCarryRaw;
+            } catch (e) { things_to_carry = thingsToCarryRaw; }
+
+            createPkgBtn.textContent = 'PUBLISHING...';
+            createPkgBtn.disabled = true;
+
+            try {
+                // Check if editing or creating
+                let error;
+                const payload = { 
+                    title, 
+                    subtitle,
+                    duration,
+                    difficulty,
+                    cost,
+                    cover_image_url,
+                    highlights,
+                    itinerary,
+                    inclusions,
+                    exclusions,
+                    cancellation_policy,
+                    terms_and_conditions,
+                    health_and_fitness,
+                    travel_insurance,
+                    important_notes,
+                    risk_liabilities,
+                    things_to_remember,
+                    things_to_carry
+                };
+
+                if (window.currentEditPkgId) {
+                    const res = await supabase
+                        .from('trips')
+                        .update(payload)
+                        .eq('id', window.currentEditPkgId);
+                    error = res.error;
+                } else {
+                    const res = await supabase
+                        .from('trips')
+                        .insert([payload]);
+                    error = res.error;
+                }
+
+                if (error) throw error;
+                
+                // Clear edit mode
+                const wasEditing = !!window.currentEditPkgId;
+                window.currentEditPkgId = null;
+                createPkgBtn.textContent = 'PUBLISH PACKAGE';
+                addPackageForm.reset();
+                window.currentItineraryDays = [];
+                if (window.syncItineraryBuilder) window.syncItineraryBuilder();
+                window.currentCarryCategories = [];
+                if (window.syncCarryBuilder) window.syncCarryBuilder();
+                alert(wasEditing ? 'Package updated successfully!' : 'Package published successfully!');
+                loadPackages();
+            } catch (err) {
+                console.error('Error saving package:', err);
+                alert('Failed to save package. See console.');
+                createPkgBtn.textContent = window.currentEditPkgId ? 'UPDATE PACKAGE' : 'PUBLISH PACKAGE';
+                createPkgBtn.disabled = false;
+            }
+        });
+    }
+
     // --- AGENTS MANAGEMENT LOGIC ---
     
     const navTrips = document.getElementById('nav-trips');
+    const navPackages = document.getElementById('nav-packages');
     const navAgents = document.getElementById('nav-agents');
     const navFixedDepartures = document.getElementById('nav-fixed-departures');
     const navCloudData = document.getElementById('nav-cloud-data');
     const navCosting = document.getElementById('nav-costing');
 
     const viewTrips = document.getElementById('trips-view-section');
+    const viewPackages = document.getElementById('packages-view-section');
     const viewAgents = document.getElementById('agents-view-section');
     const viewFD = document.getElementById('fixed-departures-view-section');
     const viewCloud = document.getElementById('cloud-data-view-section');
@@ -938,12 +1163,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function hideAllViews() {
         if (viewTrips) viewTrips.style.display = 'none';
+        if (viewPackages) viewPackages.style.display = 'none';
         if (viewAgents) viewAgents.style.display = 'none';
         if (viewFD) viewFD.style.display = 'none';
         if (viewCloud) viewCloud.style.display = 'none';
         if (viewCosting) viewCosting.style.display = 'none';
 
         if (navTrips) navTrips.classList.remove('active');
+        if (navPackages) navPackages.classList.remove('active');
         if (navAgents) navAgents.classList.remove('active');
         if (navFixedDepartures) navFixedDepartures.classList.remove('active');
         if (navCloudData) navCloudData.classList.remove('active');
@@ -957,6 +1184,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (viewTrips) viewTrips.style.display = 'block';
             navTrips.classList.add('active');
             if (mainDashboardTitle) mainDashboardTitle.textContent = 'Upcoming Trips Management';
+        });
+    }
+
+    if (navPackages) {
+        navPackages.addEventListener('click', (e) => {
+            e.preventDefault();
+            hideAllViews();
+            if (viewPackages) viewPackages.style.display = 'block';
+            navPackages.classList.add('active');
+            if (mainDashboardTitle) mainDashboardTitle.textContent = 'Website Packages & Expeditions';
+            loadPackages();
         });
     }
 
@@ -3314,4 +3552,165 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
+    // Itinerary Builder Logic
+    window.currentItineraryDays = [];
+
+    window.renderItineraryBuilder = function() {
+        const builder = document.getElementById('itinerary-builder');
+        if (!builder) return;
+        
+        builder.innerHTML = '';
+        
+        window.currentItineraryDays.forEach((dayObj, index) => {
+            const dayDiv = document.createElement('div');
+            dayDiv.style.cssText = 'background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); position: relative;';
+            
+            dayDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0; font-size: 1rem; color: var(--accent);">Day ${index + 1}</h4>
+                    <button type="button" class="remove-day-btn" data-index="${index}" style="background: transparent; border: none; color: #ff4444; cursor: pointer; font-size: 0.9rem;">&times; Remove</button>
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Day Number</label>
+                        <input type="number" class="day-number-input" data-index="${index}" value="${dayObj.day || index + 1}" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px;">
+                    </div>
+                    <div style="flex: 3;">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Title</label>
+                        <input type="text" class="day-title-input" data-index="${index}" value="${dayObj.title || ''}" placeholder="e.g. Arrival in Kathmandu" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Description</label>
+                    <textarea class="day-desc-input" data-index="${index}" rows="3" placeholder="Describe the day's activities..." style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px;">${dayObj.desc || ''}</textarea>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Metrics (Comma separated)</label>
+                    <input type="text" class="day-metrics-input" data-index="${index}" value="${(dayObj.metrics || []).join(', ')}" placeholder="e.g. 10km trek, Elev 3000m" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px;">
+                </div>
+            `;
+            
+            builder.appendChild(dayDiv);
+        });
+        
+        builder.querySelectorAll('.remove-day-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.getAttribute('data-index'));
+                window.currentItineraryDays.splice(idx, 1);
+                window.syncItineraryBuilder();
+            });
+        });
+        
+        builder.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.getAttribute('data-index'));
+                const val = e.target.value;
+                if (e.target.classList.contains('day-number-input')) window.currentItineraryDays[idx].day = parseInt(val) || idx + 1;
+                if (e.target.classList.contains('day-title-input')) window.currentItineraryDays[idx].title = val;
+                if (e.target.classList.contains('day-desc-input')) window.currentItineraryDays[idx].desc = val;
+                if (e.target.classList.contains('day-metrics-input')) window.currentItineraryDays[idx].metrics = val.split(',').map(s => s.trim()).filter(s => s);
+                window.updateHiddenItinerary();
+            });
+        });
+        
+        window.updateHiddenItinerary();
+    };
+
+    window.syncItineraryBuilder = function() {
+        window.renderItineraryBuilder();
+        window.updateHiddenItinerary();
+    };
+
+    window.updateHiddenItinerary = function() {
+        const input = document.getElementById('pkgItinerary');
+        if (input) input.value = JSON.stringify(window.currentItineraryDays, null, 2);
+    };
+
+    const addDayBtn = document.getElementById('add-itinerary-day-btn');
+    if (addDayBtn) {
+        addDayBtn.addEventListener('click', () => {
+            window.currentItineraryDays.push({
+                day: window.currentItineraryDays.length + 1,
+                title: '',
+                desc: '',
+                metrics: []
+            });
+            window.syncItineraryBuilder();
+        });
+    }
+
+    // Things to Carry Builder Logic
+    window.currentCarryCategories = [];
+
+    window.renderCarryBuilder = function() {
+        const builder = document.getElementById('carry-builder');
+        if (!builder) return;
+        
+        builder.innerHTML = '';
+        
+        window.currentCarryCategories.forEach((catObj, index) => {
+            const catDiv = document.createElement('div');
+            catDiv.style.cssText = 'background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); position: relative;';
+            
+            catDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0; font-size: 1rem; color: var(--accent);">Category ${index + 1}</h4>
+                    <button type="button" class="remove-carry-btn" data-index="${index}" style="background: transparent; border: none; color: #ff4444; cursor: pointer; font-size: 0.9rem;">&times; Remove</button>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Category Name</label>
+                    <input type="text" class="carry-cat-input" data-index="${index}" value="${catObj.category || ''}" placeholder="e.g. Basic Gears" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Items (Comma separated)</label>
+                    <input type="text" class="carry-items-input" data-index="${index}" value="${(catObj.items || []).join(', ')}" placeholder="e.g. Backpack, Water Bottle, Trekking Poles" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px;">
+                </div>
+            `;
+            
+            builder.appendChild(catDiv);
+        });
+        
+        builder.querySelectorAll('.remove-carry-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.getAttribute('data-index'));
+                window.currentCarryCategories.splice(idx, 1);
+                window.syncCarryBuilder();
+            });
+        });
+        
+        builder.querySelectorAll('input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.getAttribute('data-index'));
+                const val = e.target.value;
+                if (e.target.classList.contains('carry-cat-input')) window.currentCarryCategories[idx].category = val;
+                if (e.target.classList.contains('carry-items-input')) window.currentCarryCategories[idx].items = val.split(',').map(s => s.trim()).filter(s => s);
+                window.updateHiddenCarry();
+            });
+        });
+        
+        window.updateHiddenCarry();
+    };
+
+    window.syncCarryBuilder = function() {
+        window.renderCarryBuilder();
+        window.updateHiddenCarry();
+    };
+
+    window.updateHiddenCarry = function() {
+        const input = document.getElementById('pkgThingsToCarry');
+        if (input) input.value = JSON.stringify(window.currentCarryCategories, null, 2);
+    };
+
+    const addCarryBtn = document.getElementById('add-carry-category-btn');
+    if (addCarryBtn) {
+        addCarryBtn.addEventListener('click', () => {
+            window.currentCarryCategories.push({
+                category: '',
+                items: []
+            });
+            window.syncCarryBuilder();
+        });
+    }
+
 });

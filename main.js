@@ -229,4 +229,11 @@ if (whyGrid && whyNext && whyPrev) {
   });
 }
 
+import { loadPackagesGrid } from './src/packages.js';
+
+// Load dynamic packages if we are on the homepage
+if (document.getElementById('packages-grid-container')) {
+  loadPackagesGrid();
+}
+
 console.log('Nomadller Website Initialized');

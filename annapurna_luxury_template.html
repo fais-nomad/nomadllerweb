@@ -417,9 +417,13 @@
         .c-metric { border-left: 2px solid var(--orange); padding-left: 15px; }
 
         /* Data Grids */
-        .data-grid { display: flex; gap: 30px; }
+        .data-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 30px; 
+        }
         .data-card {
-            flex: 1;
+            background: #FFFFFF;
             background: #FFFFFF;
             border: 1px solid rgba(0,0,0,0.05);
             padding: 30px;
@@ -899,5 +903,36 @@
         <div class="brand-badge" style="letter-spacing: 4px; color: rgba(255,255,255,0.4);">NOMADLLER LUXURY EXPEDITIONS</div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pages = document.querySelectorAll('.page');
+            
+            for (let i = 0; i < pages.length; i++) {
+                const canvas = await html2canvas(pages[i], {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                });
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                if (i > 0) pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+            }
+            
+            pdf.save(document.title.replace(/ /g, '_') + '.pdf');
+            if (window.location.search.includes('download=true')) {
+                window.close();
+            }
+        }
+
+        window.onload = () => {
+            if (window.location.search.includes('download=true')) {
+                setTimeout(generatePDF, 1000);
+            }
+        };
+    </script>
 </body>
 </html>

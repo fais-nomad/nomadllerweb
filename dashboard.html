@@ -102,6 +102,10 @@
                     <i class="ph ph-airplane-tilt"></i>
                     Fixed Departures
                 </a>
+                <a href="#" class="nav-item" id="nav-packages">
+                    <i class="ph ph-backpack"></i>
+                    Packages & Expeditions
+                </a>
                 <a href="#" class="nav-item" id="nav-cloud-data">
                     <i class="ph ph-cloud"></i>
                     Cloud Data
@@ -389,6 +393,125 @@
                     </div>
                 </div>
             </div> <!-- End FIXED DEPARTURES VIEW -->
+
+            <!-- PACKAGES VIEW -->
+            <div id="packages-view-section" style="display: none;">
+                <!-- Add Package Form -->
+                <div class="trip-form">
+                    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0;">Add New Package/Expedition</h3>
+                    </div>
+                    <form id="add-package-form">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="pkgTitle">Trip Title</label>
+                                <input type="text" id="pkgTitle" required placeholder="e.g. Everest Base Camp Trek">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="pkgSubtitle">Subtitle / Short Description</label>
+                                <input type="text" id="pkgSubtitle" required placeholder="e.g. A classic journey to the roof of the world.">
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgDuration">Duration</label>
+                                <input type="text" id="pkgDuration" required placeholder="e.g. 14 DAYS">
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgDifficulty">Difficulty</label>
+                                <input type="text" id="pkgDifficulty" required placeholder="e.g. CHALLENGING">
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgCost">Expedition Cost (INR)</label>
+                                <input type="number" id="pkgCost" required placeholder="e.g. 76500">
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgCoverImage">Cover Image URL</label>
+                                <input type="text" id="pkgCoverImage" required placeholder="e.g. /images/ebc.jpg or https://...">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="pkgHighlights">Trip Highlights (Comma separated)</label>
+                                <input type="text" id="pkgHighlights" required placeholder="e.g. Kalapatthar Sunrise, Namche Bazaar, Tengboche">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Day-by-Day Itinerary</label>
+                                <div id="itinerary-builder" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 10px;">
+                                    <!-- Dynamic day inputs will be inserted here -->
+                                </div>
+                                <button type="button" id="add-itinerary-day-btn" class="btn" style="background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: var(--text-primary); width: 100%; text-align: center;">+ Add Day</button>
+                                <textarea id="pkgItinerary" style="display: none;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgInclusions">Inclusions (Comma separated)</label>
+                                <textarea id="pkgInclusions" rows="4" placeholder="e.g. Meals, Accommodation, Guide" style="width: 100%; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); padding: 10px; border-radius: 4px;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgExclusions">Exclusions (Comma separated)</label>
+                                <textarea id="pkgExclusions" rows="4" placeholder="e.g. Flights, Personal expenses, Insurance" style="width: 100%; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); padding: 10px; border-radius: 4px;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgCancellationPolicy">Cancellation Policy (Comma separated)</label>
+                                <textarea id="pkgCancellationPolicy" rows="4" placeholder="e.g. Before 15 days: 50% refund, Before 10 days: 20% refund" style="width: 100%; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); padding: 10px; border-radius: 4px;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgTerms">Terms & Conditions (Comma separated)</label>
+                                <textarea id="pkgTerms" rows="4" placeholder="e.g. Booking confirmation upon deposit" style="width: 100%; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); padding: 10px; border-radius: 4px;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgHealth">Health & Fitness (Comma separated)</label>
+                                <textarea id="pkgHealth" rows="4" placeholder="e.g. Requires excellent stamina, Prior hiking advised" style="width: 100%; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); padding: 10px; border-radius: 4px;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgInsurance">Insurance (Comma separated)</label>
+                                <textarea id="pkgInsurance" rows="4" placeholder="e.g. Medical coverage, Personal accident, Helicopter rescue" style="width: 100%; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); padding: 10px; border-radius: 4px;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgNotes">Important Notes (Comma separated)</label>
+                                <textarea id="pkgNotes" rows="4" placeholder="e.g. Passport valid for 6 months, Max 15kg luggage" style="width: 100%; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); padding: 10px; border-radius: 4px;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pkgRisk">Risk & Liabilities (Comma separated)</label>
+                                <textarea id="pkgRisk" rows="4" placeholder="e.g. High altitude risks, Must sign liability release" style="width: 100%; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); padding: 10px; border-radius: 4px;"></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="pkgRemember">Things to Remember (Comma separated)</label>
+                                <textarea id="pkgRemember" rows="4" placeholder="e.g. Walk slowly to prevent altitude sickness, Dress in layers, Respect culture" style="width: 100%; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); padding: 10px; border-radius: 4px;"></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Things to Carry</label>
+                                <div id="carry-builder" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 10px;">
+                                    <!-- Dynamic carry categories will be inserted here -->
+                                </div>
+                                <button type="button" id="add-carry-category-btn" class="btn" style="background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: var(--text-primary); width: 100%; text-align: center;">+ Add Category</button>
+                                <textarea id="pkgThingsToCarry" style="display: none;"></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn" id="create-pkg-btn">PUBLISH PACKAGE</button>
+                    </form>
+                </div>
+
+                <!-- Packages List -->
+                <div class="recent-orders">
+                    <div class="section-header">
+                        <h3>Manage Packages on Website</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Duration</th>
+                                    <th>Difficulty</th>
+                                    <th>Cost</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="packages-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div> <!-- End PACKAGES VIEW -->
+
 
             <!-- CLOUD DATA VIEW -->
             <div id="cloud-data-view-section" style="display: none;">
