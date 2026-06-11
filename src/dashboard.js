@@ -3686,7 +3686,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 - "title": string (short title of the day, e.g. "Arrival in Kathmandu")
                 - "desc": string (detailed description of the day's events)
                 - "metrics": array of 2-3 short strings with emojis (e.g. ["🥾 10 km trek", "🏔️ Elev: 15,200 ft", "🚌 2 hrs drive"])
-                - "is_highlight": boolean (Set this to true ONLY for the 1 or 2 most climactic and significant days of the trek, like reaching a peak or a major milestone)
+                - "is_highlight": boolean (Set this to true ONLY for the 1 or 2 most climactic and significant days of the trek, like reaching a peak or a major milestone. NEVER set Day 1 or arrival days to true!)
                 - "quote": string (A very short, philosophical, poetic, or inspiring quote about this specific part of the journey. Do not use quotes for every single day, just 2 or 3 days where it makes the most emotional impact. If no quote, leave as empty string "")
                 `;
 

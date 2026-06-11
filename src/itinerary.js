@@ -143,7 +143,7 @@ async function loadItinerary() {
             let isCurrentPageClimax = false;
 
             html += `
-            <div class="page">
+            <div class="page" id="initial-itinerary-page">
                 <div class="page-content">
                     <div class="gps-coords">ITINERARY DETAILS</div>
                     <h2 class="section-heading">The Journey</h2>
@@ -152,10 +152,18 @@ async function loadItinerary() {
             days.forEach((d, idx) => {
                 if (d.is_highlight && !isCurrentPageClimax) {
                     // Start new Climax Page
-                    html += `
+                    if (idx > 0 || daysOnPage > 0) {
+                        html += `
+                            </div>
+                            <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
                         </div>
-                        <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
-                    </div>
+                        `;
+                    } else {
+                        // If it's the very first item, just remove the initial page we started above
+                        html = html.replace('<div class="page" id="initial-itinerary-page">', '').replace('<div class="page-content">', '').replace('<div class="gps-coords">ITINERARY DETAILS</div>', '').replace('<h2 class="section-heading">The Journey</h2>', '');
+                    }
+                    
+                    html += `
                     <div class="page climax-page">
                         <div class="page-content">
                             <div class="gps-coords" style="color: rgba(255,255,255,0.2);">THE CLIMAX</div>
