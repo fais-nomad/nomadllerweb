@@ -388,7 +388,7 @@ async function loadItinerary() {
 
         html += `
             <!-- Final Page -->
-            <div class="page cover-page" style="background-image: linear-gradient(180deg, rgba(11,17,32,0.1) 0%, rgba(11,17,32,0.95) 100%), url('${coverImage}'); text-align: center; justify-content: center; align-items: center;">
+            <div class="page cover-page" style="background-image: linear-gradient(180deg, rgba(11,17,32,0.1) 0%, rgba(11,17,32,0.95) 100%), url('/images/nomadller_back_cover.png'); text-align: center; justify-content: center; align-items: center;">
                 <h2 class="t-serif" style="font-size: 2.5rem; font-weight: 400; line-height: 1.4; max-width: 600px; margin-bottom: 40px; color: var(--white);">
                     "Some journeys end at the destination.<br><span style="color: var(--orange);">This one stays with you forever.</span>"
                 </h2>
