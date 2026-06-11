@@ -424,8 +424,13 @@
                                 <input type="number" id="pkgCost" required placeholder="e.g. 76500">
                             </div>
                             <div class="form-group">
-                                <label for="pkgCoverImage">Cover Image URL</label>
-                                <input type="text" id="pkgCoverImage" required placeholder="e.g. /images/ebc.jpg or https://...">
+                                <label for="pkgCoverImage">Cover Image</label>
+                                <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                                    <input type="text" id="pkgCoverImage" required placeholder="e.g. /images/ebc.jpg or paste URL..." style="flex: 1; margin-bottom: 0;">
+                                    <input type="file" id="pkgCoverImageUpload" accept="image/*" style="display: none;">
+                                    <button type="button" class="btn" style="white-space: nowrap; padding: 0 20px;" onclick="document.getElementById('pkgCoverImageUpload').click()">Upload Photo</button>
+                                </div>
+                                <small style="color: var(--orange); display: block; margin-bottom: 15px;">Note: You can upload a photo from your computer, or paste a direct image link. Do NOT use Google Drive links.</small>
                             </div>
                             <div class="form-group full-width">
                                 <label for="pkgHighlights">Trip Highlights (Comma separated)</label>

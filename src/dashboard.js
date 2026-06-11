@@ -1035,6 +1035,69 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // --- Image Upload and Client-Side Compression ---
+    const pkgCoverImageUpload = document.getElementById('pkgCoverImageUpload');
+    if (pkgCoverImageUpload) {
+        pkgCoverImageUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const btn = e.target.nextElementSibling;
+            const originalText = btn.innerText;
+            btn.innerText = 'Compressing...';
+            btn.disabled = true;
+
+            try {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        const MAX_WIDTH = 1920;
+                        const MAX_HEIGHT = 1080;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Compress and get Base64 URL
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        document.getElementById('pkgCoverImage').value = dataUrl;
+                        
+                        btn.innerText = 'Uploaded!';
+                        setTimeout(() => {
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        }, 2000);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            } catch (err) {
+                console.error('Error compressing image:', err);
+                alert('Failed to process image.');
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+
     if (addPackageForm) {
         addPackageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
