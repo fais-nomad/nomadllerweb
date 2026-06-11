@@ -31,7 +31,20 @@ async function loadItinerary() {
         const coverImage = trip.cover_image_url || '/images/placeholder.jpg';
         const costStr = parseFloat(trip.cost).toLocaleString('en-IN');
 
-        let html = `
+            // Find the first quote in the itinerary to use for the main philosophy page
+            let tripQuote = "To walk in the mountains is to step into a vibrant canvas, where nature blooms in full glory.";
+            if (trip.itinerary) {
+                let tempDays = [];
+                if (typeof trip.itinerary === 'string') {
+                    try { tempDays = JSON.parse(trip.itinerary); } catch(e) {}
+                } else if (Array.isArray(trip.itinerary)) {
+                    tempDays = trip.itinerary;
+                }
+                const firstQuoteObj = tempDays.find(d => d.quote && d.quote.trim() !== '');
+                if (firstQuoteObj) tripQuote = firstQuoteObj.quote;
+            }
+
+            let html = `
             <!-- Action Bar for Web View -->
             <div id="action-bar" style="position: fixed; top: 0; left: 0; right: 0; background: rgba(11,17,32,0.9); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 9999; color: white;">
                 <div style="font-family: 'Playfair Display', serif; font-size: 1.2rem;">NOMADLLER</div>
@@ -60,7 +73,7 @@ async function loadItinerary() {
             <!-- 2. Quote Page -->
             <div class="page quote-page dark-page">
                 <div class="gps-coords">NOMADLLER PHILOSOPHY</div>
-                <h2 class="large-quote">“To walk in the mountains is to step into a vibrant canvas, where <span>nature blooms in full glory</span>.”</h2>
+                <h2 class="large-quote">“${tripQuote}”</h2>
                 <div class="quote-author">Nomadller Expeditions</div>
             </div>
         `;
@@ -91,26 +104,7 @@ async function loadItinerary() {
             `;
 
             days.forEach((d, idx) => {
-                if (d.quote && d.quote.trim() !== '') {
-                    // Close current page
-                    html += `
-                        </div>
-                        <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
-                    </div>
-                    <!-- Philosophy Page -->
-                    <div class="page quote-page dark-page">
-                        <div class="gps-coords">NOMADLLER PHILOSOPHY</div>
-                        <h2 class="large-quote">“${d.quote}”</h2>
-                    </div>
-                    <!-- Start New Page -->
-                    <div class="page ${d.is_highlight ? 'climax-page' : ''}">
-                        <div class="page-content">
-                            <div class="gps-coords" ${d.is_highlight ? 'style="color: rgba(255,255,255,0.2);"' : ''}>ITINERARY DETAILS</div>
-                            <h2 class="section-heading" ${d.is_highlight ? 'style="color: white; border-bottom-color: rgba(255,255,255,0.1);"' : ''}>${d.is_highlight ? 'The Climax' : 'The Journey Continues'}</h2>
-                    `;
-                    daysOnPage = 0;
-                    isCurrentPageClimax = d.is_highlight;
-                } else if (d.is_highlight && !isCurrentPageClimax) {
+                if (d.is_highlight && !isCurrentPageClimax) {
                     // Start new Climax Page
                     html += `
                         </div>
