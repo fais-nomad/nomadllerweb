@@ -20,7 +20,7 @@ export async function loadPackagesGrid() {
     try {
         const { data: trips, error } = await supabase
             .from('trips')
-            .select('*')
+            .select('id, title, subtitle, duration, difficulty, cost, cover_image_url, highlights, created_at, inclusions, exclusions, itinerary')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -53,9 +53,12 @@ export async function loadPackagesGrid() {
                 dlLink = '/valley_of_flowers_template.html?download=true';
             }
 
+            const coverParts = (trip.cover_image_url || '').split('|');
+            const frontCover = coverParts[0] && coverParts[0].trim() !== '' ? coverParts[0] : '/images/placeholder.jpg';
+
             html += `
                 <div class="package-card reveal">
-                    <img src="${trip.cover_image_url || '/images/placeholder.jpg'}" class="package-image" alt="${trip.title}" loading="lazy">
+                    <img src="${frontCover}" class="package-image" alt="${trip.title}" loading="lazy">
                     <div class="package-meta">
                         <span>${trip.duration || 'N/A'}</span>
                         <span>${trip.difficulty || 'N/A'}</span>
