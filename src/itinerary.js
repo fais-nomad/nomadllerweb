@@ -505,7 +505,12 @@ async function generatePDF() {
                 scale: renderScale, 
                 useCORS: true, 
                 scrollY: 0,
-                allowTaint: true 
+                allowTaint: true,
+                // CRITICAL FIX: Force html2canvas to render at the exact A4 pixel width (210mm = ~794px).
+                // If this is missing, mobile Safari will clip the canvas to the phone's narrow screen width (e.g. 390px)
+                // and output a completely blank/white page!
+                windowWidth: 794,
+                width: 794
             });
             const imgData = canvas.toDataURL('image/jpeg', isMobile ? 0.8 : 1.0);
             
