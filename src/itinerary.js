@@ -491,56 +491,40 @@ async function generatePDF() {
     document.body.appendChild(loadingDiv);
 
     try {
-        // Critical Fix: html2canvas captures blank pages if the user has scrolled down.
-        // We must reset the scroll position to the top before capturing.
-        window.scrollTo(0, 0);
-
-        // Detect mobile to lower canvas scale and prevent iOS Safari memory limits (which cause blank white pages)
-        const isMobile = window.innerWidth <= 768;
-        const renderScale = isMobile ? 1.2 : 2;
-
-        for (let i = 0; i < pages.length; i++) {
-            const page = pages[i];
-            
-            // CRITICAL FIX: iOS Safari graphics engine instantly crashes and returns a blank canvas 
-            // if it tries to render large elements with 'overflow: hidden', 'box-shadow', or 'border-radius'.
-            const originalOverflow = page.style.overflow;
-            const originalBoxShadow = page.style.boxShadow;
-            const originalBorderRadius = page.style.borderRadius;
-            
-            page.style.overflow = 'visible';
-            page.style.boxShadow = 'none';
-            page.style.borderRadius = '0';
-
-            const canvas = await html2canvas(page, { 
-                scale: renderScale, 
+        const opt = {
+            margin:       0,
+            filename:     'Nomadller_Itinerary.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { 
+                scale: window.innerWidth <= 768 ? 1.5 : 2, 
                 useCORS: true, 
-                scrollY: 0,
-                allowTaint: true,
+                letterRendering: true,
                 windowWidth: 794,
                 width: 794
-            });
-            
-            // Restore original styles
-            page.style.overflow = originalOverflow;
-            page.style.boxShadow = originalBoxShadow;
-            page.style.borderRadius = originalBorderRadius;
+            },
+            jsPDF:        { unit: 'px', format: [794, 1123], orientation: 'portrait' }
+        };
 
-            const imgData = canvas.toDataURL('image/jpeg', isMobile ? 0.8 : 1.0);
-            
-            const pdfWidth = doc.internal.pageSize.getWidth();
-            const pdfHeight = doc.internal.pageSize.getHeight();
-            
-            if (i > 0) doc.addPage();
-            doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        const container = document.createElement('div');
+        pages.forEach(p => {
+            const clone = p.cloneNode(true);
+            clone.style.margin = '0';
+            clone.style.boxShadow = 'none';
+            clone.style.borderRadius = '0';
+            // Force break after each page except the last one could be handled by css, 
+            // but we'll manually feed them to html2pdf for safety.
+            container.appendChild(clone);
+        });
 
-            // CRITICAL FIX FOR iOS: Explicitly destroy the canvas to free up memory immediately
-            // Otherwise, Safari hits a hard memory limit and silently outputs completely white pages.
-            canvas.width = 0;
-            canvas.height = 0;
+        // Use the robust html2pdf library
+        let worker = html2pdf().set(opt).from(container.children[0]).toPdf();
+        
+        for (let i = 1; i < container.children.length; i++) {
+            worker = worker.get('pdf').then(pdf => pdf.addPage()).from(container.children[i]).toContainer().toCanvas().toPdf();
         }
         
-        doc.save('Nomadller_Itinerary.pdf');
+        await worker.save();
+
     } catch (e) {
         console.error('PDF Generation failed', e);
         alert('Failed to generate PDF. Check console.');
