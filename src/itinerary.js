@@ -80,28 +80,107 @@ async function loadItinerary() {
                 days = trip.itinerary;
             }
 
-            // Group by 3 days per page
-            const chunkSize = 3;
-            for (let i = 0; i < days.length; i += chunkSize) {
-                const chunk = days.slice(i, i + chunkSize);
-                
-                html += `
-                <div class="page">
-                    <div class="page-content">
-                        <div class="gps-coords">ITINERARY DETAILS</div>
-                        <h2 class="section-heading">The Journey</h2>
-                        <div class="section-subheading">Days ${String(i + 1).padStart(2, '0')} - ${String(i + chunk.length).padStart(2, '0')}</div>
-                `;
+            let daysOnPage = 0;
+            let isCurrentPageClimax = false;
 
-                chunk.forEach(d => {
-                    let metricsHtml = '';
-                    if (d.metrics && Array.isArray(d.metrics)) {
+            html += `
+            <div class="page">
+                <div class="page-content">
+                    <div class="gps-coords">ITINERARY DETAILS</div>
+                    <h2 class="section-heading">The Journey</h2>
+            `;
+
+            days.forEach((d, idx) => {
+                if (d.quote && d.quote.trim() !== '') {
+                    // Close current page
+                    html += `
+                        </div>
+                        <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
+                    </div>
+                    <!-- Philosophy Page -->
+                    <div class="page quote-page dark-page">
+                        <div class="gps-coords">NOMADLLER PHILOSOPHY</div>
+                        <h2 class="large-quote">“${d.quote}”</h2>
+                    </div>
+                    <!-- Start New Page -->
+                    <div class="page ${d.is_highlight ? 'climax-page' : ''}">
+                        <div class="page-content">
+                            <div class="gps-coords" ${d.is_highlight ? 'style="color: rgba(255,255,255,0.2);"' : ''}>ITINERARY DETAILS</div>
+                            <h2 class="section-heading" ${d.is_highlight ? 'style="color: white; border-bottom-color: rgba(255,255,255,0.1);"' : ''}>${d.is_highlight ? 'The Climax' : 'The Journey Continues'}</h2>
+                    `;
+                    daysOnPage = 0;
+                    isCurrentPageClimax = d.is_highlight;
+                } else if (d.is_highlight && !isCurrentPageClimax) {
+                    // Start new Climax Page
+                    html += `
+                        </div>
+                        <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
+                    </div>
+                    <div class="page climax-page">
+                        <div class="page-content">
+                            <div class="gps-coords" style="color: rgba(255,255,255,0.2);">THE CLIMAX</div>
+                            <h2 class="section-heading" style="color: white; border-bottom-color: rgba(255,255,255,0.1);">The Climax</h2>
+                    `;
+                    daysOnPage = 0;
+                    isCurrentPageClimax = true;
+                } else if (!d.is_highlight && isCurrentPageClimax) {
+                    // Return to normal page
+                    html += `
+                        </div>
+                        <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
+                    </div>
+                    <div class="page">
+                        <div class="page-content">
+                            <div class="gps-coords">ITINERARY DETAILS</div>
+                            <h2 class="section-heading">The Descent</h2>
+                    `;
+                    daysOnPage = 0;
+                    isCurrentPageClimax = false;
+                } else if (daysOnPage >= 3) {
+                    // Standard pagination
+                    html += `
+                        </div>
+                        <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
+                    </div>
+                    <div class="page ${isCurrentPageClimax ? 'climax-page' : ''}">
+                        <div class="page-content">
+                            <div class="gps-coords" ${isCurrentPageClimax ? 'style="color: rgba(255,255,255,0.2);"' : ''}>ITINERARY DETAILS</div>
+                            <h2 class="section-heading" ${isCurrentPageClimax ? 'style="color: white; border-bottom-color: rgba(255,255,255,0.1);"' : ''}>${isCurrentPageClimax ? 'The Climax Continues' : 'The Journey Continues'}</h2>
+                    `;
+                    daysOnPage = 0;
+                }
+
+                let metricsHtml = '';
+                if (d.metrics && Array.isArray(d.metrics)) {
+                    if (d.is_highlight) {
+                        metricsHtml = d.metrics.map(m => {
+                            const parts = m.split(' ');
+                            const icon = parts[0];
+                            const text = parts.slice(1).join(' ');
+                            return `<div class="c-metric"><span class="t-micro" style="color: rgba(255,255,255,0.7);">${icon}</span><span style="font-size: 1.2rem; font-family: var(--font-display); display: block;">${text}</span></div>`;
+                        }).join('');
+                    } else {
                         metricsHtml = d.metrics.map(m => `<div class="metric-badge">${m}</div>`).join('');
                     }
+                }
 
+                if (d.is_highlight) {
+                    html += `
+                        <div class="day-container" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 30px;">
+                            <div class="day-number" style="color: var(--orange);">${String(d.day || idx+1).padStart(2, '0')}</div>
+                            <div class="day-details">
+                                <h3 class="day-title" style="color: white; font-size: 2rem;">${d.title || 'Day ' + d.day}</h3>
+                                <p class="day-desc" style="color: rgba(255,255,255,0.8);">${d.desc || ''}</p>
+                                <div class="data-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 20px;">
+                                    ${metricsHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
                     html += `
                         <div class="day-container">
-                            <div class="day-number">${String(d.day || i+1).padStart(2, '0')}</div>
+                            <div class="day-number">${String(d.day || idx+1).padStart(2, '0')}</div>
                             <div class="day-details">
                                 <h3 class="day-title">${d.title || 'Day ' + d.day}</h3>
                                 <p class="day-desc">${d.desc || ''}</p>
@@ -109,17 +188,17 @@ async function loadItinerary() {
                             </div>
                         </div>
                     `;
-                });
+                }
+                
+                daysOnPage++;
+            });
 
-                html += `
-                    </div>
-                    <div class="page-footer">
-                        <span>Nomadller Luxury Expeditions</span>
-                        <span>Page</span>
-                    </div>
+            // Close the final open page
+            html += `
                 </div>
-                `;
-            }
+                <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
+            </div>
+            `;
         }
 
         // Render Inclusions / Exclusions

@@ -3585,9 +3585,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     <label style="font-size: 0.8rem; color: var(--text-secondary);">Description</label>
                     <textarea class="day-desc-input" data-index="${index}" rows="3" placeholder="Describe the day's activities..." style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px;">${dayObj.desc || ''}</textarea>
                 </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex: 2;">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Metrics (Comma separated)</label>
+                        <input type="text" class="day-metrics-input" data-index="${index}" value="${(dayObj.metrics || []).join(', ')}" placeholder="e.g. 10km trek, Elev 3000m" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px;">
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #fff; cursor: pointer; padding: 8px; background: rgba(255, 107, 53, 0.1); border: 1px solid var(--accent); border-radius: 4px;">
+                            <input type="checkbox" class="day-highlight-input" data-index="${index}" ${dayObj.is_highlight ? 'checked' : ''}>
+                            ⭐ Mark as Highlight
+                        </label>
+                    </div>
+                </div>
                 <div>
-                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Metrics (Comma separated)</label>
-                    <input type="text" class="day-metrics-input" data-index="${index}" value="${(dayObj.metrics || []).join(', ')}" placeholder="e.g. 10km trek, Elev 3000m" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Philosophical Quote (Optional)</label>
+                    <textarea class="day-quote-input" data-index="${index}" rows="2" placeholder="e.g. 'The mountains are calling...'" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px; font-style: italic;">${dayObj.quote || ''}</textarea>
                 </div>
             `;
             
@@ -3610,6 +3622,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target.classList.contains('day-title-input')) window.currentItineraryDays[idx].title = val;
                 if (e.target.classList.contains('day-desc-input')) window.currentItineraryDays[idx].desc = val;
                 if (e.target.classList.contains('day-metrics-input')) window.currentItineraryDays[idx].metrics = val.split(',').map(s => s.trim()).filter(s => s);
+                if (e.target.classList.contains('day-quote-input')) window.currentItineraryDays[idx].quote = val;
+                if (e.target.classList.contains('day-highlight-input')) window.currentItineraryDays[idx].is_highlight = e.target.checked;
                 window.updateHiddenItinerary();
             });
         });
@@ -3634,9 +3648,80 @@ document.addEventListener('DOMContentLoaded', () => {
                 day: window.currentItineraryDays.length + 1,
                 title: '',
                 desc: '',
-                metrics: []
+                metrics: [],
+                is_highlight: false,
+                quote: ''
             });
             window.syncItineraryBuilder();
+        });
+    }
+
+    const aiBtn = document.getElementById('generate-ai-itinerary-btn');
+    if (aiBtn) {
+        aiBtn.addEventListener('click', async () => {
+            const title = document.getElementById('pkgTitle').value;
+            const duration = document.getElementById('pkgDuration').value;
+            
+            if (!title) {
+                alert("Please enter a Trip Name first before generating the itinerary.");
+                return;
+            }
+
+            const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
+            if (!apiKey) {
+                alert("DeepSeek API key is not configured in .env!");
+                return;
+            }
+
+            aiBtn.innerHTML = '<i class="ph ph-spinner" style="animation: spin 1s linear infinite; margin-right: 4px;"></i> Generating...';
+            aiBtn.disabled = true;
+
+            try {
+                const prompt = `You are an expert luxury travel itinerary generator. The user is creating a new premium trip named "${title}" which lasts for "${duration || 'unknown days'}".
+                
+                Generate a comprehensive, day-by-day luxury itinerary. Return ONLY a valid, raw JSON array of objects without any markdown formatting, no backticks, just the JSON string starting with [ and ending with ]. 
+                
+                Each day object MUST contain exactly these fields:
+                - "day": integer (the day number)
+                - "title": string (short title of the day, e.g. "Arrival in Kathmandu")
+                - "desc": string (detailed description of the day's events)
+                - "metrics": array of 2-3 short strings with emojis (e.g. ["🥾 10 km trek", "🏔️ Elev: 15,200 ft", "🚌 2 hrs drive"])
+                - "is_highlight": boolean (Set this to true ONLY for the 1 or 2 most climactic and significant days of the trek, like reaching a peak or a major milestone)
+                - "quote": string (A very short, philosophical, poetic, or inspiring quote about this specific part of the journey. Do not use quotes for every single day, just 2 or 3 days where it makes the most emotional impact. If no quote, leave as empty string "")
+                `;
+
+                const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.error.message);
+
+                let content = data.choices[0].message.content;
+                // Strip markdown backticks if AI ignores instruction
+                content = content.replace(/^```json/g, '').replace(/^```/g, '').replace(/```$/g, '').trim();
+                
+                const parsed = JSON.parse(content);
+                window.currentItineraryDays = parsed;
+                window.syncItineraryBuilder();
+                
+                alert("Itinerary generated successfully! Please review the content.");
+            } catch (err) {
+                console.error("AI Generation failed:", err);
+                alert("AI Generation failed. See console for details.");
+            } finally {
+                aiBtn.innerHTML = '<i class="ph ph-sparkle" style="margin-right: 4px;"></i> Auto-Generate with AI';
+                aiBtn.disabled = false;
+            }
         });
     }
 
