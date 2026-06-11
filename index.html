@@ -495,85 +495,12 @@
         </section>
     </main>
 
-    <!-- Annapurna Circuit Modal -->
-    <div id="annapurna-modal" class="modal-overlay">
+    <!-- Dynamic Trip Details Modal -->
+    <div id="trip-modal" class="modal-overlay">
         <div class="modal-content" data-lenis-prevent="true">
-            <button class="modal-close" onclick="document.getElementById('annapurna-modal').classList.remove('active')">&times;</button>
-            <div class="modal-body">
-                <h2>🏔️ Annapurna Circuit Expedition: 14-Day Itinerary</h2>
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; font-weight: bold;">
-                    <span>Price:</span>
-                    <span style="color: var(--accent);">₹76,500</span>
-                    <span style="color: var(--accent-alt);">$800</span>
-                    <span style="color: var(--secondary);">2,942 AED</span>
-                </div>
-                <p>This detailed itinerary is designed for your Annapurna Circuit adventure. It balances trekking, essential acclimatization, and cultural exploration.</p>
-                
-                <h3>Daily Itinerary</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Day</th>
-                            <th>Journey Segment</th>
-                            <th>Distance / Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>01</td><td>Arrival in Kathmandu</td><td>Airport to hotel (5-7 km)</td></tr>
-                        <tr><td>02</td><td>Kathmandu to Besi Sahar</td><td>173 km (6-7 hours)</td></tr>
-                        <tr><td>03</td><td>Besi Sahar to Upper Pisang (4WD Jeep)</td><td>70 km (6-7 hours)</td></tr>
-                        <tr><td>04</td><td>Pisang to Manang</td><td>15 km (6-7 hours)</td></tr>
-                        <tr><td>05</td><td>Manang Acclimatization</td><td>Hike to Gangapurna / Ice Lake</td></tr>
-                        <tr><td>06</td><td>Manang to Shree Kharka</td><td>8-10 km (4-5 hours)</td></tr>
-                        <tr><td>07</td><td>Shree Kharka to Tilicho Base Camp</td><td>6-7 km (4-5 hours)</td></tr>
-                        <tr><td>08</td><td>Tilicho Base Camp to Tilicho Lake</td><td>14-15 km (8-9 hours)</td></tr>
-                        <tr><td>09</td><td>Shree Kharka to Letdar</td><td>10-11 km (5-6 hours)</td></tr>
-                        <tr><td>10</td><td>Letdar to Thorong Phedi / High Camp</td><td>6-8 km (3-5 hours)</td></tr>
-                        <tr><td>11</td><td>Thorong La Pass to Muktinath</td><td>16-18 km (8-10 hours)</td></tr>
-                        <tr><td>12</td><td>Muktinath to Pokhara (Sofa Bus)</td><td>Scenic descent</td></tr>
-                        <tr><td>13</td><td>Pokhara to Kathmandu (Sofa Bus)</td><td>Highway return</td></tr>
-                        <tr><td>14</td><td>Departure</td><td>Drop at Airport</td></tr>
-                    </tbody>
-                </table>
-
-                <h3>🎒 Package Overview</h3>
-                <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 250px;">
-                        <h4 style="color: var(--accent-alt);">✅ Inclusions:</h4>
-                        <ul>
-                            <li>Airport pick up and drop-off</li>
-                            <li>All transfers</li>
-                            <li>Kathmandu to Besisahar: Sofa bus</li>
-                            <li>Besisahar to Upper Pisang: 4x4 Jeep</li>
-                            <li>Thorong Phedi to Muktinath: 4x4 Jeep</li>
-                            <li>Muktinath to Pokhara: Sofa bus</li>
-                            <li>Pokhara to Kathmandu: Sofa bus</li>
-                            <li>Professional Guide & Porter</li>
-                            <li>Trekking permits</li>
-                            <li>2 nights stay in Kathmandu, 1 night in Pokhara</li>
-                            <li>Meals during stay (Breakfast, Lunch, Dinner + Tea/Coffee)</li>
-                            <li>Wi-Fi and charging facilities</li>
-                        </ul>
-                    </div>
-                    <div style="flex: 1; min-width: 250px;">
-                        <h4 style="color: var(--accent);">❌ Exclusions:</h4>
-                        <ul>
-                            <li>Visa fees (if applicable)</li>
-                            <li>International flights</li>
-                            <li>Personal expenses</li>
-                            <li>Meals during transport segments</li>
-                            <li>Travel insurance (Highly recommended)</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <h3>📋 Essential Policies</h3>
-                <p><strong>Insurance:</strong> Travel insurance is strongly recommended and must include medical coverage, personal accident coverage, air ambulance, and helicopter rescue services. Cancellation insurance is also strongly recommended.</p>
-                <p><strong>Cancellation Policy:</strong> Initial booking amount is non-refundable. Cancellations 30 days prior incur 50% charge, 15-30 days incur 75% charge, and within 15 days incur 100% charge. Rescheduling allowed before 1 month (Fee: ₹10,000).</p>
-
-                <div style="text-align: center; margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
-                    <a href="/Annapurna_Circuit_Itinerary.pdf" target="_blank" class="pdf-download-btn">📥 Download Detailed Graphical PDF Itinerary</a>
-                </div>
+            <button class="modal-close" onclick="document.getElementById('trip-modal').classList.remove('active')">&times;</button>
+            <div class="modal-body" id="trip-modal-body">
+                <!-- Content injected by packages.js -->
             </div>
         </div>
     </div>
