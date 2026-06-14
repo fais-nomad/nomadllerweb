@@ -128,12 +128,12 @@ async function loadItinerary() {
             </div>
         `;
 
-        // Master Paginator for Continuous Flow
+        // Master Paginator for Continuous Flow using Pixel Height Estimation
         const Paginator = {
             html: '',
             currentPageHtml: '',
-            currentLines: 0,
-            maxLines: 24, // Maximum physical lines per page (lowered to 24 to guarantee no footer overlap)
+            currentHeight: 0,
+            maxHeight: 900, // Physical usable height in pixels for A4 page (1123 - 80 padding - 100 footer - buffer)
             
             closePage() {
                 if (this.currentPageHtml) {
@@ -145,30 +145,30 @@ async function loadItinerary() {
                         <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
                     </div>`;
                     this.currentPageHtml = '';
-                    this.currentLines = 0;
+                    this.currentHeight = 0;
                 }
             },
             
             addSectionHeader(heading, subheading, subtitleColor='rgba(0,0,0,0.5)') {
-                const linesNeeded = 5;
-                if (this.currentLines + linesNeeded > this.maxLines && this.currentLines > 0) {
+                const heightNeeded = (this.currentHeight > 0 ? 40 : 0) + 65 + (subheading ? 40 : 0); // h2 + subheading + margins
+                if (this.currentHeight + heightNeeded > this.maxHeight && this.currentHeight > 0) {
                     this.closePage();
                 }
-                const marginTop = this.currentLines > 0 ? 'margin-top: 40px;' : '';
+                const marginTop = this.currentHeight > 0 ? 'margin-top: 40px;' : '';
                 this.currentPageHtml += `
                     <h2 class="section-heading" style="${marginTop}">${heading}</h2>
                     ${subheading ? `<div class="section-subheading" style="color: ${subtitleColor}; margin-bottom: 20px;">${subheading}</div>` : ''}
                 `;
-                this.currentLines += linesNeeded;
+                this.currentHeight += heightNeeded;
             },
 
             addDay(dayNum, title, desc, metricsHtml, isHighlight) {
-                const titleLines = 2;
-                const descLines = Math.ceil((desc || '').length / 80);
-                const metricLines = metricsHtml ? (isHighlight ? 4 : 2) : 0;
-                const linesNeeded = titleLines + descLines + metricLines + 3;
+                const descHeight = Math.ceil((desc || '').length / 80) * 20; // 20px per line
+                const metricsHeight = metricsHtml ? (isHighlight ? 70 : 40) : 0;
+                const baseHeight = isHighlight ? 120 : 100; // titles, paddings, borders
+                const heightNeeded = baseHeight + descHeight + metricsHeight;
 
-                if (this.currentLines + linesNeeded > this.maxLines && this.currentLines > 0) {
+                if (this.currentHeight + heightNeeded > this.maxHeight && this.currentHeight > 0) {
                     this.closePage();
                     this.addSectionHeader('The Journey Continues', '');
                 }
@@ -198,7 +198,7 @@ async function loadItinerary() {
                         </div>
                     `;
                 }
-                this.currentLines += linesNeeded;
+                this.currentHeight += heightNeeded;
             },
 
             addCards(cards) {
@@ -215,13 +215,16 @@ async function loadItinerary() {
                     let isFirstChunk = true;
 
                     while(remainingItems.length > 0) {
-                        const titleLines = 4; 
-                        if (this.currentLines + titleLines >= this.maxLines && this.currentLines > 0) {
+                        const titleHeight = 80; // <h3> + margins + margin-bottom: 20px
+                        if (this.currentHeight + titleHeight >= this.maxHeight && this.currentHeight > 0) {
                             this.closePage();
                         }
                         
-                        const availableLines = this.maxLines - this.currentLines - titleLines;
-                        let maxItemsForChunk = availableLines * 2;
+                        const availableHeight = this.maxHeight - this.currentHeight - titleHeight;
+                        // each row in 2 columns takes ~25px
+                        const maxRows = Math.floor(availableHeight / 25);
+                        let maxItemsForChunk = maxRows * 2;
+                        
                         if (maxItemsForChunk <= 0) {
                             this.closePage();
                             continue;
@@ -237,10 +240,11 @@ async function loadItinerary() {
                                 </ul>
                             </div>
                             `;
-                            this.currentLines += titleLines + Math.ceil(chunk.length / 2);
+                            const rowsUsed = Math.ceil(chunk.length / 2);
+                            this.currentHeight += titleHeight + (rowsUsed * 25);
                             isFirstChunk = false;
                         }
-                        if (this.currentLines >= this.maxLines) {
+                        if (this.currentHeight >= this.maxHeight) {
                             this.closePage();
                         }
                     }
