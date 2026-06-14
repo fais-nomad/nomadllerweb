@@ -133,7 +133,7 @@ async function loadItinerary() {
             html: '',
             currentPageHtml: '',
             currentLines: 0,
-            maxLines: 36, // Maximum physical lines per page
+            maxLines: 24, // Maximum physical lines per page (lowered to 24 to guarantee no footer overlap)
             
             closePage() {
                 if (this.currentPageHtml) {
