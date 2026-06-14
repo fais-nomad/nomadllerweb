@@ -151,7 +151,9 @@ async function loadItinerary() {
             
             addSectionHeader(heading, subheading, subtitleColor='rgba(0,0,0,0.5)') {
                 const heightNeeded = (this.currentHeight > 0 ? 40 : 0) + 65 + (subheading ? 40 : 0); // h2 + subheading + margins
-                if (this.currentHeight + heightNeeded > this.maxHeight && this.currentHeight > 0) {
+                
+                // Anti-orphan logic: require at least 250px of extra space for content to follow the header
+                if (this.currentHeight + heightNeeded + 250 > this.maxHeight && this.currentHeight > 0) {
                     this.closePage();
                 }
                 const marginTop = this.currentHeight > 0 ? 'margin-top: 40px;' : '';
@@ -159,7 +161,7 @@ async function loadItinerary() {
                     <h2 class="section-heading" style="${marginTop}">${heading}</h2>
                     ${subheading ? `<div class="section-subheading" style="color: ${subtitleColor}; margin-bottom: 20px;">${subheading}</div>` : ''}
                 `;
-                this.currentHeight += heightNeeded;
+                this.currentHeight += (this.currentHeight === 0 ? (65 + (subheading ? 40 : 0)) : heightNeeded);
             },
 
             addDay(dayNum, title, desc, metricsHtml, isHighlight) {
