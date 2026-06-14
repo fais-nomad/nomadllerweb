@@ -68,8 +68,8 @@ async function loadItinerary() {
             let html = `
             <!-- Action Bar for Web View -->
             <div id="action-bar" style="position: fixed; top: 0; left: 0; right: 0; background: rgba(11,17,32,0.9); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 9999; color: white;">
-                <div style="font-family: 'Playfair Display', serif; font-size: 1.2rem;">NOMADLLER</div>
-                <div style="display: flex; gap: 15px;">
+                <div class="brand-text" style="font-family: 'Playfair Display', serif; font-size: 1.2rem;">NOMADLLER</div>
+                <div class="button-group" style="display: flex; gap: 15px;">
                     <button id="download-pdf-btn" style="background: var(--orange); color: white; border: none; padding: 8px 20px; font-family: 'Inter', sans-serif; font-size: 0.8rem; letter-spacing: 2px; cursor: pointer; border-radius: 4px; text-transform: uppercase;">Download PDF</button>
                     <button onclick="try { window.close(); } catch(e) {} setTimeout(() => { if(!window.closed) { if(window.history.length > 1) window.history.back(); else window.location.href='/dashboard.html'; } }, 100);" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 20px; font-family: 'Inter', sans-serif; font-size: 0.8rem; letter-spacing: 2px; cursor: pointer; border-radius: 4px; text-transform: uppercase;">Close</button>
                 </div>
@@ -83,21 +83,31 @@ async function loadItinerary() {
                         overflow-x: hidden;
                         background: #111;
                     }
+                    #action-bar {
+                        padding: 10px 15px !important;
+                    }
+                    #action-bar .brand-text {
+                        font-size: 0.9rem !important;
+                    }
+                    #action-bar button {
+                        padding: 6px 12px !important;
+                        font-size: 0.65rem !important;
+                        letter-spacing: 1px !important;
+                    }
+                    #action-bar .button-group {
+                        gap: 8px !important;
+                    }
                     #pdf-wrapper {
-                        transform: scale(calc(100vw / 794));
-                        transform-origin: top center;
-                        width: 794px;
-                        margin: 0 auto;
                         display: flex;
                         flex-direction: column;
-                        align-items: center;
+                        align-items: flex-start;
+                        width: 100vw;
+                        overflow: hidden;
                     }
                     .page {
-                        margin-bottom: 0 !important; /* The scaling handles the gap naturally if they are block elements, wait no, scale leaves gaps. We'll use zoom instead of transform for perfect layout on mobile Safari! */
-                    }
-                    #pdf-wrapper {
-                        zoom: calc(100vw / 794);
-                        transform: none;
+                        transform: scale(calc(100vw / 794));
+                        transform-origin: top left;
+                        margin-bottom: calc(-1123px * (1 - (100vw / 794))) !important;
                     }
                 }
             </style>
