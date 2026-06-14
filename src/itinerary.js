@@ -153,8 +153,8 @@ async function loadItinerary() {
             `;
 
             days.forEach((d, idx) => {
-                if (daysOnPage >= 2) {
-                    // Standard pagination - max 2 days per page
+                if (daysOnPage >= 3) {
+                    // Standard pagination - max 3 days per page
                     html += `
                         </div>
                         <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
@@ -218,10 +218,11 @@ async function loadItinerary() {
             `;
         }
 
-        // Helper to safely chunk lists into pages
-        function renderDataCardsIntoPages(sectionHeading, subheading, cards, maxItemsPerPage = 12) {
+        // Helper to safely chunk lists into pages with realistic height calculation
+        function renderDataCardsIntoPages(sectionHeading, subheading, cards, dummyArg = null) {
             let pagesHtml = '';
-            let currentItems = 0;
+            let currentLines = 0;
+            const maxLinesPerPage = 18; // approx 18 lines of physical space per page
             let currentPageHtml = '';
 
             const closePage = () => {
@@ -240,15 +241,13 @@ async function loadItinerary() {
                         </div>
                     </div>`;
                     currentPageHtml = '';
-                    currentItems = 0;
+                    currentLines = 0;
                 }
             };
 
             cards.forEach(card => {
                 if (!card.items || card.items.length === 0 || card.items[0].trim() === '') return;
                 
-                // CRITICAL FIX: If the user typed a massive single paragraph using '•' instead of hitting Enter, 
-                // we must manually split it into separate array items so the chunking algorithm can paginate it.
                 let normalizedItems = [];
                 card.items.forEach(item => {
                     const splitItems = item.split(/[•\n]/).filter(s => s.trim().length > 0);
@@ -259,7 +258,18 @@ async function loadItinerary() {
                 let isFirstChunk = true;
 
                 while(remainingItems.length > 0) {
-                    let chunk = remainingItems.splice(0, maxItemsPerPage - currentItems);
+                    const titleLines = 4; // overhead for <h3> + margins
+                    const availableLines = maxLinesPerPage - currentLines - titleLines;
+
+                    if (availableLines <= 0) {
+                        closePage();
+                        continue;
+                    }
+
+                    // Since it's 2 columns, availableLines * 2 is max items we can fit
+                    let maxItemsForChunk = availableLines * 2;
+                    let chunk = remainingItems.splice(0, maxItemsForChunk);
+                    
                     if (chunk.length > 0) {
                         currentPageHtml += `
                         <div class="data-card" style="margin-bottom: 20px;">
@@ -269,10 +279,10 @@ async function loadItinerary() {
                             </ul>
                         </div>
                         `;
-                        currentItems += chunk.length;
+                        currentLines += titleLines + Math.ceil(chunk.length / 2);
                         isFirstChunk = false;
                     }
-                    if (currentItems >= maxItemsPerPage) {
+                    if (currentLines >= maxLinesPerPage) {
                         closePage();
                     }
                 }
