@@ -174,7 +174,7 @@ async function loadItinerary() {
                             const parts = m.split(' ');
                             const icon = parts[0];
                             const text = parts.slice(1).join(' ');
-                            return `<div class="c-metric"><span class="t-micro" style="color: rgba(255,255,255,0.7);">${icon}</span><span style="font-size: 1.2rem; font-family: var(--font-display); display: block;">${text}</span></div>`;
+                            return `<div class="c-metric"><span class="t-micro" style="color: var(--orange);">${icon}</span><span style="font-size: 1.2rem; font-family: var(--font-display); display: block;">${text}</span></div>`;
                         }).join('');
                     } else {
                         metricsHtml = d.metrics.map(m => `<div class="metric-badge">${m}</div>`).join('');
@@ -183,11 +183,11 @@ async function loadItinerary() {
 
                 if (d.is_highlight) {
                     html += `
-                        <div class="day-container" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 30px;">
+                        <div class="day-container" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 30px;">
                             <div class="day-number" style="color: var(--orange);">${String(d.day || idx+1).padStart(2, '0')}</div>
                             <div class="day-details">
-                                <h3 class="day-title" style="color: white; font-size: 2rem;">${d.title || 'Day ' + d.day}</h3>
-                                <p class="day-desc" style="color: rgba(255,255,255,0.8);">${d.desc || ''}</p>
+                                <h3 class="day-title" style="font-size: 2rem;">${d.title || 'Day ' + d.day}</h3>
+                                <p class="day-desc" style="color: rgba(0,0,0,0.6);">${d.desc || ''}</p>
                                 <div class="data-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 20px;">
                                     ${metricsHtml}
                                 </div>
