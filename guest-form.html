@@ -1,19 +1,20 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nomadller | Guest Details Form</title>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/src/admin.css">
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- PDF.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nomadller | Guest Details Form</title>
+<link href="/style.css" rel="stylesheet"/>
+<link href="/src/admin.css" rel="stylesheet"/>
+<!-- Phosphor Icons -->
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
-    <style>
+<style>
         .guest-container {
             max-width: 800px;
             margin: 2rem auto; /* Reduced margin */
@@ -121,244 +122,229 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
-</head>
+<link href="https://nomadller.com/guest-form" rel="canonical"/><meta content="Nomadller provides top trekking and adventure experiences. Join us for an unforgettable expedition." name="description"/></head>
 <body class="admin-body" style="display: block;">
-    <div class="loading-overlay" id="ai-loading">
-        <div class="spinner"></div>
-        <h3 style="margin-top: 1rem; color: white;">AI is reading your ticket...</h3>
-    </div>
-
-    <div class="guest-container reveal">
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <div id="brand-logo" class="login-logo" style="font-size: 2.5rem;">NOMADLLER</div>
-            <p style="color: var(--text-secondary);">Guest Registration Portal</p>
-        </div>
-
-        <!-- Trip Header & Itinerary -->
-        <div class="form-section" style="border-left: 4px solid var(--accent); background: linear-gradient(135deg, rgba(255,107,53,0.1) 0%, rgba(0,0,0,0) 100%); margin-bottom: 3rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <div>
-                    <h1 id="display-trip-name" style="color: white; margin: 0; font-size: 1.8rem; font-family: var(--font-heading);">ABC TREK WITH GHANDRUK</h1>
-                    <p id="display-trip-dates" style="color: var(--accent); margin: 0.5rem 0 0 0; font-weight: bold; letter-spacing: 1px;"></p>
-                </div>
-                <button type="button" id="btn-view-itinerary" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; font-size: 0.9rem;">
-                    <i class="ph ph-map-trifold" style="vertical-align: middle; margin-right: 0.5rem;"></i> VIEW ITINERARY
+<div class="loading-overlay" id="ai-loading">
+<div class="spinner"></div>
+<h3 style="margin-top: 1rem; color: white;">AI is reading your ticket...</h3>
+</div>
+<div class="guest-container reveal">
+<div style="text-align: center; margin-bottom: 3rem;">
+<div class="login-logo" id="brand-logo" style="font-size: 2.5rem;">NOMADLLER</div>
+<p style="color: var(--text-secondary);">Guest Registration Portal</p>
+</div>
+<!-- Trip Header & Itinerary -->
+<div class="form-section" style="border-left: 4px solid var(--accent); background: linear-gradient(135deg, rgba(255,107,53,0.1) 0%, rgba(0,0,0,0) 100%); margin-bottom: 3rem;">
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+<div>
+<h1 id="display-trip-name" style="color: white; margin: 0; font-size: 1.8rem; font-family: var(--font-heading);">ABC TREK WITH GHANDRUK</h1>
+<p id="display-trip-dates" style="color: var(--accent); margin: 0.5rem 0 0 0; font-weight: bold; letter-spacing: 1px;"></p>
+</div>
+<button id="btn-view-itinerary" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; font-size: 0.9rem;" type="button">
+<i class="ph ph-map-trifold" style="vertical-align: middle; margin-right: 0.5rem;"></i> VIEW ITINERARY
                 </button>
-            </div>
-
-            <!-- Full Itinerary Content (Hidden) -->
-            <div id="itinerary-panel" style="display: none; margin-top: 2rem; border-top: 1px solid var(--admin-border); padding-top: 2rem;">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-                    <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 10px; text-align: center; border: 1px solid var(--admin-border);">
-                        <p style="color: var(--text-secondary); font-size: 0.7rem; margin: 0;">DURATION</p>
-                        <strong style="color: white; font-size: 0.9rem;">12 Days</strong>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 10px; text-align: center; border: 1px solid var(--admin-border);">
-                        <p style="color: var(--text-secondary); font-size: 0.7rem; margin: 0;">MAX ALTITUDE</p>
-                        <strong style="color: white; font-size: 0.9rem;">4,130 m</strong>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 10px; text-align: center; border: 1px solid var(--admin-border);">
-                        <p style="color: var(--text-secondary); font-size: 0.7rem; margin: 0;">PRICE</p>
-                        <strong style="color: white; font-size: 0.9rem;">₹38,000</strong>
-                    </div>
-                </div>
-
-                <div class="form-grid" style="margin-top: 1.5rem; gap: 1rem;">
-                    <div class="day-wise">
-                        <h3 style="color: var(--accent); font-size: 1.1rem; margin-bottom: 1.5rem;">DAY-WISE ITINERARY</h3>
-                        <div style="display: flex; flex-direction: column; gap: 1.2rem; max-height: 400px; overflow-y: auto; padding-right: 1rem; border-right: 1px solid var(--admin-border);">
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 1:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Arrival in Kathmandu & Transfer to Hotel.</span></div>
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 2:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Kathmandu to Pokhara via scenic drive.</span></div>
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 3:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Pokhara to Ghandruk Village (Jeep Drive).</span></div>
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 4:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Trek to Chhomrong (Views of Annapurna South).</span></div>
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 5:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Trek to Dovan through dense forests.</span></div>
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 6:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Trek to Deurali (Bamboo & Rhododendron).</span></div>
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 7:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Reach ABC (4,130 m) via MBC. Spectacular views.</span></div>
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 8:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">ABC to Bamboo (Descent through alpine forests).</span></div>
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 9:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Bamboo to Pokhara via Jhinu Hot Springs.</span></div>
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 10:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Return to Kathmandu (Tourist Bus).</span></div>
-                            <div><strong style="color: white; font-size: 0.9rem;">DAY 11:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Departure from Kathmandu Airport.</span></div>
-                        </div>
-                    </div>
-                    <div class="inclusions">
-                        <h3 style="color: var(--accent); font-size: 1.1rem; margin-bottom: 1rem;">INCLUSIONS</h3>
-                        <ul style="color: var(--text-secondary); font-size: 0.85rem; padding-left: 1rem; line-height: 1.6;">
-                            <li>Airport Pickup/Drop & Local Jeep/Bus transfers</li>
-                            <li>Hotel stays in KTM/Pokhara & Teahouses on trek</li>
-                            <li>Licensed Guide & Porter service</li>
-                            <li>All Meals (Breakfast/Lunch/Dinner) during trek</li>
-                            <li>Annapurna Permit (ACAP) & TIMS</li>
-                        </ul>
-                        <h3 style="color: #ff4d4d; font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">EXCLUSIONS</h3>
-                        <ul style="color: var(--text-secondary); font-size: 0.85rem; padding-left: 1rem; line-height: 1.6;">
-                            <li>International Airfare & Visa fees</li>
-                            <li>Travel Insurance (Mandatory)</li>
-                            <li>Personal trekking gear & Guide tips</li>
-                            <li>Hot showers/Wi-Fi during trek</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <form id="guest-registration-form">
-            <!-- 1. Guest Details -->
-            <div class="form-section">
-                <h2 class="section-title">1. Personal Details</h2>
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Full Name</label>
-                        <input type="text" id="g_name" required placeholder="As per records">
-                    </div>
-                    <div class="form-group">
-                        <label>Contact No.</label>
-                        <input type="tel" id="g_contact" required placeholder="+91 XXXXX XXXXX">
-                    </div>
-                    <div class="form-group">
-                        <label>Emergency Contact No.</label>
-                        <input type="tel" id="g_emergency" required placeholder="+91 XXXXX XXXXX">
-                    </div>
-                    <div class="form-group">
-                        <label>Blood Group</label>
-                        <input type="text" id="g_blood" required placeholder="e.g. O+">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. Passport Details -->
-            <div class="form-section">
-                <h2 class="section-title">2. Passport Details</h2>
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Name on Passport</label>
-                        <input type="text" id="p_name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Passport Number</label>
-                        <input type="text" id="p_no" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Expiry Date</label>
-                        <input type="date" id="p_expiry" required>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. Flight Details -->
-            <div class="form-section">
-                <h2 class="section-title">3. Flight Details</h2>
-                
-                <div class="upload-area" id="drop-zone">
-                    <i class="ph ph-upload-simple" style="font-size: 3rem; color: var(--accent-alt); margin-bottom: 1rem;"></i>
-                    <h3 style="color: var(--accent-alt);">Auto-fill with AI</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Upload your flight ticket (PDF) and our AI will extract the details automatically.</p>
-                    <input type="file" id="ticket-upload" accept="application/pdf" style="display: none;">
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group full-width" style="margin-top: 1rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 0.5rem;">
-                        <strong style="color: white;">Arrival Flight</strong>
-                    </div>
-                    <div class="form-group">
-                        <label>Flight No</label>
-                        <input type="text" id="arr_flight_no">
-                    </div>
-                    <div class="form-group">
-                        <label>Departure Place</label>
-                        <input type="text" id="arr_dep_place" placeholder="e.g. Mumbai (BOM)">
-                    </div>
-                    <div class="form-group">
-                        <label>Arrival Place</label>
-                        <input type="text" id="arr_arr_place" placeholder="e.g. Bali (DPS)">
-                    </div>
-                    <div class="form-group">
-                        <label>Departure Date</label>
-                        <input type="date" id="arr_dep_date">
-                    </div>
-                    <div class="form-group">
-                        <label>Arrival Date</label>
-                        <input type="date" id="arr_arr_date">
-                    </div>
-                    <div class="form-group">
-                        <label>Departure Time</label>
-                        <input type="time" id="arr_dep_time">
-                    </div>
-                    <div class="form-group">
-                        <label>Arrival Time</label>
-                        <input type="time" id="arr_arr_time">
-                    </div>
-                </div>
-
-                <div class="form-grid" style="margin-top: 2rem;">
-                    <div class="form-group full-width" style="margin-top: 1rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                        <strong style="color: white;">Departure Flight (Return)</strong>
-                        <button type="button" id="upload-return-btn" style="background: rgba(255,107,53,0.1); border: 1px solid var(--admin-primary); color: var(--admin-primary); padding: 0.3rem 0.8rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
-                            <i class="ph ph-upload-simple"></i> AI Auto-fill
+</div>
+<!-- Full Itinerary Content (Hidden) -->
+<div id="itinerary-panel" style="display: none; margin-top: 2rem; border-top: 1px solid var(--admin-border); padding-top: 2rem;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+<div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 10px; text-align: center; border: 1px solid var(--admin-border);">
+<p style="color: var(--text-secondary); font-size: 0.7rem; margin: 0;">DURATION</p>
+<strong style="color: white; font-size: 0.9rem;">12 Days</strong>
+</div>
+<div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 10px; text-align: center; border: 1px solid var(--admin-border);">
+<p style="color: var(--text-secondary); font-size: 0.7rem; margin: 0;">MAX ALTITUDE</p>
+<strong style="color: white; font-size: 0.9rem;">4,130 m</strong>
+</div>
+<div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 10px; text-align: center; border: 1px solid var(--admin-border);">
+<p style="color: var(--text-secondary); font-size: 0.7rem; margin: 0;">PRICE</p>
+<strong style="color: white; font-size: 0.9rem;">₹38,000</strong>
+</div>
+</div>
+<div class="form-grid" style="margin-top: 1.5rem; gap: 1rem;">
+<div class="day-wise">
+<h3 style="color: var(--accent); font-size: 1.1rem; margin-bottom: 1.5rem;">DAY-WISE ITINERARY</h3>
+<div style="display: flex; flex-direction: column; gap: 1.2rem; max-height: 400px; overflow-y: auto; padding-right: 1rem; border-right: 1px solid var(--admin-border);">
+<div><strong style="color: white; font-size: 0.9rem;">DAY 1:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Arrival in Kathmandu &amp; Transfer to Hotel.</span></div>
+<div><strong style="color: white; font-size: 0.9rem;">DAY 2:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Kathmandu to Pokhara via scenic drive.</span></div>
+<div><strong style="color: white; font-size: 0.9rem;">DAY 3:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Pokhara to Ghandruk Village (Jeep Drive).</span></div>
+<div><strong style="color: white; font-size: 0.9rem;">DAY 4:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Trek to Chhomrong (Views of Annapurna South).</span></div>
+<div><strong style="color: white; font-size: 0.9rem;">DAY 5:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Trek to Dovan through dense forests.</span></div>
+<div><strong style="color: white; font-size: 0.9rem;">DAY 6:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Trek to Deurali (Bamboo &amp; Rhododendron).</span></div>
+<div><strong style="color: white; font-size: 0.9rem;">DAY 7:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Reach ABC (4,130 m) via MBC. Spectacular views.</span></div>
+<div><strong style="color: white; font-size: 0.9rem;">DAY 8:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">ABC to Bamboo (Descent through alpine forests).</span></div>
+<div><strong style="color: white; font-size: 0.9rem;">DAY 9:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Bamboo to Pokhara via Jhinu Hot Springs.</span></div>
+<div><strong style="color: white; font-size: 0.9rem;">DAY 10:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Return to Kathmandu (Tourist Bus).</span></div>
+<div><strong style="color: white; font-size: 0.9rem;">DAY 11:</strong> <span style="color: var(--text-secondary); font-size: 0.9rem;">Departure from Kathmandu Airport.</span></div>
+</div>
+</div>
+<div class="inclusions">
+<h3 style="color: var(--accent); font-size: 1.1rem; margin-bottom: 1rem;">INCLUSIONS</h3>
+<ul style="color: var(--text-secondary); font-size: 0.85rem; padding-left: 1rem; line-height: 1.6;">
+<li>Airport Pickup/Drop &amp; Local Jeep/Bus transfers</li>
+<li>Hotel stays in KTM/Pokhara &amp; Teahouses on trek</li>
+<li>Licensed Guide &amp; Porter service</li>
+<li>All Meals (Breakfast/Lunch/Dinner) during trek</li>
+<li>Annapurna Permit (ACAP) &amp; TIMS</li>
+</ul>
+<h3 style="color: #ff4d4d; font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">EXCLUSIONS</h3>
+<ul style="color: var(--text-secondary); font-size: 0.85rem; padding-left: 1rem; line-height: 1.6;">
+<li>International Airfare &amp; Visa fees</li>
+<li>Travel Insurance (Mandatory)</li>
+<li>Personal trekking gear &amp; Guide tips</li>
+<li>Hot showers/Wi-Fi during trek</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<form id="guest-registration-form">
+<!-- 1. Guest Details -->
+<div class="form-section">
+<h2 class="section-title">1. Personal Details</h2>
+<div class="form-grid">
+<div class="form-group full-width">
+<label>Full Name</label>
+<input id="g_name" placeholder="As per records" required="" type="text"/>
+</div>
+<div class="form-group">
+<label>Contact No.</label>
+<input id="g_contact" placeholder="+91 XXXXX XXXXX" required="" type="tel"/>
+</div>
+<div class="form-group">
+<label>Emergency Contact No.</label>
+<input id="g_emergency" placeholder="+91 XXXXX XXXXX" required="" type="tel"/>
+</div>
+<div class="form-group">
+<label>Blood Group</label>
+<input id="g_blood" placeholder="e.g. O+" required="" type="text"/>
+</div>
+</div>
+</div>
+<!-- 2. Passport Details -->
+<div class="form-section">
+<h2 class="section-title">2. Passport Details</h2>
+<div class="form-grid">
+<div class="form-group full-width">
+<label>Name on Passport</label>
+<input id="p_name" required="" type="text"/>
+</div>
+<div class="form-group">
+<label>Passport Number</label>
+<input id="p_no" required="" type="text"/>
+</div>
+<div class="form-group">
+<label>Expiry Date</label>
+<input id="p_expiry" required="" type="date"/>
+</div>
+</div>
+</div>
+<!-- 3. Flight Details -->
+<div class="form-section">
+<h2 class="section-title">3. Flight Details</h2>
+<div class="upload-area" id="drop-zone">
+<i class="ph ph-upload-simple" style="font-size: 3rem; color: var(--accent-alt); margin-bottom: 1rem;"></i>
+<h3 style="color: var(--accent-alt);">Auto-fill with AI</h3>
+<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Upload your flight ticket (PDF) and our AI will extract the details automatically.</p>
+<input accept="application/pdf" id="ticket-upload" style="display: none;" type="file"/>
+</div>
+<div class="form-grid">
+<div class="form-group full-width" style="margin-top: 1rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 0.5rem;">
+<strong style="color: white;">Arrival Flight</strong>
+</div>
+<div class="form-group">
+<label>Flight No</label>
+<input id="arr_flight_no" type="text"/>
+</div>
+<div class="form-group">
+<label>Departure Place</label>
+<input id="arr_dep_place" placeholder="e.g. Mumbai (BOM)" type="text"/>
+</div>
+<div class="form-group">
+<label>Arrival Place</label>
+<input id="arr_arr_place" placeholder="e.g. Bali (DPS)" type="text"/>
+</div>
+<div class="form-group">
+<label>Departure Date</label>
+<input id="arr_dep_date" type="date"/>
+</div>
+<div class="form-group">
+<label>Arrival Date</label>
+<input id="arr_arr_date" type="date"/>
+</div>
+<div class="form-group">
+<label>Departure Time</label>
+<input id="arr_dep_time" type="time"/>
+</div>
+<div class="form-group">
+<label>Arrival Time</label>
+<input id="arr_arr_time" type="time"/>
+</div>
+</div>
+<div class="form-grid" style="margin-top: 2rem;">
+<div class="form-group full-width" style="margin-top: 1rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+<strong style="color: white;">Departure Flight (Return)</strong>
+<button id="upload-return-btn" style="background: rgba(255,107,53,0.1); border: 1px solid var(--admin-primary); color: var(--admin-primary); padding: 0.3rem 0.8rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" type="button">
+<i class="ph ph-upload-simple"></i> AI Auto-fill
                         </button>
-                        <input type="file" id="return-ticket-upload" accept="application/pdf" style="display: none;">
-                    </div>
-                    <div class="form-group">
-                        <label>Flight No</label>
-                        <input type="text" id="dep_flight_no">
-                    </div>
-                    <div class="form-group">
-                        <label>Departure Place</label>
-                        <input type="text" id="dep_dep_place" placeholder="e.g. Bali (DPS)">
-                    </div>
-                    <div class="form-group">
-                        <label>Arrival Place</label>
-                        <input type="text" id="dep_arr_place" placeholder="e.g. Mumbai (BOM)">
-                    </div>
-                    <div class="form-group">
-                        <label>Departure Date</label>
-                        <input type="date" id="dep_dep_date">
-                    </div>
-                    <div class="form-group">
-                        <label>Arrival Date</label>
-                        <input type="date" id="dep_arr_date">
-                    </div>
-                    <div class="form-group">
-                        <label>Departure Time</label>
-                        <input type="time" id="dep_dep_time">
-                    </div>
-                    <div class="form-group">
-                        <label>Arrival Time</label>
-                        <input type="time" id="dep_arr_time">
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-section" style="margin-top: 2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--admin-border); padding: 1.5rem;">
-                <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                    <input type="checkbox" id="terms-checkbox" style="width: 20px; height: 20px; cursor: pointer; margin-top: 0.2rem;">
-                    <label for="terms-checkbox" style="color: var(--text-secondary); font-size: 0.9rem; cursor: pointer;">
-                        I have read and agree to the <a href="#" id="view-terms-link" style="color: var(--accent); text-decoration: underline;">Terms & Conditions</a> and <a href="#" id="view-refund-link" style="color: var(--accent); text-decoration: underline;">Refund & Cancellation Policy</a>.
+<input accept="application/pdf" id="return-ticket-upload" style="display: none;" type="file"/>
+</div>
+<div class="form-group">
+<label>Flight No</label>
+<input id="dep_flight_no" type="text"/>
+</div>
+<div class="form-group">
+<label>Departure Place</label>
+<input id="dep_dep_place" placeholder="e.g. Bali (DPS)" type="text"/>
+</div>
+<div class="form-group">
+<label>Arrival Place</label>
+<input id="dep_arr_place" placeholder="e.g. Mumbai (BOM)" type="text"/>
+</div>
+<div class="form-group">
+<label>Departure Date</label>
+<input id="dep_dep_date" type="date"/>
+</div>
+<div class="form-group">
+<label>Arrival Date</label>
+<input id="dep_arr_date" type="date"/>
+</div>
+<div class="form-group">
+<label>Departure Time</label>
+<input id="dep_dep_time" type="time"/>
+</div>
+<div class="form-group">
+<label>Arrival Time</label>
+<input id="dep_arr_time" type="time"/>
+</div>
+</div>
+</div>
+<div class="form-section" style="margin-top: 2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--admin-border); padding: 1.5rem;">
+<div style="display: flex; align-items: flex-start; gap: 1rem;">
+<input id="terms-checkbox" style="width: 20px; height: 20px; cursor: pointer; margin-top: 0.2rem;" type="checkbox"/>
+<label for="terms-checkbox" style="color: var(--text-secondary); font-size: 0.9rem; cursor: pointer;">
+                        I have read and agree to the <a href="#" id="view-terms-link" style="color: var(--accent); text-decoration: underline;">Terms &amp; Conditions</a> and <a href="#" id="view-refund-link" style="color: var(--accent); text-decoration: underline;">Refund &amp; Cancellation Policy</a>.
                     </label>
-                </div>
-            </div>
-
-            <button type="submit" class="submit-btn" id="submit-registration" disabled style="opacity: 0.5; cursor: not-allowed;">SUBMIT REGISTRATION</button>
-
-        </form>
-        
-        <div id="success-msg" style="display: none; text-align: center; padding: 4rem 2rem; background: var(--admin-card-bg); border-radius: 15px; border: 1px solid var(--admin-success);">
-            <i class="ph ph-check-circle" style="font-size: 5rem; color: var(--admin-success); margin-bottom: 1rem;"></i>
-            <h2 style="color: white;">Registration Complete!</h2>
-            <p style="color: var(--text-secondary); margin-top: 1rem;">Thank you for submitting your details. The Nomadller team has received your information securely.</p>
-        </div>
-        </div>
-
-        <!-- Terms Modal -->
-        <div id="terms-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; padding: 2rem;">
-            <div style="background: var(--admin-card-bg); width: 100%; max-width: 800px; max-height: 80vh; border-radius: 15px; border: 1px solid var(--admin-border); display: flex; flex-direction: column;">
-                <div style="padding: 1.5rem; border-bottom: 1px solid var(--admin-border); display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="color: white; margin: 0; font-family: var(--font-heading);">TERMS & POLICIES</h2>
-                    <i class="ph ph-x" id="close-terms-modal" style="color: white; font-size: 1.5rem; cursor: pointer;"></i>
-                </div>
-                <div id="terms-modal-content" style="padding: 2rem; overflow-y: auto; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; font-family: 'Inter', sans-serif;">
-                    <!-- Content will be injected via JS or hardcoded -->
+</div>
+</div>
+<button class="submit-btn" disabled="" id="submit-registration" style="opacity: 0.5; cursor: not-allowed;" type="submit">SUBMIT REGISTRATION</button>
+</form>
+<div id="success-msg" style="display: none; text-align: center; padding: 4rem 2rem; background: var(--admin-card-bg); border-radius: 15px; border: 1px solid var(--admin-success);">
+<i class="ph ph-check-circle" style="font-size: 5rem; color: var(--admin-success); margin-bottom: 1rem;"></i>
+<h2 style="color: white;">Registration Complete!</h2>
+<p style="color: var(--text-secondary); margin-top: 1rem;">Thank you for submitting your details. The Nomadller team has received your information securely.</p>
+</div>
+</div>
+<!-- Terms Modal -->
+<div id="terms-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; padding: 2rem;">
+<div style="background: var(--admin-card-bg); width: 100%; max-width: 800px; max-height: 80vh; border-radius: 15px; border: 1px solid var(--admin-border); display: flex; flex-direction: column;">
+<div style="padding: 1.5rem; border-bottom: 1px solid var(--admin-border); display: flex; justify-content: space-between; align-items: center;">
+<h2 style="color: white; margin: 0; font-family: var(--font-heading);">TERMS &amp; POLICIES</h2>
+<i class="ph ph-x" id="close-terms-modal" style="color: white; font-size: 1.5rem; cursor: pointer;"></i>
+</div>
+<div id="terms-modal-content" style="padding: 2rem; overflow-y: auto; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; font-family: 'Inter', sans-serif;">
+<!-- Content will be injected via JS or hardcoded -->
 ━━━━━━━━━━━━━━━━━━
-TERMS & CONDITIONS
+TERMS &amp; CONDITIONS
 ━━━━━━━━━━━━━━━━━━
 
 1. BOOKING CONFIRMATION
@@ -371,10 +357,10 @@ TERMS & CONDITIONS
 • Passport must have minimum 6 months validity from travel date.
 • Any issue arising due to invalid or missing documents will be the participant’s responsibility.
 
-3. MEDICAL & FITNESS REQUIREMENT
+3. MEDICAL &amp; FITNESS REQUIREMENT
 • High-altitude trekking involves physical exertion and weather-related risks.
 • Participants must ensure they are medically fit for trekking.
-• Travel & medical insurance is mandatory.
+• Travel &amp; medical insurance is mandatory.
 
 4. ITINERARY CHANGES
 • Itinerary may change due to weather conditions, road blockage, landslides, flight delays, political situations, natural disasters, or operational reasons.
@@ -386,13 +372,13 @@ TERMS & CONDITIONS
 
 6. TRANSPORTATION
 Included transportation:
-• Airport pickup & drop in Kathmandu
+• Airport pickup &amp; drop in Kathmandu
 • Tourist Bus: Kathmandu → Pokhara
 • Tourist Bus: Pokhara → Kathmandu
 • Jeep Transfer: Pokhara → Ghandruk
 • Jeep Transfer: Jhinu → Pokhara
 
-7. GUIDE & PORTER
+7. GUIDE &amp; PORTER
 • Licensed trekking guide and porter services are included.
 • Participants are expected to respect guides, porters, and local communities.
 • Organizer reserves the right to remove any participant for misconduct or unsafe behavior.
@@ -423,14 +409,14 @@ Included transportation:
 12. UNUSED SERVICES
 • No refund shall be provided for unused services, voluntary withdrawal, early exit from trek, missed transportation, or missed meals/accommodation.
 
-13. PHOTOGRAPHY & MEDIA
+13. PHOTOGRAPHY &amp; MEDIA
 • Organizer may use photographs/videos captured during the trek for promotional and marketing purposes unless participant informs otherwise in writing.
 
 14. ACCEPTANCE OF TERMS
 • By confirming the booking, the participant acknowledges and agrees to all trek terms, conditions, cancellation, and refund policies.
 
 ━━━━━━━━━━━━━━━━━━
-REFUND & CANCELLATION POLICY
+REFUND &amp; CANCELLATION POLICY
 ━━━━━━━━━━━━━━━━━━
 
 1. CANCELLATION BY PARTICIPANT
@@ -464,7 +450,7 @@ The following are non-refundable once booked or issued:
 
 • Refunds in such situations will be processed after deducting non-recoverable operational expenses already paid to third parties.
 
-4. WEATHER & OPERATIONAL DELAYS
+4. WEATHER &amp; OPERATIONAL DELAYS
 • Mountain expeditions are highly dependent on weather and local conditions.
 • Delays, route changes, transportation disruption, or itinerary modification caused by weather, landslides, road blockage, or flight cancellation are beyond organizer control.
 • No compensation shall be applicable for such delays.
@@ -483,13 +469,12 @@ Nomadller
 Instagram: @nomadller.in
 Phone: +91 6238998382
                 </div>
-                <div style="padding: 1rem; border-top: 1px solid var(--admin-border); text-align: center;">
-                    <button type="button" id="accept-terms-btn" style="background: var(--accent); color: white; border: none; padding: 0.8rem 2rem; border-radius: 8px; cursor: pointer; font-weight: bold;">I UNDERSTAND</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<div style="padding: 1rem; border-top: 1px solid var(--admin-border); text-align: center;">
+<button id="accept-terms-btn" style="background: var(--accent); color: white; border: none; padding: 0.8rem 2rem; border-radius: 8px; cursor: pointer; font-weight: bold;" type="button">I UNDERSTAND</button>
+</div>
+</div>
+</div>
 
-    <script type="module" src="/src/guest-form.js"></script>
+<script src="/src/guest-form.js" type="module"></script>
 </body>
 </html>

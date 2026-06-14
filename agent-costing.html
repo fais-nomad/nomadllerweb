@@ -1,17 +1,18 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nomadller | Agent Quotation Portal</title>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/src/admin.css">
-    <!-- Phosphor Icons for UI -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- jsPDF and AutoTable for PDF Generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nomadller | Agent Quotation Portal</title>
+<link href="/style.css" rel="stylesheet"/>
+<link href="/src/admin.css" rel="stylesheet"/>
+<!-- Phosphor Icons for UI -->
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<!-- jsPDF and AutoTable for PDF Generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
         body {
             background: var(--admin-bg);
             color: var(--text-primary);
@@ -137,148 +138,134 @@
             }
         }
     </style>
-</head>
+<link href="https://nomadller.com/agent-costing" rel="canonical"/><meta content="Nomadller provides top trekking and adventure experiences. Join us for an unforgettable expedition." name="description"/></head>
 <body>
-
-    <header class="header">
-        <h1><i class="ph ph-briefcase"></i> Agent Portal</h1>
-        <div style="color: var(--text-secondary); font-size: 0.9rem;">Live Quotation Generator</div>
-    </header>
-
-    <div class="container">
-        <!-- Step 1: Select Trek -->
-        <div id="section-select-trek">
-            <h2 style="color: white; margin-top: 0; margin-bottom: 1.5rem; font-size: 1.2rem; font-weight: 500;">Select a Destination</h2>
-            <div id="costing-treks-container" class="trek-grid">
-                <!-- Populated via JS -->
-                <div style="color: var(--text-secondary);">Loading destinations...</div>
-            </div>
-        </div>
-
-        <!-- Step 2: Calculator -->
-        <div id="section-costing-calculator" style="display: none;">
-            <button class="back-btn" onclick="showSelectTrek()"><i class="ph ph-arrow-left"></i> Back to Destinations</button>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <div>
-                    <h2 style="color: white; margin: 0; font-size: 1.8rem;" id="calc-trek-title">Trek Name</h2>
-                    <div style="color: var(--admin-primary); font-size: 0.9rem; margin-top: 0.3rem;">Instant Quotation</div>
-                </div>
-            </div>
-
-            <div class="trip-form">
-                <h3 style="color: white; margin-top: 0; margin-bottom: 1.5rem; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.8rem;">TRIP PARAMETERS</h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Number of Pax (Guests)</label>
-                        <input type="number" id="calc-pax" value="2" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label>Number of Days</label>
-                        <input type="number" id="calc-days" value="14" min="1">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Meal Inclusion</label>
-                        <select id="calc-meal-inclusion">
-                            <option value="with">With Food</option>
-                            <option value="without">Without Food</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group ebc-specific-input">
-                        <label>Preferred Flight Option</label>
-                        <select id="calc-flight-opt">
-                            <option value="Kathmandu">From Kathmandu</option>
-                            <option value="Ramechhap">From Ramechhap</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group ebc-specific-input" id="calc-ramechhap-mode-group" style="display: none;">
-                        <label>Ramechhap Transport Mode <span id="calc-ramechhap-rec" style="color: var(--admin-primary);"></span></label>
-                        <select id="calc-ramechhap-mode">
-                            <option value="Sharing">Sharing</option>
-                            <option value="Pvt">Pvt</option>
-                        </select>
-                    </div>
-
-                    <!-- ANNAPURNA SPECIFIC INPUTS -->
-                    <div class="form-group annapurna-specific-input" style="display: none;">
-                        <label>Pokhara to KTM Transfer</label>
-                        <select id="calc-ktm-pkr-transfer">
-                            <option value="Flight">Flight</option>
-                            <option value="Bus">Bus</option>
-                        </select>
-                    </div>
-                    <div class="form-group annapurna-specific-input" style="display: none;">
-                        <label>Pokhara Hotel Category</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <select id="calc-pokhara-hotel-cat" style="flex: 2;">
-                                <option value="0">No Hotel Needed</option>
-                                <option value="3 Star">3 Star</option>
-                                <option value="4 Star">4 Star</option>
-                                <option value="5 Star">5 Star</option>
-                                <option value="Boutique">Boutique</option>
-                                <option value="Luxury">Luxury</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Kathmandu Hotel Category <span id="calc-hotel-count-info" style="color: var(--admin-primary);"></span></label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <select id="calc-hotel-cat" style="flex: 2;">
-                                <option value="0">No Hotel Needed</option>
-                                <option value="3 Star">3 Star</option>
-                                <option value="4 Star">4 Star</option>
-                                <option value="5 Star">5 Star</option>
-                                <option value="Boutique">Boutique</option>
-                                <option value="Luxury">Luxury</option>
-                            </select>
-                            <select id="calc-hotel-room-type" style="flex: 1;">
-                                <option value="Double/Triple">Double & Triple</option>
-                                <option value="Double Only">Double Rooms Only</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- HIDDEN Breakdown Checkboxes container (we still need the HTML elements so JS calculation works without rewriting it completely) -->
-            <div style="display: none;">
-                <div id="calc-trails-container"></div>
-                <div id="calc-lunches-container"></div>
-                <div id="calc-transfers-container"></div>
-            </div>
-
-            <!-- Bottom Grand Total -->
-            <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid var(--admin-primary); padding: 1.5rem; border-radius: 10px; margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
-                <!-- Left Side: Per Person -->
-                <div style="text-align: left;">
-                    <div style="color: var(--text-secondary); font-size: 0.9rem;">COST PER PERSON</div>
-                    <div style="color: white; font-size: 1.8rem; font-weight: bold;" id="calc-pp-cost-bottom">NPR 0</div>
-                    <div style="display: flex; gap: 1rem; margin-top: 0.2rem; color: var(--text-secondary); font-size: 1rem;">
-                        <div id="calc-pp-inr">INR 0</div>
-                        <div style="opacity: 0.5;">|</div>
-                        <div id="calc-pp-usd">USD 0</div>
-                    </div>
-                </div>
-
-                <!-- Right Side: Grand Total -->
-                <div style="text-align: right;">
-                    <div style="color: var(--text-secondary); font-size: 1rem;">GRAND TOTAL ESTIMATED COST</div>
-                    <div style="color: var(--admin-primary); font-size: 2.5rem; font-weight: 700;" id="calc-total-cost-bottom">NPR 0</div>
-                    <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem; color: var(--text-secondary); font-size: 1.2rem; font-weight: bold;">
-                        <div id="calc-total-inr">INR 0</div>
-                        <div style="opacity: 0.5;">|</div>
-                        <div id="calc-total-usd">USD 0</div>
-                    </div>
-                </div>
-            </div>
-            
-        </div>
-    </div>
-    <!-- Agent Costing JS -->
-    <script type="module" src="/src/agent-costing.js"></script>
+<header class="header">
+<h1><i class="ph ph-briefcase"></i> Agent Portal</h1>
+<div style="color: var(--text-secondary); font-size: 0.9rem;">Live Quotation Generator</div>
+</header>
+<div class="container">
+<!-- Step 1: Select Trek -->
+<div id="section-select-trek">
+<h2 style="color: white; margin-top: 0; margin-bottom: 1.5rem; font-size: 1.2rem; font-weight: 500;">Select a Destination</h2>
+<div class="trek-grid" id="costing-treks-container">
+<!-- Populated via JS -->
+<div style="color: var(--text-secondary);">Loading destinations...</div>
+</div>
+</div>
+<!-- Step 2: Calculator -->
+<div id="section-costing-calculator" style="display: none;">
+<button class="back-btn" onclick="showSelectTrek()"><i class="ph ph-arrow-left"></i> Back to Destinations</button>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+<div>
+<h2 id="calc-trek-title" style="color: white; margin: 0; font-size: 1.8rem;">Trek Name</h2>
+<div style="color: var(--admin-primary); font-size: 0.9rem; margin-top: 0.3rem;">Instant Quotation</div>
+</div>
+</div>
+<div class="trip-form">
+<h3 style="color: white; margin-top: 0; margin-bottom: 1.5rem; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.8rem;">TRIP PARAMETERS</h3>
+<div class="form-grid">
+<div class="form-group">
+<label>Number of Pax (Guests)</label>
+<input id="calc-pax" min="1" type="number" value="2"/>
+</div>
+<div class="form-group">
+<label>Number of Days</label>
+<input id="calc-days" min="1" type="number" value="14"/>
+</div>
+<div class="form-group">
+<label>Meal Inclusion</label>
+<select id="calc-meal-inclusion">
+<option value="with">With Food</option>
+<option value="without">Without Food</option>
+</select>
+</div>
+<div class="form-group ebc-specific-input">
+<label>Preferred Flight Option</label>
+<select id="calc-flight-opt">
+<option value="Kathmandu">From Kathmandu</option>
+<option value="Ramechhap">From Ramechhap</option>
+</select>
+</div>
+<div class="form-group ebc-specific-input" id="calc-ramechhap-mode-group" style="display: none;">
+<label>Ramechhap Transport Mode <span id="calc-ramechhap-rec" style="color: var(--admin-primary);"></span></label>
+<select id="calc-ramechhap-mode">
+<option value="Sharing">Sharing</option>
+<option value="Pvt">Pvt</option>
+</select>
+</div>
+<!-- ANNAPURNA SPECIFIC INPUTS -->
+<div class="form-group annapurna-specific-input" style="display: none;">
+<label>Pokhara to KTM Transfer</label>
+<select id="calc-ktm-pkr-transfer">
+<option value="Flight">Flight</option>
+<option value="Bus">Bus</option>
+</select>
+</div>
+<div class="form-group annapurna-specific-input" style="display: none;">
+<label>Pokhara Hotel Category</label>
+<div style="display: flex; gap: 0.5rem;">
+<select id="calc-pokhara-hotel-cat" style="flex: 2;">
+<option value="0">No Hotel Needed</option>
+<option value="3 Star">3 Star</option>
+<option value="4 Star">4 Star</option>
+<option value="5 Star">5 Star</option>
+<option value="Boutique">Boutique</option>
+<option value="Luxury">Luxury</option>
+</select>
+</div>
+</div>
+<div class="form-group">
+<label>Kathmandu Hotel Category <span id="calc-hotel-count-info" style="color: var(--admin-primary);"></span></label>
+<div style="display: flex; gap: 0.5rem;">
+<select id="calc-hotel-cat" style="flex: 2;">
+<option value="0">No Hotel Needed</option>
+<option value="3 Star">3 Star</option>
+<option value="4 Star">4 Star</option>
+<option value="5 Star">5 Star</option>
+<option value="Boutique">Boutique</option>
+<option value="Luxury">Luxury</option>
+</select>
+<select id="calc-hotel-room-type" style="flex: 1;">
+<option value="Double/Triple">Double &amp; Triple</option>
+<option value="Double Only">Double Rooms Only</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<!-- HIDDEN Breakdown Checkboxes container (we still need the HTML elements so JS calculation works without rewriting it completely) -->
+<div style="display: none;">
+<div id="calc-trails-container"></div>
+<div id="calc-lunches-container"></div>
+<div id="calc-transfers-container"></div>
+</div>
+<!-- Bottom Grand Total -->
+<div style="background: rgba(255, 107, 53, 0.1); border: 1px solid var(--admin-primary); padding: 1.5rem; border-radius: 10px; margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
+<!-- Left Side: Per Person -->
+<div style="text-align: left;">
+<div style="color: var(--text-secondary); font-size: 0.9rem;">COST PER PERSON</div>
+<div id="calc-pp-cost-bottom" style="color: white; font-size: 1.8rem; font-weight: bold;">NPR 0</div>
+<div style="display: flex; gap: 1rem; margin-top: 0.2rem; color: var(--text-secondary); font-size: 1rem;">
+<div id="calc-pp-inr">INR 0</div>
+<div style="opacity: 0.5;">|</div>
+<div id="calc-pp-usd">USD 0</div>
+</div>
+</div>
+<!-- Right Side: Grand Total -->
+<div style="text-align: right;">
+<div style="color: var(--text-secondary); font-size: 1rem;">GRAND TOTAL ESTIMATED COST</div>
+<div id="calc-total-cost-bottom" style="color: var(--admin-primary); font-size: 2.5rem; font-weight: 700;">NPR 0</div>
+<div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem; color: var(--text-secondary); font-size: 1.2rem; font-weight: bold;">
+<div id="calc-total-inr">INR 0</div>
+<div style="opacity: 0.5;">|</div>
+<div id="calc-total-usd">USD 0</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Agent Costing JS -->
+<script src="/src/agent-costing.js" type="module"></script>
 </body>
 </html>

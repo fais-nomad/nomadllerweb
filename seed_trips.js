@@ -11,7 +11,7 @@ const valleyOfFlowers = {
     duration: '6 DAYS',
     difficulty: 'MODERATE',
     cost: '12999',
-    cover_image_url: '/images/valley-flowers.jpg', // Assuming generic name
+    cover_image_url: '/images/valley-flowers.webp', // Assuming generic name
     highlights: ['UNESCO World Heritage Site', 'Rare Alpine Flowers', 'Hemkund Sahib Trek', 'Luxury Stays'],
     itinerary: JSON.stringify([
         { day: 1, title: 'Rishikesh to Govindghat', desc: 'Our representative will meet you in Rishikesh, and you will start your journey towards Govindghat. The journey will take 9 to 10 hours, during which you can enjoy the beautiful landscapes. You will reach Govindghat where you will have dinner and rest.', metrics: ['🚌 Tempo Traveller', '⏱️ 9-10 hours'] },
@@ -42,7 +42,7 @@ const annapurna = {
     duration: '14 DAYS',
     difficulty: 'CHALLENGING',
     cost: '76500',
-    cover_image_url: '/images/annapurna.jpg',
+    cover_image_url: '/images/annapurna.webp',
     highlights: ['Thorong La Pass', 'Tilicho Lake', 'Diverse Landscapes', 'Luxury Teahouses'],
     itinerary: JSON.stringify([
         { day: 1, title: 'Arrival in Kathmandu', desc: 'Arrive in Kathmandu. Briefing and preparation.', metrics: ['🏔️ Elev: 1,400m'] },

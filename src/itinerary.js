@@ -27,7 +27,7 @@ async function loadItinerary() {
 
         if (error) throw error;
         let coverImage = '/images/default-cover.jpg';
-        let backCoverImage = '/images/nomadller_back_cover.png';
+        let backCoverImage = '/images/nomadller_back_cover.webp';
         if (trip.cover_image_url) {
             const parts = trip.cover_image_url.split('|');
             if (parts[0] && parts[0].trim() !== '') coverImage = parts[0];

@@ -1,40 +1,40 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nomadller | Agent Login</title>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/src/admin.css">
-</head>
-<body class="admin-body">
-    <a href="/index.html" style="position: absolute; top: 2rem; left: 2rem; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s; z-index: 10;" onmouseover="this.style.color='white'" onmouseout="this.style.color='var(--text-secondary)'">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Nomadller | Agent Login | Nomadller Trekking Company</title>
+<link href="/style.css" rel="stylesheet"/>
+<link href="/src/admin.css" rel="stylesheet"/>
+<link href="https://nomadller.com/agent-login" rel="canonical"/><meta content="Nomadller provides top trekking and adventure experiences. Join us for an unforgettable expedition." name="description"/></head>
+<body class="admin-body"><h1 style="display:none;">Nomadller | Agent Login</h1>
+<a href="/index.html" onmouseout="this.style.color='var(--text-secondary)'" onmouseover="this.style.color='white'" style="position: absolute; top: 2rem; left: 2rem; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s; z-index: 10;">
+<svg fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
         Back to Home
     </a>
-    <div class="login-container">
-        <div class="login-card reveal">
-            <div class="login-header">
-                <div class="login-logo">NOMADLLER</div>
-                <div class="login-subtitle">B2B Agent Portal</div>
-            </div>
-            
-            <form id="agent-access-form" class="login-form">
-                <div class="form-group">
-                    <label for="agent-code">Agent Code</label>
-                    <input type="text" id="agent-code" required placeholder="Enter your unique code">
-                </div>
-                <button type="submit" class="login-btn">ACCESS PORTAL</button>
-            </form>
-            <div id="login-error" style="color: var(--admin-danger); text-align: center; margin-top: 1rem; display: none; font-size: 0.85rem;">
+<div class="login-container">
+<div class="login-card reveal">
+<div class="login-header">
+<div class="login-logo">NOMADLLER</div>
+<div class="login-subtitle">B2B Agent Portal</div>
+</div>
+<form class="login-form" id="agent-access-form">
+<div class="form-group">
+<label for="agent-code">Agent Code</label>
+<input id="agent-code" placeholder="Enter your unique code" required="" type="text"/>
+</div>
+<button class="login-btn" type="submit">ACCESS PORTAL</button>
+</form>
+<div id="login-error" style="color: var(--admin-danger); text-align: center; margin-top: 1rem; display: none; font-size: 0.85rem;">
                 Invalid Agent Code. Access denied.
             </div>
-        </div>
-    </div>
-
-    <!-- Re-using gsap and our agent auth logic -->
-    <script type="module" src="/src/agent-auth.js"></script>
-    <script type="module">
+</div>
+</div>
+<!-- Re-using gsap and our agent auth logic -->
+<script src="/src/agent-auth.js" type="module"></script>
+<script type="module">
         import gsap from 'gsap';
         document.addEventListener('DOMContentLoaded', () => {
             gsap.fromTo('.login-card', 
