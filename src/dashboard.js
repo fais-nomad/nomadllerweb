@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const newTrip = data[0];
 
                 // Generate Link
-                const guestLink = `${window.location.origin}/guest-form.html?trip_id=${newTrip.id}`;
+                const guestLink = `${window.location.origin}/guest-form?trip_id=${newTrip.id}`;
                 generatedLinkInput.value = guestLink;
                 linkContainer.style.display = 'block';
 
@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         modalCopyLink.addEventListener('click', () => {
             const tripId = modalCopyLink.getAttribute('data-id');
             if (tripId) {
-                const guestLink = `${window.location.origin}/guest-form.html?trip_id=${tripId}`;
+                const guestLink = `${window.location.origin}/guest-form?trip_id=${tripId}`;
                 const tempInput = document.createElement('input');
                 tempInput.value = guestLink;
                 document.body.appendChild(tempInput);

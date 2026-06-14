@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Generate the link using current origin
             // Append agent_id if agent is logged in
             const agentIdParam = fullAgentProfile && fullAgentProfile.id ? `&agent_id=${fullAgentProfile.id}` : '';
-            const link = `${window.location.origin}/guest-form.html?trip_id=${fdId}${agentIdParam}`;
+            const link = `${window.location.origin}/guest-form?trip_id=${fdId}${agentIdParam}`;
             linkText.textContent = link;
 
             // Store trip name for WhatsApp message
