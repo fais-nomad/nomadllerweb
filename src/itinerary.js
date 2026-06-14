@@ -289,7 +289,7 @@ async function loadItinerary() {
         if (trip.exclusions && trip.exclusions.length > 0) {
             logisticsCards.push({ title: 'Exclusions', items: Array.isArray(trip.exclusions) ? trip.exclusions : trip.exclusions.split('\n') });
         }
-        html += renderDataCardsIntoPages('Logistics', 'Inclusions & Exclusions', logisticsCards, 24);
+        html += renderDataCardsIntoPages('Logistics', 'Inclusions & Exclusions', logisticsCards, 12);
 
         // Render Policies Page (Health, Cancel, Insurance, Notes)
         const policyCards = [];
@@ -297,14 +297,14 @@ async function loadItinerary() {
         if (trip.cancellation_policy && trip.cancellation_policy.length > 0) policyCards.push({ title: 'Cancellation Policy', items: Array.isArray(trip.cancellation_policy) ? trip.cancellation_policy : trip.cancellation_policy.split('\n') });
         if (trip.travel_insurance && trip.travel_insurance.length > 0) policyCards.push({ title: 'Insurance', items: Array.isArray(trip.travel_insurance) ? trip.travel_insurance : trip.travel_insurance.split('\n') });
         if (trip.important_notes && trip.important_notes.length > 0) policyCards.push({ title: 'Important Notes', items: Array.isArray(trip.important_notes) ? trip.important_notes : trip.important_notes.split('\n') });
-        html += renderDataCardsIntoPages('Policies', 'ESSENTIAL GUIDELINES', policyCards, 24);
+        html += renderDataCardsIntoPages('Policies', 'ESSENTIAL GUIDELINES', policyCards, 12);
 
         // Render Agreements Page (Terms, Risk, Remember)
         const agreementCards = [];
         if (trip.terms_and_conditions && trip.terms_and_conditions.length > 0) agreementCards.push({ title: 'Terms & Conditions', items: Array.isArray(trip.terms_and_conditions) ? trip.terms_and_conditions : trip.terms_and_conditions.split('\n') });
         if (trip.risk_liabilities && trip.risk_liabilities.length > 0) agreementCards.push({ title: 'Risk & Liabilities', items: Array.isArray(trip.risk_liabilities) ? trip.risk_liabilities : trip.risk_liabilities.split('\n') });
         if (trip.things_to_remember && trip.things_to_remember.length > 0) agreementCards.push({ title: 'Things to Remember', items: Array.isArray(trip.things_to_remember) ? trip.things_to_remember : trip.things_to_remember.split('\n') });
-        html += renderDataCardsIntoPages('Agreements', 'TERMS & CONDITIONS', agreementCards, 24);
+        html += renderDataCardsIntoPages('Agreements', 'TERMS & CONDITIONS', agreementCards, 12);
 
         if (trip.things_to_carry) {
             let prepCategories = [];
@@ -324,7 +324,7 @@ async function loadItinerary() {
                     title: cat.category || 'Items',
                     items: cat.items
                 }));
-                html += renderDataCardsIntoPages('Preparation', 'Things to Carry', mappedCards, 24);
+                html += renderDataCardsIntoPages('Preparation', 'Things to Carry', mappedCards, 12);
             }
         }
 
