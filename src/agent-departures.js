@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const agentDataStr = localStorage.getItem('nomadller_agent');
     
     if (!agentDataStr) {
-        window.location.href = '/agent-login.html';
+        window.location.href = '/agent-login';
         return;
     }
 

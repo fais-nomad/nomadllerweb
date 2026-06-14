@@ -42,15 +42,15 @@ export async function loadPackagesGrid() {
 
             const isAnnapurna = trip.title.toLowerCase().includes('annapurna');
             const isValley = trip.title.toLowerCase().includes('valley');
-            let viewLink = `/itinerary.html?id=${trip.id}`;
-            let dlLink = `/itinerary.html?id=${trip.id}&download=true`;
+            let viewLink = `/itinerary?id=${trip.id}`;
+            let dlLink = `/itinerary?id=${trip.id}&download=true`;
 
             if (isAnnapurna) {
-                viewLink = '/annapurna_luxury_template.html';
-                dlLink = '/annapurna_luxury_template.html?download=true';
+                viewLink = '/annapurna_luxury_template';
+                dlLink = '/annapurna_luxury_template?download=true';
             } else if (isValley) {
-                viewLink = '/valley_of_flowers_template.html';
-                dlLink = '/valley_of_flowers_template.html?download=true';
+                viewLink = '/valley_of_flowers_template';
+                dlLink = '/valley_of_flowers_template?download=true';
             }
 
             const coverParts = (trip.cover_image_url || '').split('|');
@@ -145,9 +145,9 @@ window.showTripDetails = function(tripId) {
 
     const isAnnapurna = trip.title.toLowerCase().includes('annapurna');
     const isValley = trip.title.toLowerCase().includes('valley');
-    let viewLink = `/itinerary.html?id=${trip.id}`;
-    if (isAnnapurna) viewLink = '/annapurna_luxury_template.html';
-    if (isValley) viewLink = '/valley_of_flowers_template.html';
+    let viewLink = `/itinerary?id=${trip.id}`;
+    if (isAnnapurna) viewLink = '/annapurna_luxury_template';
+    if (isValley) viewLink = '/valley_of_flowers_template';
 
     modalBody.innerHTML = `
         <h2>🏔️ ${trip.title}: ${trip.duration}</h2>

@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const agentDataStr = localStorage.getItem('nomadller_agent');
     
     if (!agentDataStr) {
-        window.location.href = '/agent-login.html';
+        window.location.href = '/agent-login';
         return;
     }
 
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!agentId) {
         alert("Agent profile not found. Please log in again.");
-        window.location.href = '/agent-login.html';
+        window.location.href = '/agent-login';
         return;
     }
 

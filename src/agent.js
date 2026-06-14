@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (!agentDataStr) {
         // Not logged in, redirect to home
-        window.location.href = '/index.html#agent-access';
+        window.location.href = '/#agent-access';
         return;
     }
 
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 opacity: 0,
                 duration: 0.5,
                 onComplete: () => {
-                    window.location.href = '/index.html';
+                    window.location.href = '/';
                 }
             });
         });
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fixedDeparturesBtn = document.getElementById('fixed-departures-btn');
     if (fixedDeparturesBtn) {
         fixedDeparturesBtn.addEventListener('click', () => {
-            window.location.href = '/agent-fixed-departures.html';
+            window.location.href = '/agent-fixed-departures';
         });
     }
 

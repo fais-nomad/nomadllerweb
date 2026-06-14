@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     duration: 0.5,
                     ease: "power3.in",
                     onComplete: () => {
-                        window.location.href = '/dashboard.html';
+                        window.location.href = '/dashboard';
                     }
                 });
             } else {

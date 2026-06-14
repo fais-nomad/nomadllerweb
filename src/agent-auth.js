@@ -56,10 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (window.gsap && document.querySelector('.login-card')) {
                     window.gsap.to('.login-card', {
                         y: -50, opacity: 0, duration: 0.5, ease: "power3.in",
-                        onComplete: () => { window.location.href = '/agent-dashboard.html'; }
+                        onComplete: () => { window.location.href = '/agent-dashboard'; }
                     });
                 } else {
-                    window.location.href = '/agent-dashboard.html';
+                    window.location.href = '/agent-dashboard';
                 }
 
             } catch (err) {
