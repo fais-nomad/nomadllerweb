@@ -104,11 +104,7 @@ async function loadItinerary() {
                         width: 100vw;
                         overflow: hidden;
                     }
-                    .page {
-                        transform: scale(calc(100vw / 794));
-                        transform-origin: top left;
-                        margin-bottom: calc(-1123px * (1 - (100vw / 794))) !important;
-                    }
+                    /* Scale is handled via JS for mobile since CSS scale() cannot accept vw units */
                 }
             </style>
 
@@ -370,6 +366,27 @@ async function loadItinerary() {
 
         root.outerHTML = html;
 
+        function applyMobileScale() {
+            if (window.innerWidth <= 820) {
+                const scale = window.innerWidth / 794;
+                const pages = document.querySelectorAll('.page');
+                pages.forEach(p => {
+                    p.style.transform = `scale(${scale})`;
+                    p.style.transformOrigin = 'top left';
+                    p.style.marginBottom = `-${1123 * (1 - scale)}px`;
+                });
+            } else {
+                const pages = document.querySelectorAll('.page');
+                pages.forEach(p => {
+                    p.style.transform = 'none';
+                    p.style.marginBottom = '0px';
+                });
+            }
+        }
+        
+        applyMobileScale();
+        window.addEventListener('resize', applyMobileScale);
+
         document.getElementById('download-pdf-btn').addEventListener('click', generatePDF);
 
         if (autoDownload) {
@@ -430,6 +447,7 @@ async function generatePDF() {
         const container = document.createElement('div');
         pages.forEach(p => {
             const clone = p.cloneNode(true);
+            clone.style.transform = 'none';
             clone.style.margin = '0';
             clone.style.boxShadow = 'none';
             clone.style.borderRadius = '0';
