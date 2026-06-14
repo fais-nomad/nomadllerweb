@@ -35,6 +35,8 @@
       "description": "High-quality and affordable trekking company specializing in Everest Base Camp expeditions from Kerala."
     }
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="/style.css">
 
     <!-- Social Media Meta Tags (Open Graph) -->
@@ -44,6 +46,7 @@
     <meta property="og:url" content="https://nomadller.com">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
+    <link rel="preload" as="image" href="/images/russia.webp">
 </head>
 <body>
     <nav>
@@ -70,23 +73,23 @@
             <div class="hero-slider">
                 <!-- Slide 1: Teriberka, Russia -->
                 <div class="slide active" data-title="ARCTIC DREAMS" data-subtitle="Chase the celestial dance of the Northern Lights in Teriberka, Russia.">
-                    <img src="/images/russia.png" alt="Russia Northern Lights">
+                    <img src="/images/russia.webp" alt="Russia Northern Lights" fetchpriority="high" width="1920" height="1080">
                 </div>
                 <!-- Slide 2: Everest -->
                 <div class="slide" data-title="BEYOND THE EDGE" data-subtitle="Stand at the foot of the world's highest peak.">
-                    <img src="/images/everest.png" alt="Everest">
+                    <img src="/images/everest.webp" alt="" loading="lazy" width="1920" height="1080">
                 </div>
                 <!-- Slide 3: Bali -->
                 <div class="slide" data-title="TROPICAL SERENITY" data-subtitle="Experience soul-cleansing luxury in the heart of Bali.">
-                    <img src="/images/bali.png" alt="Bali">
+                    <img src="/images/bali.webp" alt="" loading="lazy" width="1920" height="1080">
                 </div>
                 <!-- Slide 4: Annapurna -->
                 <div class="slide" data-title="CLASSIC TRAILS" data-subtitle="Cross the legendary Thorong La Pass and witness the Himalayas.">
-                    <img src="/images/annapurna.png" alt="Annapurna">
+                    <img src="/images/annapurna.webp" alt="" loading="lazy" width="1920" height="1080">
                 </div>
                 <!-- Slide 5: Kyrgyzstan -->
                 <div class="slide" data-title="NOMADIC DREAMS" data-subtitle="Rugged expeditions through the heart of the Silk Road.">
-                    <img src="/images/kyrgyzstan.png" alt="Kyrgyzstan">
+                    <img src="/images/kyrgyzstan.webp" alt="" loading="lazy" width="1920" height="1080">
                 </div>
             </div>
             
@@ -110,7 +113,7 @@
         <section id="about">
             <div class="about-grid">
                 <div class="about-image reveal">
-                    <img src="/images/real/meadow-group.png" alt="Nomadller Spirit">
+                    <img src="/images/real/meadow-group.webp" alt="Nomadller Spirit" loading="lazy" width="800" height="800">
                 </div>
                 <div class="about-content reveal">
                     <h2 class="section-title">THE NOMADLLER SPIRIT</h2>
@@ -142,7 +145,7 @@
                 <!-- Fais -->
                 <div class="team-card reveal">
                     <div class="team-image">
-                        <img src="/images/team/fais_final_v2.jpg" alt="Mohamed Fais">
+                        <img src="/images/team/fais_final_v2.webp" alt="Mohamed Fais" loading="lazy" width="800" height="800">
                         <div class="team-overlay">
                             <a href="https://www.instagram.com/triping_mania/" target="_blank" class="social-link">Instagram</a>
                         </div>
@@ -157,7 +160,7 @@
                 <!-- Fathima -->
                 <div class="team-card reveal">
                     <div class="team-image">
-                        <img src="/images/team/fathima_final.png" alt="Fathima">
+                        <img src="/images/team/fathima_final.webp" alt="Fathima" loading="lazy" width="800" height="800">
                         <div class="team-overlay">
                             <a href="https://www.instagram.com/paaaaaathuuu?igsh=MW1mcDg3cGhmMnFreA==" target="_blank" class="social-link">Instagram</a>
                         </div>
@@ -172,7 +175,7 @@
                 <!-- Dhanish -->
                 <div class="team-card reveal">
                     <div class="team-image">
-                        <img src="/images/team/dhanish_final.png" alt="Dhanish">
+                        <img src="/images/team/dhanish_final.webp" alt="Dhanish" loading="lazy" width="800" height="800">
                         <div class="team-overlay">
                             <a href="https://www.instagram.com/dhanxter__?igsh=MTV6ZWkyYzNnZDB4cA==" target="_blank" class="social-link">Instagram</a>
                         </div>
@@ -331,35 +334,35 @@
             <div class="gallery-grid">
                 <!-- Large Feature: EBC Stone -->
                 <div class="gallery-item large reveal">
-                    <img src="/images/real/ebc-stone.jpg" alt="Everest Base Camp Marker">
+                    <img src="/images/real/ebc-stone.webp" alt="Everest Base Camp Marker" loading="lazy" width="800" height="800">
                     <div class="gallery-overlay">
                         <span>#EBC5364m</span>
                     </div>
                 </div>
                 <!-- Group 1: A4 Adventure Banner -->
                 <div class="gallery-item reveal">
-                    <img src="/images/real/ebc-group-1.jpg" alt="Nomadller Expedition Group">
+                    <img src="/images/real/ebc-group-1.webp" alt="Nomadller Expedition Group" loading="lazy" width="800" height="800">
                     <div class="gallery-overlay">
                         <span>#NomadllerLife</span>
                     </div>
                 </div>
                 <!-- Meadow Group -->
                 <div class="gallery-item reveal">
-                    <img src="/images/real/meadow-group.png" alt="Mountain Meadow Group">
+                    <img src="/images/real/meadow-group.webp" alt="Mountain Meadow Group" loading="lazy" width="800" height="800">
                     <div class="gallery-overlay">
                         <span>#HimalayanMeadows</span>
                     </div>
                 </div>
                 <!-- ABC Sign -->
                 <div class="gallery-item reveal">
-                    <img src="/images/real/abc-group.png" alt="Annapurna Base Camp Group">
+                    <img src="/images/real/abc-group.webp" alt="Annapurna Base Camp Group" loading="lazy" width="800" height="800">
                     <div class="gallery-overlay">
                         <span>#ABCExpedition</span>
                     </div>
                 </div>
                 <!-- Lime Group -->
                 <div class="gallery-item reveal">
-                    <img src="/images/real/ebc-group-2.jpg" alt="Everest Peak Performance">
+                    <img src="/images/real/ebc-group-2.webp" alt="Everest Peak Performance" loading="lazy" width="800" height="800">
                     <div class="gallery-overlay">
                         <span>#PeakSummit</span>
                     </div>

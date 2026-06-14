@@ -6,7 +6,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
+  esbuild: {
+    drop: ['console', 'debugger'],
+  },
   build: {
+    minify: 'esbuild',
+    cssCodeSplit: true,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
@@ -23,6 +28,17 @@ export default defineConfig({
         annapurnaTemplate: resolve(__dirname, 'annapurna_luxury_template.html'),
         valleyTemplate: resolve(__dirname, 'valley_of_flowers_template.html'),
       },
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('gsap')) return 'vendor-gsap';
+            if (id.includes('lenis')) return 'vendor-lenis';
+            if (id.includes('@supabase')) return 'vendor-supabase';
+            if (id.includes('jspdf') || id.includes('html2canvas')) return 'vendor-pdf';
+            return 'vendor';
+          }
+        }
+      }
     },
   },
 });

@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "esbuild": "^0.28.1",
+    "sharp": "^0.35.1",
     "vite": "^8.0.10"
   },
   "dependencies": {
