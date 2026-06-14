@@ -144,7 +144,6 @@ async function loadItinerary() {
             }
 
             let daysOnPage = 0;
-            let isCurrentPageClimax = false;
 
             html += `
             <div class="page" id="initial-itinerary-page">
@@ -154,30 +153,8 @@ async function loadItinerary() {
             `;
 
             days.forEach((d, idx) => {
-                // If it's a climax day, we force a new page EVERY time (1 climax day per page max)
-                if (d.is_highlight && (!isCurrentPageClimax || daysOnPage >= 1)) {
-                    // Start new Climax Page
-                    if (idx > 0 || daysOnPage > 0) {
-                        html += `
-                            </div>
-                            <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
-                        </div>
-                        `;
-                    } else {
-                        // If it's the very first item, just remove the initial page we started above
-                        html = html.replace('<div class="page" id="initial-itinerary-page">', '').replace('<div class="page-content">', '').replace('<div class="gps-coords">ITINERARY DETAILS</div>', '').replace('<h2 class="section-heading">The Journey</h2>', '');
-                    }
-                    
-                    html += `
-                    <div class="page climax-page">
-                        <div class="page-content">
-                            <div class="gps-coords" style="color: rgba(255,255,255,0.2);">THE CLIMAX</div>
-                            <h2 class="section-heading" style="color: white; border-bottom-color: rgba(255,255,255,0.1);">The Climax</h2>
-                    `;
-                    daysOnPage = 0;
-                    isCurrentPageClimax = true;
-                } else if (!d.is_highlight && isCurrentPageClimax) {
-                    // Return to normal page
+                if (daysOnPage >= 2) {
+                    // Standard pagination - max 2 days per page
                     html += `
                         </div>
                         <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
@@ -185,20 +162,7 @@ async function loadItinerary() {
                     <div class="page">
                         <div class="page-content">
                             <div class="gps-coords">ITINERARY DETAILS</div>
-                            <h2 class="section-heading">The Descent</h2>
-                    `;
-                    daysOnPage = 0;
-                    isCurrentPageClimax = false;
-                } else if (daysOnPage >= 2 && !isCurrentPageClimax) {
-                    // Standard pagination - max 2 regular days per page
-                    html += `
-                        </div>
-                        <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
-                    </div>
-                    <div class="page ${isCurrentPageClimax ? 'climax-page' : ''}">
-                        <div class="page-content">
-                            <div class="gps-coords" ${isCurrentPageClimax ? 'style="color: rgba(255,255,255,0.2);"' : ''}>ITINERARY DETAILS</div>
-                            <h2 class="section-heading" ${isCurrentPageClimax ? 'style="color: white; border-bottom-color: rgba(255,255,255,0.1);"' : ''}>${isCurrentPageClimax ? 'The Climax Continues' : 'The Journey Continues'}</h2>
+                            <h2 class="section-heading">The Journey Continues</h2>
                     `;
                     daysOnPage = 0;
                 }
@@ -342,7 +306,6 @@ async function loadItinerary() {
         if (trip.things_to_remember && trip.things_to_remember.length > 0) agreementCards.push({ title: 'Things to Remember', items: Array.isArray(trip.things_to_remember) ? trip.things_to_remember : trip.things_to_remember.split('\n') });
         html += renderDataCardsIntoPages('Agreements', 'TERMS & CONDITIONS', agreementCards, 24);
 
-        // Render Things to Carry
         if (trip.things_to_carry) {
             let prepCategories = [];
             if (typeof trip.things_to_carry === 'string') {
@@ -357,36 +320,11 @@ async function loadItinerary() {
             }
 
             if (prepCategories && prepCategories.length > 0) {
-                html += `
-                <div class="page">
-                    <div class="page-content">
-                        <h2 class="section-heading">Preparation</h2>
-                        <div class="section-subheading">Things to Carry</div>
-                        <div class="data-grid" style="margin-bottom: 20px;">
-                `;
-
-                prepCategories.forEach(cat => {
-                    if (cat.items && cat.items.length > 0) {
-                        html += `
-                        <div class="data-card">
-                            <h3>${cat.category || 'Items'}</h3>
-                            <ul style="font-size: 0.8rem;">
-                                ${cat.items.map(item => `<li>${item.trim()}</li>`).join('')}
-                            </ul>
-                        </div>
-                        `;
-                    }
-                });
-
-                html += `
-                        </div>
-                    </div>
-                    <div class="page-footer">
-                        <span>Nomadller Luxury Expeditions</span>
-                        <span>Page</span>
-                    </div>
-                </div>
-                `;
+                const mappedCards = prepCategories.map(cat => ({
+                    title: cat.category || 'Items',
+                    items: cat.items
+                }));
+                html += renderDataCardsIntoPages('Preparation', 'Things to Carry', mappedCards, 24);
             }
         }
 
