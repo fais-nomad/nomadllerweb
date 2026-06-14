@@ -128,6 +128,126 @@ async function loadItinerary() {
             </div>
         `;
 
+        // Master Paginator for Continuous Flow
+        const Paginator = {
+            html: '',
+            currentPageHtml: '',
+            currentLines: 0,
+            maxLines: 36, // Maximum physical lines per page
+            
+            closePage() {
+                if (this.currentPageHtml) {
+                    this.html += `
+                    <div class="page">
+                        <div class="page-content">
+                            ${this.currentPageHtml}
+                        </div>
+                        <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
+                    </div>`;
+                    this.currentPageHtml = '';
+                    this.currentLines = 0;
+                }
+            },
+            
+            addSectionHeader(heading, subheading, subtitleColor='rgba(0,0,0,0.5)') {
+                const linesNeeded = 5;
+                if (this.currentLines + linesNeeded > this.maxLines && this.currentLines > 0) {
+                    this.closePage();
+                }
+                const marginTop = this.currentLines > 0 ? 'margin-top: 40px;' : '';
+                this.currentPageHtml += `
+                    <h2 class="section-heading" style="${marginTop}">${heading}</h2>
+                    ${subheading ? `<div class="section-subheading" style="color: ${subtitleColor}; margin-bottom: 20px;">${subheading}</div>` : ''}
+                `;
+                this.currentLines += linesNeeded;
+            },
+
+            addDay(dayNum, title, desc, metricsHtml, isHighlight) {
+                const titleLines = 2;
+                const descLines = Math.ceil((desc || '').length / 80);
+                const metricLines = metricsHtml ? (isHighlight ? 4 : 2) : 0;
+                const linesNeeded = titleLines + descLines + metricLines + 3;
+
+                if (this.currentLines + linesNeeded > this.maxLines && this.currentLines > 0) {
+                    this.closePage();
+                    this.addSectionHeader('The Journey Continues', '');
+                }
+
+                if (isHighlight) {
+                    this.currentPageHtml += `
+                        <div class="day-container" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 30px;">
+                            <div class="day-number" style="color: var(--orange);">${String(dayNum).padStart(2, '0')}</div>
+                            <div class="day-details">
+                                <h3 class="day-title" style="font-size: 2rem;">${title}</h3>
+                                <p class="day-desc" style="color: rgba(0,0,0,0.6);">${desc || ''}</p>
+                                <div class="data-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 20px;">
+                                    ${metricsHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    this.currentPageHtml += `
+                        <div class="day-container">
+                            <div class="day-number">${String(dayNum).padStart(2, '0')}</div>
+                            <div class="day-details">
+                                <h3 class="day-title">${title}</h3>
+                                <p class="day-desc">${desc || ''}</p>
+                                <div class="day-metrics">${metricsHtml}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                this.currentLines += linesNeeded;
+            },
+
+            addCards(cards) {
+                cards.forEach(card => {
+                    if (!card.items || card.items.length === 0 || card.items[0].trim() === '') return;
+                    
+                    let normalizedItems = [];
+                    card.items.forEach(item => {
+                        const splitItems = item.split(/[•\n]/).filter(s => s.trim().length > 0);
+                        normalizedItems.push(...splitItems);
+                    });
+
+                    let remainingItems = [...normalizedItems];
+                    let isFirstChunk = true;
+
+                    while(remainingItems.length > 0) {
+                        const titleLines = 4; 
+                        if (this.currentLines + titleLines >= this.maxLines && this.currentLines > 0) {
+                            this.closePage();
+                        }
+                        
+                        const availableLines = this.maxLines - this.currentLines - titleLines;
+                        let maxItemsForChunk = availableLines * 2;
+                        if (maxItemsForChunk <= 0) {
+                            this.closePage();
+                            continue;
+                        }
+
+                        let chunk = remainingItems.splice(0, maxItemsForChunk);
+                        if (chunk.length > 0) {
+                            this.currentPageHtml += `
+                            <div class="data-card" style="margin-bottom: 20px;">
+                                <h3>${card.title} ${!isFirstChunk ? '(Cont.)' : ''}</h3>
+                                <ul style="font-size: 0.8rem; line-height: 1.5; padding-left: 20px; column-count: 2; column-gap: 40px;">
+                                    ${chunk.map(item => `<li style="margin-bottom: 8px; break-inside: avoid; page-break-inside: avoid;">${item.trim()}</li>`).join('')}
+                                </ul>
+                            </div>
+                            `;
+                            this.currentLines += titleLines + Math.ceil(chunk.length / 2);
+                            isFirstChunk = false;
+                        }
+                        if (this.currentLines >= this.maxLines) {
+                            this.closePage();
+                        }
+                    }
+                });
+            }
+        };
+
         // Render Itinerary Days
         if (trip.itinerary) {
             let days = [];
@@ -135,7 +255,6 @@ async function loadItinerary() {
                 try {
                     days = JSON.parse(trip.itinerary);
                 } catch(e) {
-                    // Fallback to simple text split by newline
                     const lines = trip.itinerary.split('\n').filter(l => l.trim() !== '');
                     days = lines.map((l, idx) => ({ day: idx + 1, title: 'Day ' + (idx + 1), desc: l }));
                 }
@@ -143,30 +262,8 @@ async function loadItinerary() {
                 days = trip.itinerary;
             }
 
-            let daysOnPage = 0;
-
-            html += `
-            <div class="page" id="initial-itinerary-page">
-                <div class="page-content">
-                    <div class="gps-coords">ITINERARY DETAILS</div>
-                    <h2 class="section-heading">The Journey</h2>
-            `;
-
+            Paginator.addSectionHeader('The Journey', 'ITINERARY DETAILS');
             days.forEach((d, idx) => {
-                if (daysOnPage >= 3) {
-                    // Standard pagination - max 3 days per page
-                    html += `
-                        </div>
-                        <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
-                    </div>
-                    <div class="page">
-                        <div class="page-content">
-                            <div class="gps-coords">ITINERARY DETAILS</div>
-                            <h2 class="section-heading">The Journey Continues</h2>
-                    `;
-                    daysOnPage = 0;
-                }
-
                 let metricsHtml = '';
                 if (d.metrics && Array.isArray(d.metrics)) {
                     if (d.is_highlight) {
@@ -180,115 +277,8 @@ async function loadItinerary() {
                         metricsHtml = d.metrics.map(m => `<div class="metric-badge">${m}</div>`).join('');
                     }
                 }
-
-                if (d.is_highlight) {
-                    html += `
-                        <div class="day-container" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 30px;">
-                            <div class="day-number" style="color: var(--orange);">${String(d.day || idx+1).padStart(2, '0')}</div>
-                            <div class="day-details">
-                                <h3 class="day-title" style="font-size: 2rem;">${d.title || 'Day ' + d.day}</h3>
-                                <p class="day-desc" style="color: rgba(0,0,0,0.6);">${d.desc || ''}</p>
-                                <div class="data-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 20px;">
-                                    ${metricsHtml}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    html += `
-                        <div class="day-container">
-                            <div class="day-number">${String(d.day || idx+1).padStart(2, '0')}</div>
-                            <div class="day-details">
-                                <h3 class="day-title">${d.title || 'Day ' + d.day}</h3>
-                                <p class="day-desc">${d.desc || ''}</p>
-                                <div class="day-metrics">${metricsHtml}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                daysOnPage++;
+                Paginator.addDay(d.day || idx+1, d.title, d.desc, metricsHtml, d.is_highlight);
             });
-
-            // Close the final open page
-            html += `
-                </div>
-                <div class="page-footer"><span>Nomadller Luxury Expeditions</span></div>
-            </div>
-            `;
-        }
-
-        // Helper to safely chunk lists into pages with realistic height calculation
-        function renderDataCardsIntoPages(sectionHeading, subheading, cards, dummyArg = null) {
-            let pagesHtml = '';
-            let currentLines = 0;
-            const maxLinesPerPage = 18; // approx 18 lines of physical space per page
-            let currentPageHtml = '';
-
-            const closePage = () => {
-                if (currentPageHtml) {
-                    pagesHtml += `
-                    <div class="page">
-                        <div class="page-content">
-                            <h2 class="section-heading">${sectionHeading}</h2>
-                            <div class="section-subheading">${subheading}</div>
-                            <div style="margin-bottom: 20px;">
-                                ${currentPageHtml}
-                            </div>
-                        </div>
-                        <div class="page-footer">
-                            <span>Nomadller Luxury Expeditions</span>
-                        </div>
-                    </div>`;
-                    currentPageHtml = '';
-                    currentLines = 0;
-                }
-            };
-
-            cards.forEach(card => {
-                if (!card.items || card.items.length === 0 || card.items[0].trim() === '') return;
-                
-                let normalizedItems = [];
-                card.items.forEach(item => {
-                    const splitItems = item.split(/[•\n]/).filter(s => s.trim().length > 0);
-                    normalizedItems.push(...splitItems);
-                });
-
-                let remainingItems = [...normalizedItems];
-                let isFirstChunk = true;
-
-                while(remainingItems.length > 0) {
-                    const titleLines = 4; // overhead for <h3> + margins
-                    const availableLines = maxLinesPerPage - currentLines - titleLines;
-
-                    if (availableLines <= 0) {
-                        closePage();
-                        continue;
-                    }
-
-                    // Since it's 2 columns, availableLines * 2 is max items we can fit
-                    let maxItemsForChunk = availableLines * 2;
-                    let chunk = remainingItems.splice(0, maxItemsForChunk);
-                    
-                    if (chunk.length > 0) {
-                        currentPageHtml += `
-                        <div class="data-card" style="margin-bottom: 20px;">
-                            <h3>${card.title} ${!isFirstChunk ? '(Cont.)' : ''}</h3>
-                            <ul style="font-size: 0.8rem; line-height: 1.5; padding-left: 20px; column-count: 2; column-gap: 40px;">
-                                ${chunk.map(item => `<li style="margin-bottom: 8px; break-inside: avoid; page-break-inside: avoid;">${item.trim()}</li>`).join('')}
-                            </ul>
-                        </div>
-                        `;
-                        currentLines += titleLines + Math.ceil(chunk.length / 2);
-                        isFirstChunk = false;
-                    }
-                    if (currentLines >= maxLinesPerPage) {
-                        closePage();
-                    }
-                }
-            });
-            closePage();
-            return pagesHtml;
         }
 
         // Render Inclusions / Exclusions
@@ -299,7 +289,10 @@ async function loadItinerary() {
         if (trip.exclusions && trip.exclusions.length > 0) {
             logisticsCards.push({ title: 'Exclusions', items: Array.isArray(trip.exclusions) ? trip.exclusions : trip.exclusions.split('\n') });
         }
-        html += renderDataCardsIntoPages('Logistics', 'Inclusions & Exclusions', logisticsCards, 12);
+        if (logisticsCards.length > 0) {
+            Paginator.addSectionHeader('Logistics', 'INCLUSIONS & EXCLUSIONS', 'var(--orange)');
+            Paginator.addCards(logisticsCards);
+        }
 
         // Render Policies Page (Health, Cancel, Insurance, Notes)
         const policyCards = [];
@@ -307,14 +300,20 @@ async function loadItinerary() {
         if (trip.cancellation_policy && trip.cancellation_policy.length > 0) policyCards.push({ title: 'Cancellation Policy', items: Array.isArray(trip.cancellation_policy) ? trip.cancellation_policy : trip.cancellation_policy.split('\n') });
         if (trip.travel_insurance && trip.travel_insurance.length > 0) policyCards.push({ title: 'Insurance', items: Array.isArray(trip.travel_insurance) ? trip.travel_insurance : trip.travel_insurance.split('\n') });
         if (trip.important_notes && trip.important_notes.length > 0) policyCards.push({ title: 'Important Notes', items: Array.isArray(trip.important_notes) ? trip.important_notes : trip.important_notes.split('\n') });
-        html += renderDataCardsIntoPages('Policies', 'ESSENTIAL GUIDELINES', policyCards, 12);
+        if (policyCards.length > 0) {
+            Paginator.addSectionHeader('Policies', 'ESSENTIAL GUIDELINES', 'var(--orange)');
+            Paginator.addCards(policyCards);
+        }
 
         // Render Agreements Page (Terms, Risk, Remember)
         const agreementCards = [];
         if (trip.terms_and_conditions && trip.terms_and_conditions.length > 0) agreementCards.push({ title: 'Terms & Conditions', items: Array.isArray(trip.terms_and_conditions) ? trip.terms_and_conditions : trip.terms_and_conditions.split('\n') });
         if (trip.risk_liabilities && trip.risk_liabilities.length > 0) agreementCards.push({ title: 'Risk & Liabilities', items: Array.isArray(trip.risk_liabilities) ? trip.risk_liabilities : trip.risk_liabilities.split('\n') });
         if (trip.things_to_remember && trip.things_to_remember.length > 0) agreementCards.push({ title: 'Things to Remember', items: Array.isArray(trip.things_to_remember) ? trip.things_to_remember : trip.things_to_remember.split('\n') });
-        html += renderDataCardsIntoPages('Agreements', 'TERMS & CONDITIONS', agreementCards, 12);
+        if (agreementCards.length > 0) {
+            Paginator.addSectionHeader('Agreements', 'TERMS & CONDITIONS', 'var(--orange)');
+            Paginator.addCards(agreementCards);
+        }
 
         if (trip.things_to_carry) {
             let prepCategories = [];
@@ -334,9 +333,13 @@ async function loadItinerary() {
                     title: cat.category || 'Items',
                     items: cat.items
                 }));
-                html += renderDataCardsIntoPages('Preparation', 'Things to Carry', mappedCards, 12);
+                Paginator.addSectionHeader('Preparation', 'THINGS TO CARRY', 'var(--orange)');
+                Paginator.addCards(mappedCards);
             }
         }
+
+        Paginator.closePage();
+        html += Paginator.html;
 
         html += `
             <!-- Final Page -->
