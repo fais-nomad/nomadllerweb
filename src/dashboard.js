@@ -1163,6 +1163,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (addPackageForm) {
+        // Add listener to catch HTML5 validation failures
+        addPackageForm.addEventListener('invalid', function(e) {
+            e.preventDefault();
+            const fieldName = e.target.previousElementSibling ? e.target.previousElementSibling.innerText : e.target.id;
+            alert('Cannot update package: The field "' + fieldName + '" is missing or invalid. Please check your inputs.');
+            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            e.target.focus();
+        }, true);
+
         addPackageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
