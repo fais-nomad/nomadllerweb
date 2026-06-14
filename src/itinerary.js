@@ -165,7 +165,7 @@ async function loadItinerary() {
             addDay(dayNum, title, desc, metricsHtml, isHighlight) {
                 const descHeight = Math.ceil((desc || '').length / 80) * 20; // 20px per line
                 const metricsHeight = metricsHtml ? (isHighlight ? 70 : 40) : 0;
-                const baseHeight = isHighlight ? 120 : 100; // titles, paddings, borders
+                const baseHeight = isHighlight ? 150 : 120; // titles, paddings (30px), margins (50px)
                 const heightNeeded = baseHeight + descHeight + metricsHeight;
 
                 if (this.currentHeight + heightNeeded > this.maxHeight && this.currentHeight > 0) {
@@ -215,14 +215,14 @@ async function loadItinerary() {
                     let isFirstChunk = true;
 
                     while(remainingItems.length > 0) {
-                        const titleHeight = 80; // <h3> + margins + margin-bottom: 20px
-                        if (this.currentHeight + titleHeight >= this.maxHeight && this.currentHeight > 0) {
+                        const cardOverhead = 130; // padding: 30px (top+bottom=60), margin-bottom: 20, h3+margins: 50
+                        if (this.currentHeight + cardOverhead >= this.maxHeight && this.currentHeight > 0) {
                             this.closePage();
                         }
                         
-                        const availableHeight = this.maxHeight - this.currentHeight - titleHeight;
-                        // each row in 2 columns takes ~25px
-                        const maxRows = Math.floor(availableHeight / 25);
+                        const availableHeight = this.maxHeight - this.currentHeight - cardOverhead;
+                        // each row in 2 columns takes ~35px (font + line-height + margin-bottom: 12px)
+                        const maxRows = Math.floor(availableHeight / 35);
                         let maxItemsForChunk = maxRows * 2;
                         
                         if (maxItemsForChunk <= 0) {
@@ -241,7 +241,7 @@ async function loadItinerary() {
                             </div>
                             `;
                             const rowsUsed = Math.ceil(chunk.length / 2);
-                            this.currentHeight += titleHeight + (rowsUsed * 25);
+                            this.currentHeight += cardOverhead + (rowsUsed * 35);
                             isFirstChunk = false;
                         }
                         if (this.currentHeight >= this.maxHeight) {
