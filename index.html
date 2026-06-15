@@ -45,8 +45,10 @@
 <meta content="https://www.nomadller.com" property="og:url"/>
 <meta content="website" property="og:type"/>
 <meta content="summary_large_image" name="twitter:card"/>
-<link as="image" href="/images/russia.webp" rel="preload"/>
-<link href="https://www.nomadller.com/" rel="canonical"/></head>
+<link as="image" href="/images/russia-mobile.webp" media="(max-width: 768px)" rel="preload"/>
+<link as="image" href="/images/russia.webp" media="(min-width: 769px)" rel="preload"/>
+<link href="https://www.nomadller.com/" rel="canonical"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+</head>
 <body>
 <nav>
 <div class="logo">NOMADLLER</div>
@@ -71,7 +73,10 @@
 <div class="hero-slider">
 <!-- Slide 1: Teriberka, Russia -->
 <div class="slide active" data-subtitle="Chase the celestial dance of the Northern Lights in Teriberka, Russia." data-title="ARCTIC DREAMS">
-<img alt="Russia Northern Lights" fetchpriority="high" height="1080" src="/images/russia.webp" width="1920"/>
+<picture>
+  <source media="(max-width: 768px)" srcset="/images/russia-mobile.webp">
+  <img alt="Russia Northern Lights" fetchpriority="high" src="/images/russia.webp" width="1920" height="1080"/>
+</picture>
 </div>
 <!-- Slide 2: Everest -->
 <div class="slide" data-subtitle="Stand at the foot of the world's highest peak." data-title="BEYOND THE EDGE">
