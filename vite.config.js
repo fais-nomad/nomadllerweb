@@ -10,6 +10,7 @@ export default defineConfig({
     drop: ['console', 'debugger'],
   },
   build: {
+    modulePreload: false,
     minify: 'esbuild',
     cssCodeSplit: true,
     rollupOptions: {

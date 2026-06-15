@@ -123,13 +123,11 @@ reveals.forEach((el) => {
   gsap.fromTo(el, 
     {
       opacity: 0,
-      y: 50,
-      filter: 'blur(10px)'
+      y: 50
     },
     {
       opacity: 1,
       y: 0,
-      filter: 'blur(0px)',
       duration: 1,
       ease: 'power3.out',
       scrollTrigger: {
