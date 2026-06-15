@@ -3,7 +3,7 @@
   --bg-dark: #0a0a0a;
   --bg-card: rgba(20, 20, 20, 0.7);
   --text-primary: #ffffff;
-  --text-secondary: #a0a0a0;
+  --text-secondary: #cccccc;
   --accent: #ff6b35; /* Adventure Orange */
   --accent-alt: #2ec4b6; /* Glacier Teal */
   --glass-border: rgba(255, 255, 255, 0.1);
@@ -877,7 +877,7 @@ section {
 
 .review-date {
   font-size: 0.8rem;
-  color: #777;
+  color: #cccccc;
 }
 
 .stars-mini {

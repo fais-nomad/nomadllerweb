@@ -1157,7 +1157,7 @@
 <button class="btn" id="download-passport-data" style="margin: 0; padding: 0.5rem 1rem; background: var(--accent); font-size: 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer;"><i class="ph ph-download"></i> Passports</button>
 <button class="btn" id="modal-copy-link" style="margin: 0; padding: 0.5rem 1rem; background: var(--admin-success); font-size: 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer;"><i class="ph ph-copy"></i> Link</button>
 <button class="btn" id="toggle-agent-bookings-btn" style="margin: 0; padding: 0.5rem 1rem; background: #a46bb5; font-size: 0.8rem; border: none; border-radius: 5px; color: white; cursor: pointer;"><i class="ph ph-users-three"></i> Agent Bookings</button>
-<button id="close-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin-left: 0.5rem;"><i class="ph ph-x"></i></button>
+<button id="close-modal" aria-label="Close modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin-left: 0.5rem;"><i class="ph ph-x"></i></button>
 </div>
 </div>
 <div class="admin-two-col-grid">
@@ -1177,7 +1177,7 @@
 <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 15px; border: 1px solid var(--admin-border); padding: 2rem;">
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem;">
 <h2 style="color: white; margin: 0;">Edit Guest Details</h2>
-<button id="close-edit-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
+<button id="close-edit-modal" aria-label="Close modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
 </div>
 <form id="edit-guest-form">
 <input id="edit-guest-id" type="hidden"/>
@@ -1289,7 +1289,7 @@
 <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; border-radius: 15px; border: 1px solid var(--admin-border); padding: 2rem;">
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem;">
 <h2 style="color: white; margin: 0;">Edit Trip Details</h2>
-<button id="close-edit-trip-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
+<button id="close-edit-trip-modal" aria-label="Close modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
 </div>
 <form id="edit-trip-form">
 <input id="edit-trip-id" type="hidden"/>
@@ -1324,7 +1324,7 @@
 <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 600px; max-height: 80vh; border-radius: 15px; border: 1px solid var(--admin-border); overflow: hidden; display: flex; flex-direction: column;">
 <div style="padding: 1.5rem; border-bottom: 1px solid var(--admin-border); display: flex; justify-content: space-between; align-items: center;">
 <h2 style="color: white; margin: 0; font-size: 1.2rem;"><i class="ph ph-magic-wand" style="color: var(--accent);"></i> <span id="planner-modal-title">AI Planner</span></h2>
-<button id="close-planner-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
+<button id="close-planner-modal" aria-label="Close modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
 </div>
 <div id="planner-content" style="padding: 1.5rem; overflow-y: auto; flex: 1;">
 <!-- Content will be injected here -->
@@ -1342,7 +1342,7 @@
 <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 15px; border: 1px solid var(--admin-border); padding: 2rem;">
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem;">
 <h2 style="color: white; margin: 0;">Edit Fixed Departure</h2>
-<button id="close-edit-fd-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
+<button id="close-edit-fd-modal" aria-label="Close modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
 </div>
 <form id="edit-fd-form">
 <input id="edit-fd-id" type="hidden"/>
@@ -1452,7 +1452,7 @@
 <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 400px; border-radius: 15px; border: 1px solid var(--admin-border); padding: 2rem;">
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem;">
 <h2 style="color: white; margin: 0; display: flex; align-items: center; gap: 0.5rem;"><i class="ph ph-whatsapp-logo" style="color: #25D366;"></i> Send WhatsApp</h2>
-<button id="close-wa-agent-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
+<button id="close-wa-agent-modal" aria-label="Close modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;"><i class="ph ph-x"></i></button>
 </div>
 <form id="wa-agent-form">
 <input id="wa-agent-code" type="hidden"/>
