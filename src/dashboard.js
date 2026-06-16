@@ -1393,6 +1393,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     const agentsTableBody = document.getElementById('agents-table-body');
     async function loadAgents() {
         if (!agentsTableBody) return;
+        
+        // Setup Event Delegation for WA and Delete buttons if not already set
+        if (!agentsTableBody.dataset.listenerBound) {
+            agentsTableBody.dataset.listenerBound = 'true';
+            agentsTableBody.addEventListener('click', async (e) => {
+                const waBtn = e.target.closest('.send-agent-wa-btn');
+                if (waBtn) {
+                    e.preventDefault();
+                    const code = waBtn.getAttribute('data-code');
+                    const name = waBtn.getAttribute('data-name');
+                    
+                    const waAgentModal = document.getElementById('wa-agent-modal');
+                    const waAgentCodeInput = document.getElementById('wa-agent-code');
+                    const waAgentNameInput = document.getElementById('wa-agent-name');
+                    
+                    if(waAgentModal) {
+                        waAgentCodeInput.value = code;
+                        waAgentNameInput.value = name;
+                        waAgentModal.style.display = 'flex';
+                        gsap.fromTo(waAgentModal.querySelector('.modal-content'), 
+                            { y: 50, opacity: 0 }, 
+                            { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out' }
+                        );
+                    }
+                    return;
+                }
+
+                const delBtn = e.target.closest('.delete-agent-btn');
+                if (delBtn) {
+                    e.preventDefault();
+                    const agentId = delBtn.getAttribute('data-id');
+                    if (confirm('Are you sure you want to delete this agent?')) {
+                        try {
+                            const { error } = await supabase.from('agents').delete().eq('id', agentId);
+                            if (error) throw error;
+                            loadAgents();
+                        } catch (err) {
+                            console.error('Error deleting agent:', err);
+                            alert('Error deleting agent');
+                        }
+                    }
+                }
+            });
+        }
+
         try {
             const { data: agents, error } = await supabase
                 .from('agents')
@@ -1419,48 +1464,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     agentsTableBody.appendChild(tr);
                 });
 
-                // Add WA listeners
-                document.querySelectorAll('.send-agent-wa-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const target = e.target.closest('.send-agent-wa-btn');
-                        const code = target.getAttribute('data-code');
-                        const name = target.getAttribute('data-name');
-                        
-                        // We need to call the modal opening function. 
-                        // Since openWaModal is defined globally or lower in the script, we can just call it.
-                        // However, wait, openWaModal is defined lower in the script inside a block or global?
-                        // Let's just dispatch an event or directly define it globally to be safe, 
-                        // or just get the inputs directly here:
-                        const waAgentModal = document.getElementById('wa-agent-modal');
-                        const waAgentCodeInput = document.getElementById('wa-agent-code');
-                        const waAgentNameInput = document.getElementById('wa-agent-name');
-                        
-                        waAgentCodeInput.value = code;
-                        waAgentNameInput.value = name;
-                        waAgentModal.style.display = 'flex';
-                        gsap.fromTo(waAgentModal.querySelector('.modal-content'), 
-                            { y: 50, opacity: 0 }, 
-                            { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out' }
-                        );
-                    });
-                });
+                // WA and Delete listeners are now handled via event delegation on agentsTableBody
 
-                // Add delete listeners
-                document.querySelectorAll('.delete-agent-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const agentId = e.target.closest('.delete-agent-btn').getAttribute('data-id');
-                        if (confirm('Are you sure you want to delete this agent?')) {
-                            try {
-                                const { error } = await supabase.from('agents').delete().eq('id', agentId);
-                                if (error) throw error;
-                                loadAgents();
-                            } catch (err) {
-                                console.error('Error deleting agent:', err);
-                                alert('Error deleting agent');
-                            }
-                        }
-                    });
-                });
+                // Delete listener is now handled via event delegation
             } else {
                 agentsTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No agents found</td></tr>';
             }
@@ -1557,7 +1563,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const loginUrl = `https://www.nomadller.com/agent-login`;
                 const text = `Hello ${name},\n\nThank you so much for collaborating with us! We are thrilled to have you onboard.\n\n*Agent Portal Access:*\n- Link: ${loginUrl}\n- Access Code: *${code}*\n\n*How to use the portal:*\n\n- *Dashboard:* View details of all Fixed Departures. You can also download customized PDF itineraries automatically branded with your own company name.\n\n- *Bookings Tab:* Manage all your client bookings easily. To book, click the button and type your guest's WhatsApp number (Note: This number is strictly confidential and is not saved anywhere in Nomadller's database). Send the generated link directly to your guest.\n\n- *Custom Costing:* (Coming soon!)\n\n- *Training & Support:* If your team has any sales-related doubts or needs a detailed explanation class for our itineraries, we are happy to arrange a Google Meet session for you!\n\n- *Marketing Materials:* If you need any type of marketing materials to promote the trips, feel free to ask! Contact Dhanish at +91 81291 63766.\n\nLet us know if you need any assistance!\n\nWarm regards,\nNomadller Team`;
                 
-                window.open(`https://wa.me/${country}${phone}?text=${encodeURIComponent(text)}`, '_blank');
+                const url = `https://wa.me/${country}${phone}?text=${encodeURIComponent(text)}`;
+                window.open(url, '_blank') || (window.location.href = url);
                 
                 // Close modal
                 gsap.to(waAgentModal.querySelector('.modal-content'), { 
