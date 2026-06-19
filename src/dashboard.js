@@ -2183,7 +2183,9 @@ window.calculateCostingTotal = () => {
     else if (costingCache.guides.length > 1) asstGuideCost = parseFloat(costingCache.guides[1].cost_per_day) || 0;
 
     let guideDays = Math.max(1, days - 2);
-    if (cCode.includes('abc') || cCode.includes('annapurna')) {
+    if (cCode === 'abc') {
+        guideDays = 7;
+    } else if (cCode.includes('annapurna')) {
         guideDays = 15;
     }
     const guideTotal = ((mainGuides * mainGuideCost) + (asstGuides * asstGuideCost)) * guideDays;
@@ -2205,7 +2207,9 @@ window.calculateCostingTotal = () => {
         porterCostPerDay = parseFloat(costingCache.porters[0].cost_per_day) || 0;
     }
     let porterDays = (cCode === 'gokyo' || cCode === 'ebc-gokyo') ? Math.max(1, days - 1) : Math.max(1, days - 3);
-    if (cCode.includes('abc') || cCode.includes('annapurna')) {
+    if (cCode === 'abc') {
+        porterDays = 7;
+    } else if (cCode.includes('annapurna')) {
         porterDays = 15;
     }
     const porterTotal = porterCostPerDay * porterCount * porterDays;
@@ -2552,30 +2556,39 @@ window.calculateCostingTotal = () => {
             else if (staffCount >= 4 && staffCount <= 7) { staffVehicleCost = pkrHiacePrice; staffVehicleName = 'Hiace'; }
             else if (staffCount >= 8) { staffVehicleCost = pkrHiacePrice * 2; staffVehicleName = '2 Hiaces'; }
 
-            const staffKpTotal = kpCostPerPax * staffCount;
-            const staffKtmToBesTotal = ktmToBesPerPax * staffCount;
-            const staffMukToPkrTotal = mukToPkrPerPax * staffCount;
-            const staffBesiToPisangTotal = besiToPisangCost * staffCount;
-            const staffThorangToMuktiTotal = thorangToMuktiCost * staffCount;
+            let staffTransfersTotal = 0;
 
-            const staffTransfersTotal = staffKpTotal + staffKtmToBesTotal + staffMukToPkrTotal + staffBesiToPisangTotal + staffThorangToMuktiTotal + staffVehicleCost;
-            
-            annapurnaTotal += staffTransfersTotal;
-            
-            detailsText += `<br><br><strong style="color: var(--admin-primary);">STAFF TRANSFERS</strong>`;
-            detailsText += `<br>PKR ➔ KTM (${kpMode}): ${staffCount} Staff × NPR ${kpCostPerPax.toLocaleString()} = <strong>NPR ${staffKpTotal.toLocaleString()}</strong>`;
-            
-            if (cCode.includes('annapurna') && !cCode.includes('abc')) {
-                detailsText += `<br>KTM ➔ Besisahar (Bus + Drop): ${staffCount} Staff × NPR ${ktmToBesPerPax.toLocaleString()} = <strong>NPR ${staffKtmToBesTotal.toLocaleString()}</strong>`;
-                detailsText += `<br>Besisahar ➔ Upper Pisang (Jeep): ${staffCount} Staff × NPR ${besiToPisangCost.toLocaleString()} = <strong>NPR ${staffBesiToPisangTotal.toLocaleString()}</strong>`;
-                detailsText += `<br>Thorang Phedi ➔ Muktinath (Jeep): ${staffCount} Staff × NPR ${thorangToMuktiCost.toLocaleString()} = <strong>NPR ${staffThorangToMuktiTotal.toLocaleString()}</strong>`;
-                detailsText += `<br>Muktinath ➔ PKR (Bus + Drop): ${staffCount} Staff × NPR ${mukToPkrPerPax.toLocaleString()} = <strong>NPR ${staffMukToPkrTotal.toLocaleString()}</strong>`;
-            }
+            if (cCode === 'abc') {
+                staffTransfersTotal = 3000 * staffCount;
+                annapurnaTotal += staffTransfersTotal;
+                detailsText += `<br><br><strong style="color: var(--admin-primary);">STAFF TRANSFERS</strong>`;
+                detailsText += `<br>Staff Transfer: ${staffCount} Staff × NPR 3,000 = <strong>NPR ${staffTransfersTotal.toLocaleString()}</strong>`;
+            } else {
+                const staffKpTotal = kpCostPerPax * staffCount;
+                const staffKtmToBesTotal = ktmToBesPerPax * staffCount;
+                const staffMukToPkrTotal = mukToPkrPerPax * staffCount;
+                const staffBesiToPisangTotal = besiToPisangCost * staffCount;
+                const staffThorangToMuktiTotal = thorangToMuktiCost * staffCount;
 
-            if (staffVehicleCost > 0) {
-                detailsText += `<br>PKR Pick/Drop: (1 ${staffVehicleName} × NPR ${staffVehicleCost.toLocaleString()}) = <strong>NPR ${staffVehicleCost.toLocaleString()}</strong>`;
+                staffTransfersTotal = staffKpTotal + staffKtmToBesTotal + staffMukToPkrTotal + staffBesiToPisangTotal + staffThorangToMuktiTotal + staffVehicleCost;
+                
+                annapurnaTotal += staffTransfersTotal;
+                
+                detailsText += `<br><br><strong style="color: var(--admin-primary);">STAFF TRANSFERS</strong>`;
+                detailsText += `<br>PKR ➔ KTM (${kpMode}): ${staffCount} Staff × NPR ${kpCostPerPax.toLocaleString()} = <strong>NPR ${staffKpTotal.toLocaleString()}</strong>`;
+                
+                if (cCode.includes('annapurna') && !cCode.includes('abc')) {
+                    detailsText += `<br>KTM ➔ Besisahar (Bus + Drop): ${staffCount} Staff × NPR ${ktmToBesPerPax.toLocaleString()} = <strong>NPR ${staffKtmToBesTotal.toLocaleString()}</strong>`;
+                    detailsText += `<br>Besisahar ➔ Upper Pisang (Jeep): ${staffCount} Staff × NPR ${besiToPisangCost.toLocaleString()} = <strong>NPR ${staffBesiToPisangTotal.toLocaleString()}</strong>`;
+                    detailsText += `<br>Thorang Phedi ➔ Muktinath (Jeep): ${staffCount} Staff × NPR ${thorangToMuktiCost.toLocaleString()} = <strong>NPR ${staffThorangToMuktiTotal.toLocaleString()}</strong>`;
+                    detailsText += `<br>Muktinath ➔ PKR (Bus + Drop): ${staffCount} Staff × NPR ${mukToPkrPerPax.toLocaleString()} = <strong>NPR ${staffMukToPkrTotal.toLocaleString()}</strong>`;
+                }
+
+                if (staffVehicleCost > 0) {
+                    detailsText += `<br>PKR Pick/Drop: (1 ${staffVehicleName} × NPR ${staffVehicleCost.toLocaleString()}) = <strong>NPR ${staffVehicleCost.toLocaleString()}</strong>`;
+                }
+                detailsText += `<br><strong>Staff Transfer Cost: NPR ${staffTransfersTotal.toLocaleString()}</strong>`;
             }
-            detailsText += `<br><strong>Staff Transfer Cost: NPR ${staffTransfersTotal.toLocaleString()}</strong>`;
         }
         
         const annTrDet = document.getElementById('calc-annapurna-transfers-details');
