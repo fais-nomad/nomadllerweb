@@ -597,7 +597,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const tripId = row.getAttribute('data-id');
                 
                 try {
-                    const trip = window.tripsData ? window.tripsData.find(t => t.id === tripId) : null;
+                    const trip = window.tripsData ? window.tripsData.find(t => t.id == tripId) : null;
                     
                     if (trip) {
                         document.getElementById('edit-trip-id').value = trip.id || '';
@@ -772,7 +772,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         btn.addEventListener('click', (e) => {
                             e.stopPropagation();
                             const guestId = btn.getAttribute('data-id');
-                            const guest = currentTripGuests.find(g => g.id === guestId);
+                            const guest = currentTripGuests.find(g => g.id == guestId);
                             
                             if (guest) {
                                 // Fill the edit form
@@ -1667,7 +1667,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.querySelectorAll('.edit-fd-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const fdId = e.target.closest('.edit-fd-btn').getAttribute('data-id');
-                        const fd = window.fdsData.find(f => f.id === fdId);
+                        const fd = window.fdsData.find(f => f.id == fdId);
                         if (!fd) return;
 
                         // Populate form
@@ -1737,7 +1737,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert('Please select a fixed departure to copy from.');
                 return;
             }
-            const fd = window.fdsData?.find(f => f.id === fdId);
+            const fd = window.fdsData?.find(f => f.id == fdId);
             if (!fd) return;
 
             // Fill the add form fields
@@ -3197,7 +3197,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 select.addEventListener('change', () => {
                     if (!select.value) return;
-                    const fd = window.fdsData?.find(f => f.id === select.value);
+                    const fd = window.fdsData?.find(f => f.id == select.value);
                     if (fd && fd[dbField]) {
                         textarea.value = fd[dbField];
                         textarea.style.transition = 'background 0.3s';
