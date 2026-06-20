@@ -1666,6 +1666,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 document.querySelectorAll('.edit-fd-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         const fdId = e.target.closest('.edit-fd-btn').getAttribute('data-id');
                         const fd = window.fdsData.find(f => f.id == fdId);
                         if (!fd) return;
@@ -1680,29 +1682,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                         
                         // Parse USD prices from strings like "$1500"
                         const parseUsd = str => {
-                            if (str === null || str === undefined) return '';
-                            return parseFloat(String(str).replace('$', '').replace(/,/g, ''));
+                            if (!str) return '';
+                            const val = parseFloat(String(str).replace(/[$,]/g, ''));
+                            return isNaN(val) ? '' : val;
                         };
-                        document.getElementById('edit-fd-b2b').value = parseUsd(fd.b2b_price);
-                        document.getElementById('edit-fd-max').value = parseUsd(fd.max_selling_price);
+                        try {
+                            document.getElementById('edit-fd-b2b').value = parseUsd(fd.b2b_price);
+                            document.getElementById('edit-fd-max').value = parseUsd(fd.max_selling_price);
 
-                        document.getElementById('edit-fd-cover-url').value = fd.cover_image_url || '';
-                        document.getElementById('edit-fd-map-url').value = fd.map_image_url || '';
-                        document.getElementById('edit-fd-altitude-url').value = fd.altitude_image_url || '';
-                        
-                        document.getElementById('edit-fd-highlights').value = fd.trip_highlights || '';
-                        document.getElementById('edit-fd-itinerary').value = fd.detailed_itinerary || '';
-                        document.getElementById('edit-fd-inclusions').value = fd.inclusions || '';
-                        document.getElementById('edit-fd-exclusions').value = fd.exclusions || '';
-                        document.getElementById('edit-fd-notes').value = fd.important_notes || '';
-                        document.getElementById('edit-fd-remember').value = fd.things_to_remember || '';
-                        document.getElementById('edit-fd-terms').value = fd.terms_and_conditions || '';
-                        document.getElementById('edit-fd-risk').value = fd.risk_liabilities || '';
-                        document.getElementById('edit-fd-health').value = fd.health_and_fitness || '';
-                        document.getElementById('edit-fd-insurance').value = fd.travel_insurance || '';
-                        document.getElementById('edit-fd-cancellation').value = fd.cancellation_policy || '';
-
-                        document.getElementById('edit-fd-modal').style.display = 'flex';
+                            document.getElementById('edit-fd-cover-url').value = fd.cover_image_url || '';
+                            document.getElementById('edit-fd-map-url').value = fd.map_image_url || '';
+                            document.getElementById('edit-fd-altitude-url').value = fd.altitude_image_url || '';
+                            
+                            document.getElementById('edit-fd-highlights').value = fd.trip_highlights || '';
+                            document.getElementById('edit-fd-itinerary').value = fd.detailed_itinerary || '';
+                            document.getElementById('edit-fd-inclusions').value = fd.inclusions || '';
+                            document.getElementById('edit-fd-exclusions').value = fd.exclusions || '';
+                            document.getElementById('edit-fd-notes').value = fd.important_notes || '';
+                            document.getElementById('edit-fd-remember').value = fd.things_to_remember || '';
+                            document.getElementById('edit-fd-terms').value = fd.terms_and_conditions || '';
+                            document.getElementById('edit-fd-risk').value = fd.risk_liabilities || '';
+                            document.getElementById('edit-fd-health').value = fd.health_and_fitness || '';
+                            document.getElementById('edit-fd-insurance').value = fd.travel_insurance || '';
+                            document.getElementById('edit-fd-cancellation').value = fd.cancellation_policy || '';
+                        } catch (err) {
+                            console.error('Error populating FD form:', err);
+                        } finally {
+                            document.getElementById('edit-fd-modal').style.display = 'flex';
+                        }
                     });
                 });
 
@@ -1745,8 +1752,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('fdTotalSlots').value = fd.total_slots || '';
             
             const parseUsd = str => {
-                if (str === null || str === undefined) return '';
-                return parseFloat(String(str).replace('$', '').replace(/,/g, ''));
+                if (!str) return '';
+                const val = parseFloat(String(str).replace(/[$,]/g, ''));
+                return isNaN(val) ? '' : val;
             };
             document.getElementById('fdPrice').value = parseUsd(fd.b2b_price) || '';
             document.getElementById('fdMaxSellingPrice').value = parseUsd(fd.max_selling_price) || '';
