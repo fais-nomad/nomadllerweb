@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error) {
             console.error('Error fetching trips:', error);
         } else if (trips && trips.length > 0) {
+            window.tripsData = trips;
             tripsTableBody.innerHTML = ''; // Clear default
             trips.forEach(trip => {
                 const tr = document.createElement('tr');
@@ -592,30 +593,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (editBtn && row) {
                 e.stopPropagation();
+                e.preventDefault();
                 const tripId = row.getAttribute('data-id');
                 
                 try {
-                    const { data: trip, error } = await supabase
-                        .from('upcoming_trips')
-                        .select('*')
-                        .eq('id', tripId)
-                        .single();
+                    const trip = window.tripsData ? window.tripsData.find(t => t.id === tripId) : null;
                     
-                    if (error) throw error;
-
                     if (trip) {
-                        document.getElementById('edit-trip-id').value = trip.id;
-                        document.getElementById('edit-trip-name').value = trip.trip_name;
-                        document.getElementById('edit-trip-start').value = trip.start_date;
-                        document.getElementById('edit-trip-end').value = trip.end_date;
-                        document.getElementById('edit-trip-guide').value = trip.guide_name;
-                        document.getElementById('edit-trip-contact').value = trip.guide_contact;
+                        document.getElementById('edit-trip-id').value = trip.id || '';
+                        document.getElementById('edit-trip-name').value = trip.trip_name || '';
+                        document.getElementById('edit-trip-start').value = trip.start_date || '';
+                        document.getElementById('edit-trip-end').value = trip.end_date || '';
+                        document.getElementById('edit-trip-guide').value = trip.guide_name || '';
+                        document.getElementById('edit-trip-contact').value = trip.guide_contact || '';
                         
                         editTripModal.style.display = 'flex';
+                    } else {
+                        console.error('Trip not found in local data');
                     }
                 } catch (err) {
-                    console.error('Fetch error:', err);
-                    alert('Error fetching trip details');
+                    console.error('Error setting trip details:', err);
+                    alert('Error setting trip details');
                 }
                 return;
             }
@@ -1681,7 +1679,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         document.getElementById('edit-fd-status').value = fd.status || 'Available';
                         
                         // Parse USD prices from strings like "$1500"
-                        const parseUsd = str => str ? parseFloat(str.replace('$', '').replace(',', '')) : '';
+                        const parseUsd = str => {
+                            if (str === null || str === undefined) return '';
+                            return parseFloat(String(str).replace('$', '').replace(/,/g, ''));
+                        };
                         document.getElementById('edit-fd-b2b').value = parseUsd(fd.b2b_price);
                         document.getElementById('edit-fd-max').value = parseUsd(fd.max_selling_price);
 
@@ -1743,7 +1744,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('fdDestination').value = fd.destination || '';
             document.getElementById('fdTotalSlots').value = fd.total_slots || '';
             
-            const parseUsd = str => str ? parseFloat(str.replace('$', '').replace(',', '')) : '';
+            const parseUsd = str => {
+                if (str === null || str === undefined) return '';
+                return parseFloat(String(str).replace('$', '').replace(/,/g, ''));
+            };
             document.getElementById('fdPrice').value = parseUsd(fd.b2b_price) || '';
             document.getElementById('fdMaxSellingPrice').value = parseUsd(fd.max_selling_price) || '';
             
