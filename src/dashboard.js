@@ -1619,6 +1619,133 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- FIXED DEPARTURES LOGIC ---
     const fdTableBody = document.getElementById('fixed-departures-table-body');
+
+    if (fdTableBody) {
+        fdTableBody.addEventListener('click', async (e) => {
+            const editBtn = e.target.closest('.edit-fd-btn');
+            const deleteBtn = e.target.closest('.delete-fd-btn');
+
+            if (editBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Edit FD button clicked.');
+                const fdId = editBtn.getAttribute('data-id');
+                console.log('Target FD ID:', fdId);
+                console.log('window.fdsData availability:', !!window.fdsData, window.fdsData?.length);
+                
+                const fd = window.fdsData ? window.fdsData.find(f => f.id == fdId) : null;
+                if (!fd) {
+                    console.error('No matching FD found for ID:', fdId);
+                    alert('Error: Departure data not found. Please try refreshing the page.');
+                    return;
+                }
+
+                // Populate form
+                try {
+                    const fdIdInput = document.getElementById('edit-fd-id');
+                    if (fdIdInput) fdIdInput.value = fd.id;
+                    
+                    const fdDestInput = document.getElementById('edit-fd-destination');
+                    if (fdDestInput) fdDestInput.value = fd.destination || '';
+                    
+                    const fdStartInput = document.getElementById('edit-fd-start');
+                    if (fdStartInput) fdStartInput.value = fd.start_date || '';
+                    
+                    const fdEndInput = document.getElementById('edit-fd-end');
+                    if (fdEndInput) fdEndInput.value = fd.end_date || '';
+                    
+                    const fdSlotsInput = document.getElementById('edit-fd-slots');
+                    if (fdSlotsInput) fdSlotsInput.value = fd.total_slots || '';
+                    
+                    const fdStatusSelect = document.getElementById('edit-fd-status');
+                    if (fdStatusSelect) fdStatusSelect.value = fd.status || 'Available';
+                    
+                    // Parse USD prices from strings like "$1500"
+                    const parseUsd = str => {
+                        if (!str) return '';
+                        const val = parseFloat(String(str).replace(/[$,]/g, ''));
+                        return isNaN(val) ? '' : val;
+                    };
+                    
+                    const fdB2bInput = document.getElementById('edit-fd-b2b');
+                    if (fdB2bInput) fdB2bInput.value = parseUsd(fd.b2b_price);
+                    
+                    const fdMaxInput = document.getElementById('edit-fd-max');
+                    if (fdMaxInput) fdMaxInput.value = parseUsd(fd.max_selling_price);
+
+                    const fdCoverInput = document.getElementById('edit-fd-cover-url');
+                    if (fdCoverInput) fdCoverInput.value = fd.cover_image_url || '';
+                    
+                    const fdMapInput = document.getElementById('edit-fd-map-url');
+                    if (fdMapInput) fdMapInput.value = fd.map_image_url || '';
+                    
+                    const fdAltInput = document.getElementById('edit-fd-altitude-url');
+                    if (fdAltInput) fdAltInput.value = fd.altitude_image_url || '';
+                    
+                    const fdHighlightsInput = document.getElementById('edit-fd-highlights');
+                    if (fdHighlightsInput) fdHighlightsInput.value = fd.trip_highlights || '';
+                    
+                    const fdItineraryInput = document.getElementById('edit-fd-itinerary');
+                    if (fdItineraryInput) fdItineraryInput.value = fd.detailed_itinerary || '';
+                    
+                    const fdInclusionsInput = document.getElementById('edit-fd-inclusions');
+                    if (fdInclusionsInput) fdInclusionsInput.value = fd.inclusions || '';
+                    
+                    const fdExclusionsInput = document.getElementById('edit-fd-exclusions');
+                    if (fdExclusionsInput) fdExclusionsInput.value = fd.exclusions || '';
+                    
+                    const fdNotesInput = document.getElementById('edit-fd-notes');
+                    if (fdNotesInput) fdNotesInput.value = fd.important_notes || '';
+                    
+                    const fdRememberInput = document.getElementById('edit-fd-remember');
+                    if (fdRememberInput) fdRememberInput.value = fd.things_to_remember || '';
+                    
+                    const fdTermsInput = document.getElementById('edit-fd-terms');
+                    if (fdTermsInput) fdTermsInput.value = fd.terms_and_conditions || '';
+                    
+                    const fdRiskInput = document.getElementById('edit-fd-risk');
+                    if (fdRiskInput) fdRiskInput.value = fd.risk_liabilities || '';
+                    
+                    const fdHealthInput = document.getElementById('edit-fd-health');
+                    if (fdHealthInput) fdHealthInput.value = fd.health_and_fitness || '';
+                    
+                    const fdInsuranceInput = document.getElementById('edit-fd-insurance');
+                    if (fdInsuranceInput) fdInsuranceInput.value = fd.travel_insurance || '';
+                    
+                    const fdCancellationInput = document.getElementById('edit-fd-cancellation');
+                    if (fdCancellationInput) fdCancellationInput.value = fd.cancellation_policy || '';
+                    
+                } catch (err) {
+                    console.error('Error populating FD form:', err);
+                } finally {
+                    const modal = document.getElementById('edit-fd-modal');
+                    if (modal) {
+                        modal.style.display = 'flex';
+                        console.log('Edit FD modal displayed.');
+                    } else {
+                        console.error('edit-fd-modal element not found!');
+                    }
+                }
+            }
+
+            if (deleteBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const fdId = deleteBtn.getAttribute('data-id');
+                if (confirm('Are you sure you want to delete this Fixed Departure?')) {
+                    try {
+                        const { error } = await supabase.from('fixed_departures').delete().eq('id', fdId);
+                        if (error) throw error;
+                        loadFixedDepartures();
+                    } catch (err) {
+                        console.error('Error deleting fixed departure:', err);
+                        alert('Error deleting fixed departure');
+                    }
+                }
+            }
+        });
+    }
+
     async function loadFixedDepartures() {
         if (!fdTableBody) return;
         try {
@@ -1662,71 +1789,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </td>
                     `;
                     fdTableBody.appendChild(tr);
-                });
-
-                document.querySelectorAll('.edit-fd-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const fdId = e.target.closest('.edit-fd-btn').getAttribute('data-id');
-                        const fd = window.fdsData.find(f => f.id == fdId);
-                        if (!fd) return;
-
-                        // Populate form
-                        document.getElementById('edit-fd-id').value = fd.id;
-                        document.getElementById('edit-fd-destination').value = fd.destination || '';
-                        document.getElementById('edit-fd-start').value = fd.start_date || '';
-                        document.getElementById('edit-fd-end').value = fd.end_date || '';
-                        document.getElementById('edit-fd-slots').value = fd.total_slots || '';
-                        document.getElementById('edit-fd-status').value = fd.status || 'Available';
-                        
-                        // Parse USD prices from strings like "$1500"
-                        const parseUsd = str => {
-                            if (!str) return '';
-                            const val = parseFloat(String(str).replace(/[$,]/g, ''));
-                            return isNaN(val) ? '' : val;
-                        };
-                        try {
-                            document.getElementById('edit-fd-b2b').value = parseUsd(fd.b2b_price);
-                            document.getElementById('edit-fd-max').value = parseUsd(fd.max_selling_price);
-
-                            document.getElementById('edit-fd-cover-url').value = fd.cover_image_url || '';
-                            document.getElementById('edit-fd-map-url').value = fd.map_image_url || '';
-                            document.getElementById('edit-fd-altitude-url').value = fd.altitude_image_url || '';
-                            
-                            document.getElementById('edit-fd-highlights').value = fd.trip_highlights || '';
-                            document.getElementById('edit-fd-itinerary').value = fd.detailed_itinerary || '';
-                            document.getElementById('edit-fd-inclusions').value = fd.inclusions || '';
-                            document.getElementById('edit-fd-exclusions').value = fd.exclusions || '';
-                            document.getElementById('edit-fd-notes').value = fd.important_notes || '';
-                            document.getElementById('edit-fd-remember').value = fd.things_to_remember || '';
-                            document.getElementById('edit-fd-terms').value = fd.terms_and_conditions || '';
-                            document.getElementById('edit-fd-risk').value = fd.risk_liabilities || '';
-                            document.getElementById('edit-fd-health').value = fd.health_and_fitness || '';
-                            document.getElementById('edit-fd-insurance').value = fd.travel_insurance || '';
-                            document.getElementById('edit-fd-cancellation').value = fd.cancellation_policy || '';
-                        } catch (err) {
-                            console.error('Error populating FD form:', err);
-                        } finally {
-                            document.getElementById('edit-fd-modal').style.display = 'flex';
-                        }
-                    });
-                });
-
-                document.querySelectorAll('.delete-fd-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const fdId = e.target.closest('.delete-fd-btn').getAttribute('data-id');
-                        if (confirm('Are you sure you want to delete this Fixed Departure?')) {
-                            try {
-                                const { error } = await supabase.from('fixed_departures').delete().eq('id', fdId);
-                                if (error) throw error;
-                                loadFixedDepartures();
-                            } catch (err) {
-                                console.error('Error deleting fixed departure:', err);
-                                alert('Error deleting fixed departure');
-                            }
-                        }
-                    });
                 });
             } else {
                 fdTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No fixed departures found</td></tr>';
