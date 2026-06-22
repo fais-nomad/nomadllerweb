@@ -1789,6 +1789,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             fdTableBody.innerHTML = '';
             if (fds && fds.length > 0) {
                 window.fdsData = fds;
+                if (window.populateAllPullFromSelects) {
+                    window.populateAllPullFromSelects();
+                }
 
                 const copySelect = document.getElementById('copy-fd-add-select');
                 if (copySelect) {
@@ -3245,6 +3248,22 @@ async function loadTrekData(trekId) {
     }
 }
 
+window.populateAllPullFromSelects = function() {
+    if (!window.fdsData) return;
+    document.querySelectorAll('.pull-from-select').forEach(select => {
+        if (select.children.length <= 1) {
+            // Keep the first placeholder option, then add all others
+            select.innerHTML = '<option value="" disabled selected>Pull from...</option>';
+            window.fdsData.forEach(fd => {
+                const option = document.createElement('option');
+                option.value = fd.id;
+                option.textContent = fd.destination;
+                select.appendChild(option);
+            });
+        }
+    });
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     // Helper to map textarea ID to DB field name
     function getDbFieldFromId(id) {
@@ -3282,20 +3301,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const dbField = getDbFieldFromId(textarea.id);
             if (dbField) {
                 const select = document.createElement('select');
+                select.className = 'pull-from-select';
                 select.innerHTML = '<option value="" disabled selected>Pull from...</option>';
                 select.style.cssText = 'background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: var(--text-secondary); border-radius: 3px; font-size: 0.7rem; padding: 0.2rem; cursor: pointer; max-width: 120px;';
                 
-                select.addEventListener('focus', () => {
-                    if (select.children.length <= 1 && window.fdsData) {
-                        window.fdsData.forEach(fd => {
-                            const option = document.createElement('option');
-                            option.value = fd.id;
-                            option.textContent = fd.destination;
-                            select.appendChild(option);
-                        });
-                    }
-                });
-
                 select.addEventListener('change', () => {
                     if (!select.value) return;
                     const fd = window.fdsData?.find(f => f.id == select.value);
@@ -3330,6 +3339,9 @@ document.addEventListener('DOMContentLoaded', () => {
             label.appendChild(controlsDiv);
         }
     });
+
+    // Populate immediately if window.fdsData is already available
+    window.populateAllPullFromSelects();
 
     const backBtn = document.getElementById('back-to-cloud-list');
     if (backBtn) {
