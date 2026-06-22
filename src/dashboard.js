@@ -1777,7 +1777,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadFixedDepartures() {
-        if (!fdTableBody) return;
         try {
             const { data: fds, error } = await supabase
                 .from('fixed_departures')
@@ -1786,45 +1785,50 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
             if (error) throw error;
             
-            fdTableBody.innerHTML = '';
-            if (fds && fds.length > 0) {
+            if (fds) {
                 window.fdsData = fds;
                 if (window.populateAllPullFromSelects) {
                     window.populateAllPullFromSelects();
                 }
+            }
 
-                const copySelect = document.getElementById('copy-fd-add-select');
-                if (copySelect) {
-                    copySelect.innerHTML = '<option value="" disabled selected>Copy data from...</option>';
-                    fds.forEach(fd => {
-                        const dateStr = new Date(fd.start_date).toLocaleDateString();
-                        copySelect.innerHTML += `<option value="${fd.id}">${fd.destination} (${dateStr})</option>`;
-                    });
-                }
-
+            const copySelect = document.getElementById('copy-fd-add-select');
+            if (copySelect && fds) {
+                copySelect.innerHTML = '<option value="" disabled selected>Copy data from...</option>';
                 fds.forEach(fd => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><strong>${fd.destination}</strong></td>
-                        <td>${new Date(fd.start_date).toLocaleDateString()} - ${new Date(fd.end_date).toLocaleDateString()}</td>
-                        <td>${fd.available_slots} / ${fd.total_slots}</td>
-                        <td style="color: var(--admin-success); font-weight: bold;">${fd.b2b_price}</td>
-                        <td>
-                            <span style="padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; background: ${fd.status === 'Available' ? 'rgba(46, 196, 182, 0.2)' : fd.status === 'Sold Out' ? 'rgba(255, 107, 53, 0.2)' : 'rgba(255,255,255,0.1)'}; color: ${fd.status === 'Available' ? 'var(--admin-success)' : fd.status === 'Sold Out' ? 'var(--admin-danger)' : 'white'};">
-                                ${fd.status}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="actions-cell">
-                                <button class="action-btn edit-fd-btn" data-id="${fd.id}" title="Edit Departure"><i class="ph ph-pencil"></i></button>
-                                <button class="action-btn delete-fd-btn" data-id="${fd.id}" title="Delete Departure"><i class="ph ph-trash"></i></button>
-                            </div>
-                        </td>
-                    `;
-                    fdTableBody.appendChild(tr);
+                    const dateStr = new Date(fd.start_date).toLocaleDateString();
+                    copySelect.innerHTML += `<option value="${fd.id}">${fd.destination} (${dateStr})</option>`;
                 });
-            } else {
-                fdTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No fixed departures found</td></tr>';
+            }
+
+            const tableBody = document.getElementById('fixed-departures-table-body');
+            if (tableBody) {
+                tableBody.innerHTML = '';
+                if (fds && fds.length > 0) {
+                    fds.forEach(fd => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>${fd.destination}</strong></td>
+                            <td>${new Date(fd.start_date).toLocaleDateString()} - ${new Date(fd.end_date).toLocaleDateString()}</td>
+                            <td>${fd.available_slots} / ${fd.total_slots}</td>
+                            <td style="color: var(--admin-success); font-weight: bold;">${fd.b2b_price}</td>
+                            <td>
+                                <span style="padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; background: ${fd.status === 'Available' ? 'rgba(46, 196, 182, 0.2)' : fd.status === 'Sold Out' ? 'rgba(255, 107, 53, 0.2)' : 'rgba(255,255,255,0.1)'}; color: ${fd.status === 'Available' ? 'var(--admin-success)' : fd.status === 'Sold Out' ? 'var(--admin-danger)' : 'white'};">
+                                    ${fd.status}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="actions-cell">
+                                    <button class="action-btn edit-fd-btn" data-id="${fd.id}" title="Edit Departure"><i class="ph ph-pencil"></i></button>
+                                    <button class="action-btn delete-fd-btn" data-id="${fd.id}" title="Delete Departure"><i class="ph ph-trash"></i></button>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No fixed departures found</td></tr>';
+                }
             }
         } catch (error) {
             console.error('Error fetching fixed departures:', error);
@@ -4253,6 +4257,13 @@ Fields to extract:
         const modal = document.getElementById('pdf-missing-info-modal');
         const container = document.getElementById('missing-fields-container');
         if (!modal || !container) return;
+
+        // Dynamic debug title
+        const titleEl = modal.querySelector('h2');
+        if (titleEl) {
+            const fdsCount = window.fdsData ? window.fdsData.length : 'undefined';
+            titleEl.textContent = `Missing Information (FDS: ${fdsCount})`;
+        }
 
         // Helper to map missing field key to fixed_departures db column
         function getDbFieldFromKey(key) {
