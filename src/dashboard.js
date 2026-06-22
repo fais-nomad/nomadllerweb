@@ -4205,10 +4205,14 @@ Fields to extract:
         const pdf = await loadingTask.promise;
         let fullText = '';
         for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items.map(item => item.str).join(' ');
-            fullText += pageText + '\n';
+            try {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n';
+            } catch (pageErr) {
+                console.warn(`Failed to extract text from page ${i}:`, pageErr);
+            }
         }
         return fullText;
     }
