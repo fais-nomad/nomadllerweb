@@ -3248,6 +3248,9 @@ async function loadTrekData(trekId) {
     }
 }
 
+// Initial load of fixed departures to populate window.fdsData on page load
+loadFixedDepartures();
+
 window.populateAllPullFromSelects = function() {
     if (!window.fdsData) return;
     document.querySelectorAll('.pull-from-select').forEach(select => {
