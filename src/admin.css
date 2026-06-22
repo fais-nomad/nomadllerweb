@@ -574,3 +574,9 @@ tbody tr:hover {
   margin-top: 0 !important;
 }
 
+/* Override style.css opacity/interaction rules for admin modals */
+.modal-overlay {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
