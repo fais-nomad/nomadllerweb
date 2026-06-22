@@ -4176,10 +4176,26 @@ Fields to extract:
                     { key: 'subtitle', label: 'Subtitle / Short Description', type: 'text', placeholder: 'e.g. A classic journey to the roof of the world.' },
                     { key: 'duration', label: 'Duration', type: 'text', placeholder: 'e.g. 14 DAYS' },
                     { key: 'difficulty', label: 'Difficulty', type: 'text', placeholder: 'e.g. CHALLENGING' },
-                    { key: 'cost', label: 'Expedition Cost (INR)', type: 'number', placeholder: 'e.g. 76500' }
+                    { key: 'cost', label: 'Expedition Cost (INR)', type: 'number', placeholder: 'e.g. 76500' },
+                    { key: 'highlights', label: 'Trip Highlights (Comma separated)', type: 'text', placeholder: 'e.g. Kalapatthar Sunrise, Namche Bazaar, Tengboche' },
+                    { key: 'inclusions', label: 'Inclusions (Comma separated)', type: 'textarea', placeholder: 'e.g. Meals, Accommodation, Guide' },
+                    { key: 'exclusions', label: 'Exclusions (Comma separated)', type: 'textarea', placeholder: 'e.g. Flights, Personal expenses, Insurance' },
+                    { key: 'cancellation_policy', label: 'Cancellation Policy (Comma separated)', type: 'textarea', placeholder: 'e.g. Before 15 days: 50% refund, Before 10 days: 20% refund' },
+                    { key: 'terms', label: 'Terms & Conditions (Comma separated)', type: 'textarea', placeholder: 'e.g. Booking confirmation upon deposit' },
+                    { key: 'health', label: 'Health & Fitness (Comma separated)', type: 'textarea', placeholder: 'e.g. Requires excellent stamina, Prior hiking advised' },
+                    { key: 'insurance', label: 'Insurance (Comma separated)', type: 'textarea', placeholder: 'e.g. Medical coverage, Personal accident, Helicopter rescue' },
+                    { key: 'notes', label: 'Important Notes (Comma separated)', type: 'textarea', placeholder: 'e.g. Passport valid for 6 months, Max 15kg luggage' },
+                    { key: 'risk', label: 'Risk & Liabilities (Comma separated)', type: 'textarea', placeholder: 'e.g. High altitude risks, Must sign liability release' },
+                    { key: 'remember', label: 'Things to Remember (Comma separated)', type: 'textarea', placeholder: 'e.g. Walk slowly to prevent altitude sickness, Dress in layers, Respect culture' }
                 ];
 
-                const missing = requiredFields.filter(f => !parsedData[f.key]);
+                const missing = requiredFields.filter(f => {
+                    const val = parsedData[f.key];
+                    if (val === undefined || val === null) return true;
+                    if (typeof val === 'string' && val.trim() === '') return true;
+                    if (Array.isArray(val) && val.length === 0) return true;
+                    return false;
+                });
 
                 if (missing.length > 0) {
                     showMissingFieldsModal(parsedData, missing);
@@ -4225,9 +4241,20 @@ Fields to extract:
         container.innerHTML = '';
         missing.forEach(f => {
             const group = document.createElement('div');
+            group.style.display = 'flex';
+            group.style.flexDirection = 'column';
+            group.style.gap = '0.3rem';
+
+            let inputHtml = '';
+            if (f.type === 'textarea') {
+                inputHtml = `<textarea id="missing-${f.key}" placeholder="${f.placeholder}" style="width: 100%; min-height: 80px; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; font-family: inherit; resize: vertical;"></textarea>`;
+            } else {
+                inputHtml = `<input id="missing-${f.key}" placeholder="${f.placeholder}" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px;" type="${f.type}"/>`;
+            }
+
             group.innerHTML = `
-                <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; display: block; margin-top: 1rem;">${f.label}</label>
-                <input id="missing-${f.key}" placeholder="${f.placeholder}" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" type="${f.type}"/>
+                <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; display: block; margin-top: 0.5rem; font-weight: 600;">${f.label}</label>
+                ${inputHtml}
             `;
             container.appendChild(group);
         });
@@ -4245,8 +4272,13 @@ Fields to extract:
         form.onsubmit = (e) => {
             e.preventDefault();
             missing.forEach(f => {
-                const val = document.getElementById(`missing-${f.key}`).value;
-                parsedData[f.key] = val;
+                const el = document.getElementById(`missing-${f.key}`);
+                const val = el ? el.value.trim() : '';
+                if (f.type === 'textarea' || f.key === 'highlights') {
+                    parsedData[f.key] = val ? val.split(/,|\n/).map(s => s.trim()).filter(s => s) : [];
+                } else {
+                    parsedData[f.key] = val;
+                }
             });
             modal.style.display = 'none';
             applyParsedDataToForm(parsedData);

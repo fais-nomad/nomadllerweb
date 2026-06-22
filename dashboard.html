@@ -1516,24 +1516,24 @@
 
 <!-- PDF Missing Information Modal -->
 <div class="modal-overlay" id="pdf-missing-info-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1005; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
-<div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 500px; border-radius: 15px; border: 1px solid var(--admin-border); padding: 2rem;">
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem;">
-<h2 style="color: white; margin: 0; font-size: 1.3rem;">Missing Information</h2>
-<button id="close-pdf-missing-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;" type="button"><i class="ph ph-x"></i></button>
-</div>
-<p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
-The following fields could not be found in the PDF itinerary. Please fill them in or click Skip.
-</p>
-<form id="pdf-missing-info-form">
-<div id="missing-fields-container" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
-<!-- Dynamic missing fields inputs will be added here -->
-</div>
-<div style="display: flex; gap: 1rem; justify-content: flex-end;">
-<button type="button" class="btn" id="btn-skip-missing" style="background: transparent; border: 1px solid var(--admin-border); color: white; margin: 0;">SKIP ALL</button>
-<button type="submit" class="submit-btn" id="btn-confirm-missing" style="width: auto; margin: 0; padding: 0.8rem 1.5rem; background: var(--admin-primary); color: white;">APPLY TO FORM</button>
-</div>
-</form>
-</div>
+    <div class="modal-content" style="background: var(--admin-card-bg); width: 90%; max-width: 700px; border-radius: 15px; border: 1px solid var(--admin-border); padding: 2rem; max-height: 90vh; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem; flex-shrink: 0;">
+            <h2 style="color: white; margin: 0; font-size: 1.3rem;">Missing Information</h2>
+            <button id="close-pdf-missing-modal" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;" type="button"><i class="ph ph-x"></i></button>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; flex-shrink: 0;">
+            The following fields could not be found in the PDF itinerary. Please fill them in or click Skip.
+        </p>
+        <form id="pdf-missing-info-form" style="display: flex; flex-direction: column; overflow: hidden; flex: 1;">
+            <div id="missing-fields-container" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; overflow-y: auto; flex: 1; padding-right: 8px;">
+                <!-- Dynamic missing fields inputs will be added here -->
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; border-top: 1px solid var(--admin-border); padding-top: 1.5rem; flex-shrink: 0;">
+                <button type="button" class="btn" id="btn-skip-missing" style="background: transparent; border: 1px solid var(--admin-border); color: white; margin: 0;">SKIP ALL</button>
+                <button type="submit" class="submit-btn" id="btn-confirm-missing" style="width: auto; margin: 0; padding: 0.8rem 1.5rem; background: var(--admin-primary); color: white;">APPLY TO FORM</button>
+            </div>
+        </form>
+    </div>
 </div>
 </body>
 </html>
