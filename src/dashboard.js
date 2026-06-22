@@ -4076,4 +4076,212 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // PDF Itinerary Upload Logic
+    const uploadBtn = document.getElementById('upload-pdf-itinerary-btn');
+    const fileInput = document.getElementById('pdf-itinerary-upload');
+
+    if (uploadBtn && fileInput) {
+        uploadBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
+            if (!apiKey) {
+                alert("DeepSeek API key is not configured in .env!");
+                return;
+            }
+
+            const originalBtnHtml = uploadBtn.innerHTML;
+            uploadBtn.innerHTML = '<i class="ph ph-spinner" style="animation: spin 1s linear infinite; margin-right: 4px;"></i> Reading PDF...';
+            uploadBtn.disabled = true;
+
+            try {
+                // 1. Read PDF text
+                const pdfText = await extractTextFromPdf(file);
+                if (!pdfText.trim()) {
+                    throw new Error("Could not extract any text from the PDF. Please make sure it is not a scanned image.");
+                }
+
+                uploadBtn.innerHTML = '<i class="ph ph-spinner" style="animation: spin 1s linear infinite; margin-right: 4px;"></i> Analyzing with AI...';
+
+                // 2. Call DeepSeek
+                const prompt = `You are a professional travel coordinator. You are given the text of a travel itinerary PDF. 
+Your job is to read the text and extract all relevant package information. 
+
+Here is the extracted PDF text:
+---
+${pdfText}
+---
+
+Extract the following fields and return ONLY a valid JSON object. Do not wrap in markdown backticks, do not include any other text, just the raw JSON starting with { and ending with }.
+
+If any of the fields below are not mentioned in the text, return them as null.
+
+Fields to extract:
+1. "title": The name of the trek/tour/package.
+2. "subtitle": A catchy tagline or short description.
+3. "duration": Number of days (e.g. "12 Days").
+4. "difficulty": Estimated difficulty level (e.g., "Easy", "Moderate", "Challenging").
+5. "cost": The price/cost in digits (number only, e.g., 75000), if mentioned.
+6. "highlights": An array of main highlights/features.
+7. "inclusions": An array of included items (e.g. meals, accommodation, guide, permit).
+8. "exclusions": An array of excluded items (e.g. flights, personal gears, tips).
+9. "cancellation_policy": An array of lines representing the cancellation policy.
+10. "terms": An array of lines representing terms & conditions.
+11. "health": An array of lines representing health and fitness guidelines.
+12. "insurance": An array of lines representing travel insurance instructions.
+13. "notes": An array of lines representing important notes or advice.
+14. "risk": An array of lines representing risk and liability.
+15. "remember": An array of lines representing things to remember.
+16. "itinerary": An array of day-by-day objects. Each object must have:
+    - "day": integer (e.g., 1)
+    - "title": string (title of the day)
+    - "desc": string (description of activities)
+    - "metrics": array of short strings with emojis (e.g. ["🥾 12 km", "🏔️ Elev: 3,440m"])
+    - "is_highlight": boolean (true for the most climactic days, else false)
+    - "quote": string (optional quote, or empty string "")
+17. "carry": An array of category objects for gear/packing lists. Each category must have:
+    - "category": string (e.g., "Clothing", "Toiletries", "Footwear")
+    - "items": array of strings (e.g. ["Down jacket", "Trekking pants"])
+`;
+
+                const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.3
+                    })
+                });
+
+                const resData = await res.json();
+                if (resData.error) throw new Error(resData.error.message);
+
+                let content = resData.choices[0].message.content;
+                content = content.replace(/^```json/g, '').replace(/^```/g, '').replace(/```$/g, '').trim();
+
+                const parsedData = JSON.parse(content);
+                
+                // 3. Check for missing information
+                const requiredFields = [
+                    { key: 'title', label: 'Trip Title', type: 'text', placeholder: 'e.g. Everest Base Camp Trek' },
+                    { key: 'subtitle', label: 'Subtitle / Short Description', type: 'text', placeholder: 'e.g. A classic journey to the roof of the world.' },
+                    { key: 'duration', label: 'Duration', type: 'text', placeholder: 'e.g. 14 DAYS' },
+                    { key: 'difficulty', label: 'Difficulty', type: 'text', placeholder: 'e.g. CHALLENGING' },
+                    { key: 'cost', label: 'Expedition Cost (INR)', type: 'number', placeholder: 'e.g. 76500' }
+                ];
+
+                const missing = requiredFields.filter(f => !parsedData[f.key]);
+
+                if (missing.length > 0) {
+                    showMissingFieldsModal(parsedData, missing);
+                } else {
+                    applyParsedDataToForm(parsedData);
+                    alert("Itinerary PDF successfully parsed and loaded!");
+                }
+
+            } catch (err) {
+                console.error("PDF Itinerary parsing failed:", err);
+                alert("Failed to parse PDF itinerary: " + err.message);
+            } finally {
+                uploadBtn.innerHTML = originalBtnHtml;
+                uploadBtn.disabled = false;
+                fileInput.value = ''; // Reset input
+            }
+        });
+    }
+
+    async function extractTextFromPdf(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const loadingTask = window.pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdf = await loadingTask.promise;
+        let fullText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + '\n';
+        }
+        return fullText;
+    }
+
+    function showMissingFieldsModal(parsedData, missing) {
+        const modal = document.getElementById('pdf-missing-info-modal');
+        const container = document.getElementById('missing-fields-container');
+        if (!modal || !container) return;
+
+        container.innerHTML = '';
+        missing.forEach(f => {
+            const group = document.createElement('div');
+            group.innerHTML = `
+                <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; display: block; margin-top: 1rem;">${f.label}</label>
+                <input id="missing-${f.key}" placeholder="${f.placeholder}" required style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.3rem;" type="${f.type}"/>
+            `;
+            container.appendChild(group);
+        });
+
+        modal.style.display = 'flex';
+
+        const skipBtn = document.getElementById('btn-skip-missing');
+        skipBtn.onclick = () => {
+            modal.style.display = 'none';
+            applyParsedDataToForm(parsedData);
+            alert("Itinerary PDF successfully parsed and loaded (some fields left empty)!");
+        };
+
+        const form = document.getElementById('pdf-missing-info-form');
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            missing.forEach(f => {
+                const val = document.getElementById(`missing-${f.key}`).value;
+                parsedData[f.key] = val;
+            });
+            modal.style.display = 'none';
+            applyParsedDataToForm(parsedData);
+            alert("Itinerary PDF successfully parsed and loaded!");
+        };
+
+        const closeBtn = document.getElementById('close-pdf-missing-modal');
+        closeBtn.onclick = () => {
+            modal.style.display = 'none';
+        };
+    }
+
+    function applyParsedDataToForm(data) {
+        if (data.title) document.getElementById('pkgTitle').value = data.title;
+        if (data.subtitle) document.getElementById('pkgSubtitle').value = data.subtitle;
+        if (data.duration) document.getElementById('pkgDuration').value = data.duration;
+        if (data.difficulty) document.getElementById('pkgDifficulty').value = data.difficulty;
+        if (data.cost) document.getElementById('pkgCost').value = data.cost;
+
+        if (data.highlights) document.getElementById('pkgHighlights').value = (data.highlights || []).join(', ');
+        if (data.inclusions) document.getElementById('pkgInclusions').value = (data.inclusions || []).join(', ');
+        if (data.exclusions) document.getElementById('pkgExclusions').value = (data.exclusions || []).join(', ');
+        if (data.cancellation_policy) document.getElementById('pkgCancellationPolicy').value = (data.cancellation_policy || []).join(', ');
+        if (data.terms) document.getElementById('pkgTerms').value = (data.terms || []).join(', ');
+        if (data.health) document.getElementById('pkgHealth').value = (data.health || []).join(', ');
+        if (data.insurance) document.getElementById('pkgInsurance').value = (data.insurance || []).join(', ');
+        if (data.notes) document.getElementById('pkgNotes').value = (data.notes || []).join(', ');
+        if (data.risk) document.getElementById('pkgRisk').value = (data.risk || []).join(', ');
+        if (data.remember) document.getElementById('pkgRemember').value = (data.remember || []).join(', ');
+
+        if (data.itinerary) {
+            window.currentItineraryDays = data.itinerary;
+            if (window.syncItineraryBuilder) window.syncItineraryBuilder();
+        }
+
+        if (data.carry) {
+            window.currentCarryCategories = data.carry;
+            if (window.syncCarryBuilder) window.syncCarryBuilder();
+        }
+    }
+
 });
