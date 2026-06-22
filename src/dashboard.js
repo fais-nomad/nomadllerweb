@@ -595,25 +595,55 @@ document.addEventListener('DOMContentLoaded', async () => {
                 e.stopPropagation();
                 e.preventDefault();
                 const tripId = row.getAttribute('data-id');
+                console.log('Edit Trip button clicked. Trip ID:', tripId);
                 
                 try {
-                    const trip = window.tripsData ? window.tripsData.find(t => t.id == tripId) : null;
+                    let trip = window.tripsData ? window.tripsData.find(t => t.id == tripId) : null;
+                    
+                    if (!trip) {
+                        console.warn(`Trip ${tripId} not found in local cache. Fetching from Supabase...`);
+                        const { data, error } = await supabase
+                            .from('upcoming_trips')
+                            .select('*')
+                            .eq('id', tripId)
+                            .single();
+                        if (error) throw error;
+                        trip = data;
+                    }
                     
                     if (trip) {
-                        document.getElementById('edit-trip-id').value = trip.id || '';
-                        document.getElementById('edit-trip-name').value = trip.trip_name || '';
-                        document.getElementById('edit-trip-start').value = trip.start_date || '';
-                        document.getElementById('edit-trip-end').value = trip.end_date || '';
-                        document.getElementById('edit-trip-guide').value = trip.guide_name || '';
-                        document.getElementById('edit-trip-contact').value = trip.guide_contact || '';
+                        const tripIdInput = document.getElementById('edit-trip-id');
+                        if (tripIdInput) tripIdInput.value = trip.id || '';
                         
-                        editTripModal.style.display = 'flex';
+                        const tripNameInput = document.getElementById('edit-trip-name');
+                        if (tripNameInput) tripNameInput.value = trip.trip_name || '';
+                        
+                        const tripStartInput = document.getElementById('edit-trip-start');
+                        if (tripStartInput) tripStartInput.value = trip.start_date || '';
+                        
+                        const tripEndInput = document.getElementById('edit-trip-end');
+                        if (tripEndInput) tripEndInput.value = trip.end_date || '';
+                        
+                        const tripGuideInput = document.getElementById('edit-trip-guide');
+                        if (tripGuideInput) tripGuideInput.value = trip.guide_name || '';
+                        
+                        const tripContactInput = document.getElementById('edit-trip-contact');
+                        if (tripContactInput) tripContactInput.value = trip.guide_contact || '';
+                        
+                        const modal = document.getElementById('edit-trip-modal');
+                        if (modal) {
+                            modal.style.display = 'flex';
+                            console.log('Edit Trip modal displayed successfully.');
+                        } else {
+                            console.error('edit-trip-modal element not found!');
+                        }
                     } else {
-                        console.error('Trip not found in local data');
+                        console.error('Trip data could not be retrieved.');
+                        alert('Error: Could not retrieve trip data. Please refresh and try again.');
                     }
                 } catch (err) {
                     console.error('Error setting trip details:', err);
-                    alert('Error setting trip details');
+                    alert('Error setting trip details: ' + err.message);
                 }
                 return;
             }
