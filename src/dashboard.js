@@ -4239,12 +4239,43 @@ Fields to extract:
         const container = document.getElementById('missing-fields-container');
         if (!modal || !container) return;
 
+        // Helper to map missing field key to fixed_departures db column
+        function getDbFieldFromKey(key) {
+            if (key === 'title') return 'destination';
+            if (key === 'cost') return 'b2b_price_inr';
+            if (key === 'highlights') return 'trip_highlights';
+            if (key === 'inclusions') return 'inclusions';
+            if (key === 'exclusions') return 'exclusions';
+            if (key === 'cancellation_policy') return 'cancellation_policy';
+            if (key === 'terms') return 'terms_and_conditions';
+            if (key === 'health') return 'health_and_fitness';
+            if (key === 'insurance') return 'travel_insurance';
+            if (key === 'notes') return 'important_notes';
+            if (key === 'risk') return 'risk_liabilities';
+            if (key === 'remember') return 'things_to_remember';
+            return null;
+        }
+
         container.innerHTML = '';
         missing.forEach(f => {
             const group = document.createElement('div');
             group.style.display = 'flex';
             group.style.flexDirection = 'column';
             group.style.gap = '0.3rem';
+
+            let selectHtml = '';
+            const dbField = getDbFieldFromKey(f.key);
+            if (dbField && window.fdsData && window.fdsData.length > 0) {
+                let options = '<option value="" disabled selected>Pull from...</option>';
+                window.fdsData.forEach(fd => {
+                    options += `<option value="${fd.id}">${fd.destination}</option>`;
+                });
+                selectHtml = `
+                    <select class="missing-pull-from" data-field="${f.key}" data-dbfield="${dbField}" style="background: rgba(0,0,0,0.5); border: 1px solid var(--admin-border); color: var(--text-secondary); border-radius: 3px; font-size: 0.7rem; padding: 0.2rem; cursor: pointer; max-width: 150px; outline: none;">
+                        ${options}
+                    </select>
+                `;
+            }
 
             let inputHtml = '';
             if (f.type === 'textarea') {
@@ -4254,10 +4285,37 @@ Fields to extract:
             }
 
             group.innerHTML = `
-                <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; display: block; margin-top: 0.5rem; font-weight: 600;">${f.label}</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <label style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">${f.label}</label>
+                    ${selectHtml}
+                </div>
                 ${inputHtml}
             `;
             container.appendChild(group);
+        });
+
+        // Add event listeners to populate values from selected itinerary
+        container.querySelectorAll('.missing-pull-from').forEach(select => {
+            select.addEventListener('change', () => {
+                if (!select.value) return;
+                const fieldKey = select.getAttribute('data-field');
+                const dbField = select.getAttribute('data-dbfield');
+                const fd = window.fdsData?.find(f => f.id == select.value);
+                if (fd) {
+                    const inputEl = document.getElementById(`missing-${fieldKey}`);
+                    if (inputEl) {
+                        const value = fd[dbField] || '';
+                        inputEl.value = value;
+                        // Brief pulse highlight to indicate value updated
+                        inputEl.style.transition = 'background 0.3s';
+                        inputEl.style.background = 'rgba(46, 196, 182, 0.2)';
+                        setTimeout(() => { inputEl.style.background = 'rgba(0,0,0,0.5)'; }, 500);
+                    }
+                } else {
+                    alert('This departure does not have data for this field.');
+                }
+                select.value = '';
+            });
         });
 
         modal.style.display = 'flex';
