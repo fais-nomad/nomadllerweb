@@ -3249,17 +3249,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper to map textarea ID to DB field name
     function getDbFieldFromId(id) {
         if (!id) return null;
-        if (id.includes('Highlights')) return 'trip_highlights';
-        if (id.includes('Itinerary')) return 'detailed_itinerary';
-        if (id.includes('Inclusions')) return 'inclusions';
-        if (id.includes('Exclusions')) return 'exclusions';
-        if (id.includes('ImportantNotes') || id.includes('notes')) return 'important_notes';
-        if (id.includes('ThingsToRemember') || id.includes('remember')) return 'things_to_remember';
-        if (id.includes('Terms') || id.includes('terms')) return 'terms_and_conditions';
-        if (id.includes('Risk') || id.includes('risk')) return 'risk_liabilities';
-        if (id.includes('Health') || id.includes('health')) return 'health_and_fitness';
-        if (id.includes('Insurance') || id.includes('insurance')) return 'travel_insurance';
-        if (id.includes('Cancellation') || id.includes('cancellation')) return 'cancellation_policy';
+        const lowerId = id.toLowerCase();
+        if (lowerId.includes('highlights')) return 'trip_highlights';
+        if (lowerId.includes('itinerary')) return 'detailed_itinerary';
+        if (lowerId.includes('inclusions')) return 'inclusions';
+        if (lowerId.includes('exclusions')) return 'exclusions';
+        if (lowerId.includes('importantnotes') || lowerId.includes('notes')) return 'important_notes';
+        if (lowerId.includes('thingstoremember') || lowerId.includes('remember')) return 'things_to_remember';
+        if (lowerId.includes('terms')) return 'terms_and_conditions';
+        if (lowerId.includes('risk')) return 'risk_liabilities';
+        if (lowerId.includes('health')) return 'health_and_fitness';
+        if (lowerId.includes('insurance')) return 'travel_insurance';
+        if (lowerId.includes('cancellation')) return 'cancellation_policy';
         return null;
     }
 
