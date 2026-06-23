@@ -3250,10 +3250,9 @@ async function loadTrekData(trekId) {
             lBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 1rem; color: var(--text-secondary);">No lunches added.</td></tr>';
         }
     }
+    // Initial load of fixed departures to populate window.fdsData on page load
+    loadFixedDepartures();
 }
-
-// Initial load of fixed departures to populate window.fdsData on page load
-loadFixedDepartures();
 
 window.populateAllPullFromSelects = function() {
     if (!window.fdsData) return;
