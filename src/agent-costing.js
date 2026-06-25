@@ -77,7 +77,7 @@ async function openCostingDetail(trek) {
     if (ctt) ctt.textContent = `${trek.name} Calculator`;
     
     // Reset cache and inputs
-    costingCache = { guides: [], porters: [], permits: [], trails: [], lunches: [], transfers: [], cloudHotels: [], cloudTransports: [], trekCode: trek.code };
+    costingCache = { guides: [], porters: [], permits: [], trails: [], lunches: [], transfers: [], cloudHotels: [], cloudTransports: [], trekCode: trek.code, trek: trek };
     document.getElementById('calc-pax').value = 2;
     document.getElementById('calc-days').value = trek.days || 14;
 
@@ -773,4 +773,69 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', loadCostingTreks);
 } else {
     loadCostingTreks();
+}
+
+// --- PDF GENERATION LOGIC ---
+import { generateItineraryPDF } from './pdf-generator.js';
+
+const pdfModal = document.getElementById('pdf-modal');
+const closePdfModal = document.getElementById('close-pdf-modal');
+const pdfForm = document.getElementById('pdf-generate-form');
+const openPdfBtn = document.getElementById('open-costing-pdf-btn');
+
+if (openPdfBtn && pdfModal) {
+    openPdfBtn.addEventListener('click', () => {
+        if (!costingCache.trek) return;
+        const ppTotalStr = document.getElementById('calc-pp-usd')?.textContent || '';
+        document.getElementById('pdf-guest-name').value = '';
+        document.getElementById('pdf-selling-rate').value = ppTotalStr.replace('USD ', '$');
+        pdfModal.style.display = 'flex';
+    });
+}
+
+if (closePdfModal) {
+    closePdfModal.addEventListener('click', () => {
+        pdfModal.style.display = 'none';
+    });
+}
+
+if (pdfForm) {
+    pdfForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('generate-pdf-btn');
+        const originalText = btn.innerHTML;
+        btn.textContent = 'GENERATING PDF...';
+        btn.disabled = true;
+
+        const guestName = document.getElementById('pdf-guest-name').value;
+        const sellingRate = document.getElementById('pdf-selling-rate').value;
+        const trekName = costingCache.trek ? costingCache.trek.name : '';
+
+        // Try to find matching fixed departure to steal the itinerary text
+        const { data: fdData } = await supabase.from('fixed_departures').select('*').ilike('destination', '%' + trekName + '%').limit(1);
+        const fd = (fdData && fdData.length > 0) ? fdData[0] : { 
+            destination: trekName + ' Custom Trip',
+            start_date: new Date().toISOString(),
+            end_date: new Date(Date.now() + (parseInt(document.getElementById('calc-days')?.value || 14) * 86400000)).toISOString(),
+            itinerary: 'DAY 1: Arrival and Briefing\nWelcome to Kathmandu!\n\nDAY 2: Trek Start\nYour adventure begins.'
+        };
+        
+        const agentData = JSON.parse(localStorage.getItem('agentData') || '{}');
+        let fullProfile = null;
+        if (agentData.id) {
+            const { data } = await supabase.from('agent_profiles').select('*').eq('agent_id', agentData.id).single();
+            fullProfile = data;
+        }
+        
+        try {
+            await generateItineraryPDF(fd, guestName, sellingRate, fullProfile, agentData);
+        } catch (err) {
+            console.error(err);
+            alert("Failed to generate PDF.");
+        }
+        
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        pdfModal.style.display = 'none';
+    });
 }

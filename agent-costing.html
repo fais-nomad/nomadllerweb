@@ -12,6 +12,7 @@
 <!-- jsPDF and AutoTable for PDF Generation -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 <style>
         body {
             background: var(--admin-bg);
@@ -161,6 +162,11 @@
 <h2 id="calc-trek-title" style="color: white; margin: 0; font-size: 1.8rem;">Trek Name</h2>
 <div style="color: var(--admin-primary); font-size: 0.9rem; margin-top: 0.3rem;">Instant Quotation</div>
 </div>
+<div>
+<button class="btn btn-primary" id="open-costing-pdf-btn" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; font-size: 0.85rem;">
+<i class="ph ph-file-pdf"></i> Download Itinerary
+</button>
+</div>
 </div>
 <div class="trip-form">
 <h3 style="color: white; margin-top: 0; margin-bottom: 1.5rem; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.8rem;">TRIP PARAMETERS</h3>
@@ -263,6 +269,71 @@
 </div>
 </div>
 </div>
+</div>
+</div>
+<!-- Generate PDF Modal -->
+<div class="modal" id="pdf-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+<div class="modal-content" style="background: var(--admin-card-bg); border: 1px solid var(--admin-border); border-radius: 15px; padding: 2rem; width: 90%; max-width: 450px; position: relative;">
+<button id="close-pdf-modal" aria-label="Close modal" style="position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.5rem;">
+<i class="ph ph-x"></i>
+</button>
+<h2 style="color: white; margin-bottom: 1.5rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 1rem;">Generate PDF Itinerary</h2>
+<form id="pdf-generate-form">
+<input id="pdf-fd-id" type="hidden"/>
+<div class="form-group">
+<label>Guest Name</label>
+<input id="pdf-guest-name" placeholder="e.g. John Doe" required="" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.2); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.5rem;" type="text"/>
+</div>
+<div class="form-group" style="margin-top: 1rem;">
+<label>Selling Rate</label>
+<input id="pdf-selling-rate" placeholder="e.g. $1500" required="" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.2); border: 1px solid var(--admin-border); color: white; border-radius: 5px; margin-top: 0.5rem;" type="text"/>
+</div>
+<button class="btn btn-primary" id="generate-pdf-btn" style="margin-top: 2rem; width: 100%;" type="submit"><i class="ph ph-file-pdf" style="margin-right: 0.5rem;"></i> GENERATE &amp; DOWNLOAD</button>
+</form>
+</div>
+</div>
+
+<!-- Hidden PDF Template -->
+<div id="pdf-template-container" style="display: none;">
+<div id="luxury-pdf-content" style="width: 800px; padding: 0; font-family: 'Space Grotesk', 'Helvetica', sans-serif; background: #ffffff; color: #333333;">
+<!-- Cover Page -->
+<div class="pdf-page pdf-cover" style="width: 800px; height: 1120px; position: relative; overflow: hidden; box-sizing: border-box;">
+<!-- Cinematic Everest Sunrise Image -->
+<img crossorigin="anonymous" id="pdf-cover-bg" src="https://images.unsplash.com/photo-1522163182402-834f871fd851?q=80&amp;w=1600&amp;auto=format&amp;fit=crop" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;"/>
+<!-- Dramatic Gradient Overlay -->
+<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.95) 100%); z-index: 1;"></div>
+<!-- Content Container -->
+<div style="position: relative; z-index: 2; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 60px 60px 80px; box-sizing: border-box;">
+<!-- Top Section: Company name only (logo moves to center) -->
+<div style="display: flex; align-items: center; justify-content: space-between;">
+<div style="background: rgba(0,0,0,0.45); border: 1px solid rgba(212,175,55,0.35); backdrop-filter: blur(8px); padding: 10px 20px; border-radius: 6px;">
+<h3 id="pdf-agent-company" style="color: #ffffff; letter-spacing: 3px; text-transform: uppercase; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.8rem; margin: 0;"></h3>
+</div>
+<div style="width: 40px; height: 2px; background: #d4af37;"></div>
+</div>
+<!-- Middle Section: Logo centered + Title + Dates -->
+<div style="text-align: center; margin-top: auto; margin-bottom: auto;">
+<!-- Logo centered above title -->
+<div id="pdf-logo-wrapper" style="display: none; justify-content: center; margin-bottom: 24px;">
+<div style="background: rgba(255,255,255,0.95); border-radius: 10px; padding: 12px 24px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+<img alt="Logo" crossorigin="anonymous" id="pdf-agent-logo" loading="lazy" src="" style="height: 50px; width: auto; max-width: 160px; object-fit: contain; display: block;"/>
+</div>
+</div>
+<h2 id="pdf-title" style="font-family: 'Playfair Display', serif; font-size: 5rem; line-height: 1.15; color: #ffffff; font-weight: 700; margin-bottom: 25px; text-shadow: 0 8px 24px rgba(0,0,0,0.6); letter-spacing: 2px;"></h2>
+<h2 id="pdf-dates" style="font-family: 'Inter', sans-serif; font-size: 1.3rem; color: #f0f0f0; font-weight: 400; letter-spacing: 4px; margin-bottom: 0; text-transform: uppercase; text-shadow: 0 2px 8px rgba(0,0,0,0.5);"></h2>
+</div>
+<!-- Bottom Section: Guest & Footer -->
+<div style="text-align: center;">
+<div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(212, 175, 55, 0.4); backdrop-filter: blur(10px); padding: 25px; border-radius: 4px; width: 80%; margin: 0 auto 40px; box-sizing: border-box;">
+<p style="color: #d4af37; margin-bottom: 5px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 3px; font-family: 'Inter', sans-serif;">Prepared Exclusively For</p>
+<p id="pdf-guest-name-display" style="color: #ffffff; font-size: 1.8rem; font-family: 'Playfair Display', serif; font-style: italic; margin: 0;"></p>
+</div>
+<p id="pdf-agent-contact" style="color: rgba(255,255,255,0.7); font-size: 0.85rem; font-family: 'Inter', sans-serif; letter-spacing: 1px;"></p>
+</div>
+</div>
+</div>
+<!-- Details Pages (Populated via JS) -->
+<div id="pdf-details-pages"></div>
 </div>
 </div>
 <!-- Agent Costing JS -->
