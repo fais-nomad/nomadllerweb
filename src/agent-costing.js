@@ -810,17 +810,28 @@ if (pdfForm) {
         const guestName = document.getElementById('pdf-guest-name').value;
         const sellingRate = document.getElementById('pdf-selling-rate').value;
         const trekName = costingCache.trek ? costingCache.trek.name : '';
+        const cleanTrekName = trekName.replace(/\s*\(.*?\)\s*/g, '').replace(' Trek', '').trim();
 
         // Try to find matching fixed departure to steal the itinerary text
-        const { data: fdData } = await supabase.from('fixed_departures').select('*').ilike('destination', '%' + trekName + '%').limit(1);
+        const { data: fdData } = await supabase.from('fixed_departures').select('*').ilike('destination', '%' + cleanTrekName + '%').limit(1);
         const fd = (fdData && fdData.length > 0) ? fdData[0] : { 
             destination: trekName + ' Custom Trip',
             start_date: new Date().toISOString(),
             end_date: new Date(Date.now() + (parseInt(document.getElementById('calc-days')?.value || 14) * 86400000)).toISOString(),
-            itinerary: 'DAY 1: Arrival and Briefing\nWelcome to Kathmandu!\n\nDAY 2: Trek Start\nYour adventure begins.'
+            detailed_itinerary: 'DAY 1: Arrival and Briefing\nWelcome to Kathmandu!\n\nDAY 2: Trek Start\nYour adventure begins.',
+            inclusions: '- Airport Transfers\n- Accommodation as per itinerary\n- Experienced Guide',
+            exclusions: '- International Flights\n- Travel Insurance\n- Personal Expenses',
+            trip_highlights: '- Scenic views\n- Local culture\n- Experienced guides',
+            important_notes: '- Please carry proper trekking gear.\n- Listen to your guide at all times.',
+            things_to_remember: '- Hydrate well.\n- Acclimatize properly.',
+            terms_and_conditions: '- Standard booking conditions apply.',
+            risk_liabilities: '- Trekking involves inherent risks.',
+            health_and_fitness: '- Participants should be physically fit.',
+            travel_insurance: '- Mandatory for high altitude trekking.',
+            cancellation_policy: '- 30 days prior: Full refund.'
         };
         
-        const agentData = JSON.parse(localStorage.getItem('agentData') || '{}');
+        const agentData = JSON.parse(localStorage.getItem('nomadller_agent') || '{}');
         let fullProfile = null;
         if (agentData.id) {
             const { data } = await supabase.from('agent_profiles').select('*').eq('agent_id', agentData.id).single();
