@@ -67,44 +67,73 @@
 </nav>
 <main>
 <section class="hero" id="home">
+<div class="hero-container">
 <div class="hero-slider">
 <!-- Slide 1: Teriberka, Russia -->
-<div class="slide active" data-subtitle="Chase the celestial dance of the Northern Lights in Teriberka, Russia." data-title="ARCTIC DREAMS">
+<div class="slide active" data-subtitle="Chase the celestial dance of the Northern Lights in Teriberka, Russia." data-title="ARCTIC DREAMS" data-img="/images/russia_high_res.png">
 <picture>
-  <source media="(max-width: 768px)" srcset="/images/russia-mobile.webp">
-  <img alt="Russia Northern Lights" fetchpriority="high" src="/images/russia.webp" width="1920" height="1080"/>
+  <source media="(max-width: 768px)" srcset="/images/russia_high_res.png">
+  <img alt="Russia Northern Lights" fetchpriority="high" src="/images/russia_high_res.png" width="1920" height="1080"/>
 </picture>
 </div>
 <!-- Slide 2: Everest -->
-<div class="slide" data-subtitle="Stand at the foot of the world's highest peak." data-title="BEYOND THE EDGE">
-<img alt="" height="1080" loading="lazy" src="/images/everest.webp" width="1920"/>
+<div class="slide" data-subtitle="Stand at the foot of the world's highest peak." data-title="BEYOND THE EDGE" data-img="/images/everest_high_res.png">
+<img alt=" " height="1080" loading="lazy" src="/images/everest_high_res.png" width="1920"/>
 </div>
 <!-- Slide 3: Bali -->
-<div class="slide" data-subtitle="Experience soul-cleansing luxury in the heart of Bali." data-title="TROPICAL SERENITY">
-<img alt="" height="1080" loading="lazy" src="/images/bali.webp" width="1920"/>
+<div class="slide" data-subtitle="Experience soul-cleansing luxury in the heart of Bali." data-title="TROPICAL SERENITY" data-img="/images/bali_high_res.png">
+<img alt=" " height="1080" loading="lazy" src="/images/bali_high_res.png" width="1920"/>
 </div>
 <!-- Slide 4: Annapurna -->
-<div class="slide" data-subtitle="Cross the legendary Thorong La Pass and witness the Himalayas." data-title="CLASSIC TRAILS">
-<img alt="" height="1080" loading="lazy" src="/images/annapurna.webp" width="1920"/>
+<div class="slide" data-subtitle="Cross the legendary Thorong La Pass and witness the Himalayas." data-title="CLASSIC TRAILS" data-img="/images/annapurna_high_res.png">
+<img alt=" " height="1080" loading="lazy" src="/images/annapurna_high_res.png" width="1920"/>
 </div>
 <!-- Slide 5: Kyrgyzstan -->
-<div class="slide" data-subtitle="Rugged expeditions through the heart of the Silk Road." data-title="NOMADIC DREAMS">
-<img alt="" height="1080" loading="lazy" src="/images/kyrgyzstan.webp" width="1920"/>
+<div class="slide" data-subtitle="Rugged expeditions through the heart of the Silk Road." data-title="NOMADIC DREAMS" data-img="/images/kyrgyzstan_high_res.png">
+<img alt=" " height="1080" loading="lazy" src="/images/kyrgyzstan_high_res.png" width="1920"/>
 </div>
 </div>
+
 <div class="hero-content">
-<h1 class="hero-title reveal">ARCTIC<br/>DREAMS</h1>
-<p class="hero-subtitle reveal">Chase the celestial dance of the Northern Lights in Teriberka, Russia.</p>
-<a class="btn reveal" href="#packages">Explore Treks</a>
+<h1 class="hero-title">ARCTIC<br/>DREAMS</h1>
+<p class="hero-subtitle">Chase the celestial dance of the Northern Lights in Teriberka, Russia.</p>
+<a class="btn btn-outline" href="#packages">VIEW DESTINATIONS</a>
 </div>
-<div class="slider-controls">
-<div class="slider-dots">
-<span class="dot active"></span>
-<span class="dot"></span>
-<span class="dot"></span>
-<span class="dot"></span>
-<span class="dot"></span>
+
+<div class="hero-mini-gallery">
+  <div class="mini-card" id="mini-card-1">
+    <div class="mini-card-bg"></div>
+  </div>
+  <div class="mini-card" id="mini-card-2">
+    <div class="mini-card-bg"></div>
+  </div>
+  <div class="hero-arrows">
+    <button id="hero-prev" class="hero-nav-arrow" aria-label="Previous">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <button id="hero-next" class="hero-nav-arrow" aria-label="Next">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+  </div>
 </div>
+</div>
+
+<div class="hero-floating-card">
+  <div class="floating-search">
+    <div class="search-field">
+      <span>Destination</span>
+      <input type="text" class="search-input" placeholder="Where to next?">
+    </div>
+    <div class="search-field">
+      <span>Check In-Out</span>
+      <input type="text" class="search-input" placeholder="Add Dates" onfocus="(this.type='date')" onblur="(this.type='text')">
+    </div>
+    <div class="search-field">
+      <span>Who</span>
+      <input type="number" class="search-input" placeholder="Add Guests" min="1">
+    </div>
+    <button class="btn btn-primary" onclick="document.getElementById('packages').scrollIntoView({behavior: 'smooth'})">SEARCH</button>
+  </div>
 </div>
 </section>
 <section id="about">
@@ -129,54 +158,6 @@
 <span class="stat-number">100%</span>
 <span class="stat-label">Safety Record</span>
 </div>
-</div>
-</div>
-</div>
-</section>
-<!-- TEAM SECTION -->
-<section id="team">
-<h2 class="section-title reveal">The Pioneers</h2>
-<div class="team-grid">
-<!-- Fais -->
-<div class="team-card reveal">
-<div class="team-image">
-<img alt="Mohamed Fais" height="800" loading="lazy" src="/images/team/fais_final_v2.webp" width="800"/>
-<div class="team-overlay">
-<a class="social-link" href="https://www.instagram.com/triping_mania/" rel="noopener noreferrer" target="_blank">Instagram</a>
-</div>
-</div>
-<div class="team-info">
-<h3>Mohamed Fais</h3>
-<p class="role">Co-Founder / Trek Lead</p>
-<p class="team-desc">A veteran trek leader with a passion for high-altitude exploration. Fais has led over 50+ expeditions across the Himalayas and Russia, ensuring every nomad finds their peak.</p>
-</div>
-</div>
-<!-- Fathima -->
-<div class="team-card reveal">
-<div class="team-image">
-<img alt="Fathima" height="800" loading="lazy" src="/images/team/fathima_final.webp" width="800"/>
-<div class="team-overlay">
-<a class="social-link" href="https://www.instagram.com/paaaaaathuuu?igsh=MW1mcDg3cGhmMnFreA==" rel="noopener noreferrer" target="_blank">Instagram</a>
-</div>
-</div>
-<div class="team-info">
-<h3>Fathima</h3>
-<p class="role">Tour Operational Manager / Trek Lead</p>
-<p class="team-desc">Combining expert operational management with seasoned trekking experience, Fathima ensures every journey is seamless and safe. She is a dedicated mentor to new trekkers.</p>
-</div>
-</div>
-<!-- Dhanish -->
-<div class="team-card reveal">
-<div class="team-image">
-<img alt="Dhanish" height="800" loading="lazy" src="/images/team/dhanish_final.webp" width="800"/>
-<div class="team-overlay">
-<a class="social-link" href="https://www.instagram.com/dhanxter__?igsh=MTV6ZWkyYzNnZDB4cA==" rel="noopener noreferrer" target="_blank">Instagram</a>
-</div>
-</div>
-<div class="team-info">
-<h3>Dhanish</h3>
-<p class="role">Co-Founder / Finance Manager</p>
-<p class="team-desc">The backbone of Nomadller's operations, managing the intricate finance and logistics that make global expeditions possible. Dhanish ensures the highest quality at the most affordable rates.</p>
 </div>
 </div>
 </div>
@@ -232,6 +213,54 @@
 <div class="feature-icon">🤝</div>
 <h3>Community Impact</h3>
 <p>Nomadller reinvests 10% of all profits into local schools and porter welfare funds in the regions we visit, making your adventure a force for good.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- TEAM SECTION -->
+<section id="team">
+<h2 class="section-title reveal">The Pioneers</h2>
+<div class="team-grid">
+<!-- Fais -->
+<div class="team-card reveal">
+<div class="team-image">
+<img alt="Mohamed Fais" height="800" loading="lazy" src="/images/team/fais_final_v2.webp" width="800"/>
+<div class="team-overlay">
+<a class="social-link" href="https://www.instagram.com/triping_mania/" rel="noopener noreferrer" target="_blank">Instagram</a>
+</div>
+</div>
+<div class="team-info">
+<h3>Mohamed Fais</h3>
+<p class="role">Co-Founder / Trek Lead</p>
+<p class="team-desc">A veteran trek leader with a passion for high-altitude exploration. Fais has led over 50+ expeditions across the Himalayas and Russia, ensuring every nomad finds their peak.</p>
+</div>
+</div>
+<!-- Fathima -->
+<div class="team-card reveal">
+<div class="team-image">
+<img alt="Fathima" height="800" loading="lazy" src="/images/team/fathima_final.webp" width="800"/>
+<div class="team-overlay">
+<a class="social-link" href="https://www.instagram.com/paaaaaathuuu?igsh=MW1mcDg3cGhmMnFreA==" rel="noopener noreferrer" target="_blank">Instagram</a>
+</div>
+</div>
+<div class="team-info">
+<h3>Fathima</h3>
+<p class="role">Tour Operational Manager / Trek Lead</p>
+<p class="team-desc">Combining expert operational management with seasoned trekking experience, Fathima ensures every journey is seamless and safe. She is a dedicated mentor to new trekkers.</p>
+</div>
+</div>
+<!-- Dhanish -->
+<div class="team-card reveal">
+<div class="team-image">
+<img alt="Dhanish" height="800" loading="lazy" src="/images/team/dhanish_final.webp" width="800"/>
+<div class="team-overlay">
+<a class="social-link" href="https://www.instagram.com/dhanxter__?igsh=MTV6ZWkyYzNnZDB4cA==" rel="noopener noreferrer" target="_blank">Instagram</a>
+</div>
+</div>
+<div class="team-info">
+<h3>Dhanish</h3>
+<p class="role">Co-Founder / Finance Manager</p>
+<p class="team-desc">The backbone of Nomadller's operations, managing the intricate finance and logistics that make global expeditions possible. Dhanish ensures the highest quality at the most affordable rates.</p>
 </div>
 </div>
 </div>

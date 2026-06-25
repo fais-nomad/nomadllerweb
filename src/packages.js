@@ -74,8 +74,8 @@ export async function loadPackagesGrid() {
                             <span style="color: var(--accent); font-size: 1.5rem; font-weight: 700; font-family: 'Playfair Display', serif;">₹${parseFloat(trip.cost).toLocaleString('en-IN')}</span>
                         </div>
                         <div style="display: flex; gap: 10px; margin-top: 1rem;">
-                            <button class="btn btn-primary" style="flex: 1;" onclick="window.showTripDetails('${trip.id}')">VIEW DETAILS</button>
-                            <a href="${viewLink}" target="_blank" class="btn" style="flex: 1; border: 1px solid rgba(255,255,255,0.5); background: transparent; color: #fff; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <button class="btn btn-primary" style="flex: 1; border: 1px solid var(--accent); background: var(--accent); color: white;" onclick="window.showTripDetails('${trip.id}')">VIEW DETAILS</button>
+                            <a href="${viewLink}" target="_blank" class="btn" style="flex: 1; border: 1px solid var(--text-primary); background: transparent; color: var(--text-primary); text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                 ITINERARY
                             </a>

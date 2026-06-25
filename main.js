@@ -74,8 +74,8 @@ function updateHero(index) {
   dots.forEach(d => d.classList.remove('active'));
 
   // Add active classes
-  slides[index].classList.add('active');
-  dots[index].classList.add('active');
+  if (slides[index]) slides[index].classList.add('active');
+  if (dots[index]) dots[index].classList.add('active');
 
   // Animate text change
   const newTitle = slides[index].getAttribute('data-title').replace(/ /g, '<br>');
@@ -96,6 +96,17 @@ function updateHero(index) {
       });
     }
   });
+
+  // Update mini gallery
+  const miniCard1 = document.getElementById('mini-card-1');
+  const miniCard2 = document.getElementById('mini-card-2');
+  if (miniCard1 && miniCard2 && slides.length > 0) {
+    const next1 = (index + 1) % slides.length;
+    const next2 = (index + 2) % slides.length;
+    
+    miniCard1.querySelector('.mini-card-bg').style.backgroundImage = `url('${slides[next1].getAttribute('data-img')}')`;
+    miniCard2.querySelector('.mini-card-bg').style.backgroundImage = `url('${slides[next2].getAttribute('data-img')}')`;
+  }
 }
 
 function nextSlide() {
@@ -103,18 +114,47 @@ function nextSlide() {
   updateHero(currentSlide);
 }
 
+function prevSlide() {
+  currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+  updateHero(currentSlide);
+}
+
 // Auto transition every 5 seconds
 let sliderInterval = setInterval(nextSlide, 5000);
 
 // Dot navigation
-dots.forEach((dot, i) => {
-  dot.addEventListener('click', () => {
+if (dots.length > 0) {
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      clearInterval(sliderInterval);
+      currentSlide = i;
+      updateHero(i);
+      sliderInterval = setInterval(nextSlide, 5000);
+    });
+  });
+}
+
+// Hero Arrow Navigation
+const mainHeroNext = document.getElementById('hero-next');
+const mainHeroPrev = document.getElementById('hero-prev');
+
+if (mainHeroNext && mainHeroPrev) {
+  mainHeroNext.addEventListener('click', () => {
     clearInterval(sliderInterval);
-    currentSlide = i;
-    updateHero(i);
+    nextSlide();
     sliderInterval = setInterval(nextSlide, 5000);
   });
-});
+  mainHeroPrev.addEventListener('click', () => {
+    clearInterval(sliderInterval);
+    prevSlide();
+    sliderInterval = setInterval(nextSlide, 5000);
+  });
+}
+
+// Init mini-gallery on load
+if (slides.length > 0) {
+  updateHero(0);
+}
 
 // Reveal Animations
 const reveals = document.querySelectorAll('.reveal');
