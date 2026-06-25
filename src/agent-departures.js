@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         directUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
                     }
                 }
-                return `https://wsrv.nl/?url=${encodeURIComponent(directUrl)}`;
+                return `https://wsrv.nl/?url=${encodeURIComponent(directUrl)}&w=800&q=70&output=webp`;
             };
 
             // Populate Cover Page
@@ -880,7 +880,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 filename:     `${fd.destination.replace(/ /g, '_')}_Itinerary.pdf`,
                 image:        { type: 'jpeg', quality: 0.95 },
                 html2canvas:  { 
-                    scale: 1.5, 
+                    scale: 1.2, 
                     useCORS: true, 
                     logging: false,
                     // CRITICAL FIX: Force html2canvas to render at desktop width to bypass mobile media queries

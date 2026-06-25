@@ -10,6 +10,8 @@
 }
 
 body.admin-body {
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
   background-color: var(--admin-bg);
   min-height: 100vh;
   display: flex;
