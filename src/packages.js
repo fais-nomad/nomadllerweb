@@ -41,7 +41,7 @@ export async function loadPackagesGrid() {
             }
 
             const isAnnapurna = trip.title.toLowerCase().includes('annapurna');
-            const isValley = trip.title.toLowerCase().includes('valley');
+            const isValley = trip.title.toLowerCase().includes('valley of flowers');
             let viewLink = `/itinerary?id=${trip.id}`;
             let dlLink = `/itinerary?id=${trip.id}&download=true`;
 
@@ -144,7 +144,7 @@ window.showTripDetails = function(tripId) {
     }
 
     const isAnnapurna = trip.title.toLowerCase().includes('annapurna');
-    const isValley = trip.title.toLowerCase().includes('valley');
+    const isValley = trip.title.toLowerCase().includes('valley of flowers');
     let viewLink = `/itinerary?id=${trip.id}`;
     if (isAnnapurna) viewLink = '/annapurna_luxury_template';
     if (isValley) viewLink = '/valley_of_flowers_template';
