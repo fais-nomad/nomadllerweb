@@ -33,6 +33,12 @@ const __dirname = path.dirname(__filename);
         const htmlPath = 'file://' + path.join(__dirname, 'valley_of_flowers_template.html');
         await page.goto(htmlPath, { waitUntil: 'networkidle0' });
         
+        // Hide UI navigation buttons before capturing PDF
+        await page.evaluate(() => {
+            const btns = document.querySelectorAll('#download-pdf-btn, #top-download-btn, button');
+            btns.forEach(b => b.style.display = 'none');
+        });
+
         const pdfPath = path.join(__dirname, 'public', 'Valley_of_Flowers_Itinerary.pdf');
         await page.pdf({
             path: pdfPath,
