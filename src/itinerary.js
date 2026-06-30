@@ -122,7 +122,9 @@ async function loadItinerary() {
             html: '',
             currentPageHtml: '',
             currentHeight: 0,
-            maxHeight: 740, 
+            // A4 page at 96dpi = 1123px. Minus 80px top padding + 110px bottom padding (footer safe) = 933px usable.
+            // We use 860 to leave a small safety margin above the footer.
+            maxHeight: 860,
             
             closePage() {
                 if (this.currentPageHtml) {
@@ -139,26 +141,32 @@ async function loadItinerary() {
             },
             
             addSectionHeader(heading, subheading, subtitleColor='var(--orange)') {
-                const heightNeeded = (this.currentHeight > 0 ? 40 : 0) + 65 + (subheading ? 40 : 0);
+                // heading ~48px + subheading ~28px + margin ~20px
+                const heightNeeded = (this.currentHeight > 0 ? 30 : 0) + 48 + (subheading ? 28 : 0) + 20;
                 
-                if (this.currentHeight + heightNeeded + 250 > this.maxHeight && this.currentHeight > 0) {
+                // Anti-orphan: need at least 160px after header for first content
+                if (this.currentHeight + heightNeeded + 160 > this.maxHeight && this.currentHeight > 0) {
                     this.closePage();
                 }
-                const marginTop = this.currentHeight > 0 ? 'margin-top: 44px;' : '';
+                const marginTop = this.currentHeight > 0 ? 'margin-top: 32px;' : '';
                 this.currentPageHtml += `
                     <div style="${marginTop} border-left: 4px solid #B84500; padding-left: 18px; margin-bottom: 6px;">
                         <h2 class="section-heading">${heading}</h2>
                     </div>
-                    ${subheading ? `<div class="section-subheading" style="color: ${subtitleColor}; margin-bottom: 28px;">${subheading}</div>` : ''}
+                    ${subheading ? `<div class="section-subheading" style="color: ${subtitleColor}; margin-bottom: 20px;">${subheading}</div>` : ''}
                 `;
-                this.currentHeight += (this.currentHeight === 0 ? (65 + (subheading ? 40 : 0)) : heightNeeded);
+                this.currentHeight += heightNeeded;
             },
 
             addDay(dayNum, title, desc, metricsHtml, isHighlight) {
-                const descHeight = Math.ceil((desc || '').length / 50) * 32; 
-                const metricsHeight = metricsHtml ? (isHighlight ? 80 : 50) : 0;
-                const baseHeight = isHighlight ? 170 : 150;
-                const heightNeeded = baseHeight + descHeight + metricsHeight;
+                // title ~36px, each desc line ~26px (1.1rem * 1.8 lh), metrics ~36px, margins ~30px
+                const charsPerLine = 70; // approx chars that fit per line at 1.1rem
+                const descLines = Math.max(1, Math.ceil((desc || '').length / charsPerLine));
+                const descHeight = descLines * 26;
+                const metricsHeight = metricsHtml ? (isHighlight ? 60 : 36) : 0;
+                const titleHeight = isHighlight ? 44 : 36;
+                const marginAndPadding = 36; // day-container margin-bottom + padding
+                const heightNeeded = titleHeight + descHeight + metricsHeight + marginAndPadding;
 
                 if (this.currentHeight + heightNeeded > this.maxHeight && this.currentHeight > 0) {
                     this.closePage();
@@ -207,13 +215,15 @@ async function loadItinerary() {
                     let isFirstChunk = true;
 
                     while(remainingItems.length > 0) {
-                        const cardOverhead = 140;
+                        // card: h3 ~38px + padding 40px + margin 22px = ~100px overhead
+                        const cardOverhead = 100;
                         if (this.currentHeight + cardOverhead >= this.maxHeight && this.currentHeight > 0) {
                             this.closePage();
                         }
                         
                         const availableHeight = this.maxHeight - this.currentHeight - cardOverhead;
-                        const maxRows = Math.floor(availableHeight / 38);
+                        // each list row in 2 columns: 1rem * 1.7 lh + 9px margin ≈ 30px
+                        const maxRows = Math.floor(availableHeight / 30);
                         let maxItemsForChunk = maxRows * 2;
                         
                         if (maxItemsForChunk <= 0) {
@@ -232,7 +242,7 @@ async function loadItinerary() {
                             </div>
                             `;
                             const rowsUsed = Math.ceil(chunk.length / 2);
-                            this.currentHeight += cardOverhead + (rowsUsed * 38);
+                            this.currentHeight += cardOverhead + (rowsUsed * 30);
                             isFirstChunk = false;
                         }
                         if (this.currentHeight >= this.maxHeight) {
