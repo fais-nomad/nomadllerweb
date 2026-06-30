@@ -6,20 +6,20 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Annapurna Circuit Ultra Premium Editorial</title>
 <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:wght@400;500;600;700&display=swap');
 
         :root {
-            --ivory: #F4EFE6;
-            --paper-light: #F9F8F6;
-            --navy: #0B1120;
-            --charcoal: #1C2331;
-            --stone: #8E9BAE;
-            --orange: #D35400; /* Richer earthy orange */
+            --ivory: #FDFAF5;
+            --paper-light: #FFFFFF;
+            --navy: #1A2A1A;
+            --charcoal: #1A1A1A;
+            --stone: #5A6A7A;
+            --orange: #B84500;
             --teal: #1A5F7A;
             --white: #FFFFFF;
             
-            --font-display: 'Playfair Display', serif;
-            --font-body: 'Inter', sans-serif;
+            --font-display: 'Lora', serif;
+            --font-body: 'Source Sans 3', sans-serif;
         }
 
         * {
@@ -169,8 +169,9 @@
 
         .brand-badge {
             font-family: var(--font-body);
-            font-size: 0.85rem;
-            letter-spacing: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 6px;
             text-transform: uppercase;
             margin-bottom: 20px;
             position: relative;
@@ -179,20 +180,20 @@
 
         .cover-title {
             font-family: var(--font-display);
-            font-size: 5rem;
-            line-height: 1.05;
-            margin-bottom: 25px;
+            font-size: 4rem;
+            line-height: 1.2;
+            margin-bottom: 22px;
             position: relative;
             z-index: 2;
-            font-weight: 400;
+            font-weight: 700;
         }
 
         .cover-subtitle {
             font-family: var(--font-body);
             font-size: 1.2rem;
-            font-weight: 300;
-            letter-spacing: 3px;
-            color: rgba(255,255,255,0.8);
+            font-weight: 500;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.9);
             position: relative;
             z-index: 2;
             margin-bottom: 60px;
@@ -258,20 +259,20 @@
         }
         .large-quote {
             font-family: var(--font-display);
-            font-size: 3rem;
-            line-height: 1.3;
+            font-size: 2.4rem;
+            line-height: 1.55;
             color: var(--white);
-            font-weight: 400;
+            font-weight: 500;
             margin-bottom: 40px;
             font-style: italic;
         }
-        .large-quote span { color: var(--orange); }
+        .large-quote span { color: #F4A261; }
         .quote-author {
             font-family: var(--font-body);
-            font-size: 0.85rem;
-            letter-spacing: 4px;
+            font-size: 1rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            color: var(--stone);
+            color: rgba(255,255,255,0.65);
         }
 
         /* Map Infographic Page */
@@ -289,71 +290,80 @@
         /* Editorial Headers */
         .section-heading {
             font-family: var(--font-display);
-            font-size: 3.2rem;
+            font-size: 2.6rem;
             color: var(--charcoal);
-            line-height: 1.1;
-            margin-bottom: 10px;
-            font-weight: 400;
+            line-height: 1.25;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
         .section-subheading {
             font-family: var(--font-body);
-            font-size: 0.9rem;
-            letter-spacing: 4px;
+            font-size: 1rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--orange);
-            margin-bottom: 50px;
+            font-weight: 600;
+            margin-bottom: 40px;
         }
 
         /* Day Formatting */
         .day-container {
             display: flex;
-            gap: 40px;
-            margin-bottom: 50px;
+            gap: 28px;
+            margin-bottom: 36px;
             position: relative;
         }
         .day-container::after {
             content: '';
             position: absolute;
-            bottom: -25px; left: 100px; right: 0;
+            bottom: -18px; left: 0; right: 0;
             height: 1px;
-            background: rgba(28,35,49,0.05);
+            background: rgba(0,0,0,0.08);
         }
         .day-number {
             font-family: var(--font-display);
-            font-size: 4rem;
-            color: rgba(28,35,49,0.1);
-            line-height: 0.8;
-            min-width: 60px;
+            font-size: 2.8rem;
+            color: var(--orange);
+            opacity: 0.22;
+            line-height: 0.85;
+            min-width: 56px;
+            font-weight: 700;
         }
         .day-details { flex: 1; }
         .day-title {
             font-family: var(--font-display);
-            font-size: 1.6rem;
-            color: var(--charcoal);
-            margin-bottom: 15px;
-            font-weight: 600;
+            font-size: 1.55rem;
+            color: #111111;
+            margin-bottom: 10px;
+            font-weight: 700;
+            line-height: 1.3;
         }
         .day-desc {
-            font-size: 1.08rem;
-            line-height: 1.75;
-            color: #1A202C;
-            margin-bottom: 24px;
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #1A1A1A;
+            margin-bottom: 16px;
             font-weight: 400;
-            letter-spacing: 0.2px;
+            letter-spacing: 0.15px;
         }
         .day-metrics {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
         }
         .metric-badge {
-            font-size: 0.7rem;
-            letter-spacing: 1px;
+            font-family: var(--font-body);
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
-            padding: 6px 12px;
-            border: 1px solid rgba(28,35,49,0.1);
-            color: var(--charcoal);
-            border-radius: 4px;
+            padding: 7px 14px;
+            background: #F2EEE6;
+            border: 1.5px solid rgba(0,0,0,0.12);
+            color: #1A1A1A;
+            border-radius: 6px;
         }
 
         /* Split Pages & Experience Spreads */
@@ -428,39 +438,46 @@
         }
         .data-card {
             background: #FFFFFF;
-            background: #FFFFFF;
-            border: 1px solid rgba(0,0,0,0.05);
-            padding: 30px;
+            border: 1.5px solid rgba(0,0,0,0.09);
+            border-radius: 8px;
+            padding: 28px 30px;
         }
         .data-card h3 {
             font-family: var(--font-display);
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-            color: var(--charcoal);
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #111111;
+            border-bottom: 2px solid var(--orange);
+            padding-bottom: 10px;
         }
         .data-card ul { list-style: none; }
         .data-card li {
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-            color: #555;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 10px;
+            color: #1A1A1A;
             padding-left: 20px;
             position: relative;
-            line-height: 1.5;
+            line-height: 1.65;
         }
         .data-card li::before {
             content: '•';
             position: absolute;
             left: 0;
             color: var(--orange);
+            font-weight: 700;
         }
 
         .policy-h4 {
             font-family: var(--font-display);
-            font-size: 1.2rem;
-            color: var(--charcoal);
-            margin-bottom: 10px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            padding-bottom: 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #111111;
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--orange);
+            padding-bottom: 8px;
         }
 
     </style>
