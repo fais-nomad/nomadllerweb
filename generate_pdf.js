@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,6 +11,24 @@ const __dirname = path.dirname(__filename);
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
         
+        await page.setRequestInterception(true);
+        page.on('request', req => {
+            const url = req.url();
+            if (url.includes('/images/')) {
+                const imgName = url.substring(url.indexOf('/images/') + 8);
+                const imgPath = path.join(__dirname, 'public', 'images', imgName.split('?')[0]);
+                if (fs.existsSync(imgPath)) {
+                    req.respond({
+                        status: 200,
+                        contentType: imgPath.endsWith('.webp') ? 'image/webp' : imgPath.endsWith('.png') ? 'image/png' : 'image/jpeg',
+                        body: fs.readFileSync(imgPath)
+                    });
+                    return;
+                }
+            }
+            req.continue();
+        });
+
         // Point to the new luxury template
         const htmlPath = 'file://' + path.join(__dirname, 'annapurna_luxury_template.html');
         await page.goto(htmlPath, { waitUntil: 'networkidle0' });
