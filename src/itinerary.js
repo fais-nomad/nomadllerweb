@@ -139,7 +139,7 @@ async function loadItinerary() {
             html: '',
             currentPageHtml: '',
             currentHeight: 0,
-            maxHeight: 900, // Physical usable height in pixels for A4 page (1123 - 80 padding - 100 footer - buffer)
+            maxHeight: 740, // Strict physical usable height in pixels for A4 page (ensures content NEVER touches footer)
             
             closePage() {
                 if (this.currentPageHtml) {
@@ -171,9 +171,9 @@ async function loadItinerary() {
             },
 
             addDay(dayNum, title, desc, metricsHtml, isHighlight) {
-                const descHeight = Math.ceil((desc || '').length / 80) * 20; // 20px per line
-                const metricsHeight = metricsHtml ? (isHighlight ? 70 : 40) : 0;
-                const baseHeight = isHighlight ? 150 : 120; // titles, paddings (30px), margins (50px)
+                const descHeight = Math.ceil((desc || '').length / 50) * 32; // 32px per line
+                const metricsHeight = metricsHtml ? (isHighlight ? 80 : 50) : 0;
+                const baseHeight = isHighlight ? 170 : 150; // titles, paddings, margins
                 const heightNeeded = baseHeight + descHeight + metricsHeight;
 
                 if (this.currentHeight + heightNeeded > this.maxHeight && this.currentHeight > 0) {
