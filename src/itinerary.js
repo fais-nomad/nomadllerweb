@@ -78,7 +78,7 @@ async function loadItinerary() {
             <div style="margin-top: 60px;"></div> <!-- Spacer -->
 
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+                /* Fonts loaded from itinerary.html <head> */
                 @media (max-width: 820px) {
                     body { overflow-x: hidden; background: #222; }
                     #action-bar { padding: 10px 16px !important; }
