@@ -47,10 +47,10 @@ export async function loadPackagesGrid() {
 
             if (isAnnapurna) {
                 viewLink = '/annapurna_luxury_template';
-                dlLink = '/annapurna_luxury_template?download=true';
+                dlLink = '/Annapurna_Circuit_Itinerary.pdf';
             } else if (isValley) {
                 viewLink = '/valley_of_flowers_template';
-                dlLink = '/valley_of_flowers_template?download=true';
+                dlLink = '/Valley_of_Flowers_Itinerary.pdf';
             }
 
             const coverParts = (trip.cover_image_url || '').split('|');
