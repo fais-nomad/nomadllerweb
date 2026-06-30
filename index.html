@@ -43,8 +43,11 @@
 <meta content="https://www.nomadller.com" property="og:url"/>
 <meta content="website" property="og:type"/>
 <meta content="summary_large_image" name="twitter:card"/>
-<link as="image" href="/images/russia-mobile.webp" media="(max-width: 768px)" rel="preload"/>
-<link as="image" href="/images/russia.webp" media="(min-width: 769px)" rel="preload"/>
+<link rel="dns-prefetch" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link as="image" href="/images/russia-mobile.webp" media="(max-width: 768px)" rel="preload" fetchpriority="high"/>
+<link as="image" href="/images/russia.webp" media="(min-width: 769px)" rel="preload" fetchpriority="high"/>
 <link href="https://www.nomadller.com/" rel="canonical"/></head>
 <body>
 <nav>
@@ -70,27 +73,44 @@
 <div class="hero-container">
 <div class="hero-slider">
 <!-- Slide 1: Teriberka, Russia -->
-<div class="slide active" data-subtitle="Chase the celestial dance of the Northern Lights in Teriberka, Russia." data-title="ARCTIC DREAMS" data-img="/images/russia_high_res.png">
+<div class="slide active" data-subtitle="Chase the celestial dance of the Northern Lights in Teriberka, Russia." data-title="ARCTIC DREAMS" data-img="/images/russia.webp">
 <picture>
-  <source media="(max-width: 768px)" srcset="/images/russia_high_res.png">
-  <img alt="Russia Northern Lights" fetchpriority="high" src="/images/russia_high_res.png" width="1920" height="1080"/>
+  <source media="(max-width: 768px)" srcset="/images/russia-mobile.webp" type="image/webp">
+  <source media="(min-width: 769px)" srcset="/images/russia.webp" type="image/webp">
+  <img alt="Russia Northern Lights" fetchpriority="high" src="/images/russia.webp" width="1920" height="1080" decoding="async"/>
 </picture>
 </div>
 <!-- Slide 2: Everest -->
-<div class="slide" data-subtitle="Stand at the foot of the world's highest peak." data-title="BEYOND THE EDGE" data-img="/images/everest_high_res.png">
-<img alt=" " height="1080" loading="lazy" src="/images/everest_high_res.png" width="1920"/>
+<div class="slide" data-subtitle="Stand at the foot of the world's highest peak." data-title="BEYOND THE EDGE" data-img="/images/everest.webp">
+<picture>
+  <source media="(max-width: 768px)" srcset="/images/everest-mobile.webp" type="image/webp">
+  <source media="(min-width: 769px)" srcset="/images/everest.webp" type="image/webp">
+  <img alt="Everest Base Camp" height="1080" loading="lazy" src="/images/everest.webp" width="1920"/>
+</picture>
 </div>
 <!-- Slide 3: Bali -->
-<div class="slide" data-subtitle="Experience soul-cleansing luxury in the heart of Bali." data-title="TROPICAL SERENITY" data-img="/images/bali_high_res.png">
-<img alt=" " height="1080" loading="lazy" src="/images/bali_high_res.png" width="1920"/>
+<div class="slide" data-subtitle="Experience soul-cleansing luxury in the heart of Bali." data-title="TROPICAL SERENITY" data-img="/images/bali.webp">
+<picture>
+  <source media="(max-width: 768px)" srcset="/images/bali-mobile.webp" type="image/webp">
+  <source media="(min-width: 769px)" srcset="/images/bali.webp" type="image/webp">
+  <img alt="Bali Luxury Retreat" height="1080" loading="lazy" src="/images/bali.webp" width="1920"/>
+</picture>
 </div>
 <!-- Slide 4: Annapurna -->
-<div class="slide" data-subtitle="Cross the legendary Thorong La Pass and witness the Himalayas." data-title="CLASSIC TRAILS" data-img="/images/annapurna_high_res.png">
-<img alt=" " height="1080" loading="lazy" src="/images/annapurna_high_res.png" width="1920"/>
+<div class="slide" data-subtitle="Cross the legendary Thorong La Pass and witness the Himalayas." data-title="CLASSIC TRAILS" data-img="/images/annapurna.webp">
+<picture>
+  <source media="(max-width: 768px)" srcset="/images/annapurna-mobile.webp" type="image/webp">
+  <source media="(min-width: 769px)" srcset="/images/annapurna.webp" type="image/webp">
+  <img alt="Annapurna Circuit" height="1080" loading="lazy" src="/images/annapurna.webp" width="1920"/>
+</picture>
 </div>
 <!-- Slide 5: Kyrgyzstan -->
-<div class="slide" data-subtitle="Rugged expeditions through the heart of the Silk Road." data-title="NOMADIC DREAMS" data-img="/images/kyrgyzstan_high_res.png">
-<img alt=" " height="1080" loading="lazy" src="/images/kyrgyzstan_high_res.png" width="1920"/>
+<div class="slide" data-subtitle="Rugged expeditions through the heart of the Silk Road." data-title="NOMADIC DREAMS" data-img="/images/kyrgyzstan.webp">
+<picture>
+  <source media="(max-width: 768px)" srcset="/images/kyrgyzstan-mobile.webp" type="image/webp">
+  <source media="(min-width: 769px)" srcset="/images/kyrgyzstan.webp" type="image/webp">
+  <img alt="Kyrgyzstan Expedition" height="1080" loading="lazy" src="/images/kyrgyzstan.webp" width="1920"/>
+</picture>
 </div>
 </div>
 
