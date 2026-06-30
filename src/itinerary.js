@@ -187,7 +187,7 @@ async function loadItinerary() {
                             <div class="day-number" style="color: var(--orange);">${String(dayNum).padStart(2, '0')}</div>
                             <div class="day-details">
                                 <h3 class="day-title" style="font-size: 2rem;">${title}</h3>
-                                <p class="day-desc" style="color: rgba(0,0,0,0.6);">${desc || ''}</p>
+                                <p class="day-desc">${desc || ''}</p>
                                 <div class="data-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 20px;">
                                     ${metricsHtml}
                                 </div>
