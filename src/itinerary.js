@@ -67,44 +67,25 @@ async function loadItinerary() {
 
             let html = `
             <!-- Action Bar for Web View -->
-            <div id="action-bar" style="position: fixed; top: 0; left: 0; right: 0; background: rgba(11,17,32,0.9); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 9999; color: white;">
-                <div class="brand-text" style="font-family: 'Playfair Display', serif; font-size: 1.2rem;">NOMADLLER</div>
-                <div class="button-group" style="display: flex; gap: 15px;">
-                    <button id="download-pdf-btn" style="background: var(--orange); color: white; border: none; padding: 8px 20px; font-family: 'Inter', sans-serif; font-size: 0.8rem; letter-spacing: 2px; cursor: pointer; border-radius: 4px; text-transform: uppercase;">Download PDF</button>
-                    <button onclick="try { window.close(); } catch(e) {} setTimeout(() => { if(!window.closed) { if(window.history.length > 1) window.history.back(); else window.location.href='/dashboard'; } }, 100);" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 20px; font-family: 'Inter', sans-serif; font-size: 0.8rem; letter-spacing: 2px; cursor: pointer; border-radius: 4px; text-transform: uppercase;">Close</button>
+            <div id="action-bar" style="position: fixed; top: 0; left: 0; right: 0; background: rgba(26,26,26,0.97); backdrop-filter: blur(12px); padding: 14px 32px; display: flex; justify-content: space-between; align-items: center; z-index: 9999; color: white; border-bottom: 2px solid #B84500;">
+                <div class="brand-text" style="font-family: 'Lora', serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 3px; color: #FFFFFF;">NOMADLLER</div>
+                <div class="button-group" style="display: flex; gap: 12px;">
+                    <button id="download-pdf-btn" style="background: #B84500; color: white; border: none; padding: 10px 24px; font-family: 'Source Sans 3', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 1.5px; cursor: pointer; border-radius: 6px; text-transform: uppercase;">⬇ Download PDF</button>
+                    <button onclick="try { window.close(); } catch(e) {} setTimeout(() => { if(!window.closed) { if(window.history.length > 1) window.history.back(); else window.location.href='/dashboard'; } }, 100);" style="background: transparent; border: 1.5px solid rgba(255,255,255,0.35); color: white; padding: 10px 24px; font-family: 'Source Sans 3', sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 1.5px; cursor: pointer; border-radius: 6px; text-transform: uppercase;">✕ Close</button>
                 </div>
             </div>
             
             <div style="margin-top: 60px;"></div> <!-- Spacer -->
 
             <style>
+                @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:wght@400;500;600;700&display=swap');
                 @media (max-width: 820px) {
-                    body {
-                        overflow-x: hidden;
-                        background: #111;
-                    }
-                    #action-bar {
-                        padding: 10px 15px !important;
-                    }
-                    #action-bar .brand-text {
-                        font-size: 0.9rem !important;
-                    }
-                    #action-bar button {
-                        padding: 6px 12px !important;
-                        font-size: 0.65rem !important;
-                        letter-spacing: 1px !important;
-                    }
-                    #action-bar .button-group {
-                        gap: 8px !important;
-                    }
-                    #pdf-wrapper {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: flex-start;
-                        width: 100vw;
-                        overflow: hidden;
-                    }
-                    /* Scale is handled via JS for mobile since CSS scale() cannot accept vw units */
+                    body { overflow-x: hidden; background: #222; }
+                    #action-bar { padding: 10px 16px !important; }
+                    #action-bar .brand-text { font-size: 1rem !important; }
+                    #action-bar button { padding: 7px 12px !important; font-size: 0.72rem !important; }
+                    #action-bar .button-group { gap: 8px !important; }
+                    #pdf-wrapper { display: flex; flex-direction: column; align-items: flex-start; width: 100vw; overflow: hidden; }
                 }
             </style>
 
@@ -112,7 +93,7 @@ async function loadItinerary() {
 
             <!-- 1. Cover Page -->
             <div class="page cover-page" id="pdf-content-start" style="background-image: url('${coverImage}');">
-                <div class="gps-coords">NOMADLLER LUXURY</div>
+                <div class="gps-coords">NOMADLLER EXPEDITIONS</div>
                 <div class="price-card">
                     <div class="price-title">Expedition Cost</div>
                     <div class="price-list">
@@ -123,13 +104,15 @@ async function loadItinerary() {
                 </div>
                 <div class="brand-badge">NOMADLLER EXPEDITIONS</div>
                 <h1 class="cover-title">${trip.title.replace(/ /g, '<br>')}</h1>
-                <div class="cover-subtitle">${trip.subtitle || trip.difficulty + ' | ' + trip.duration}</div>
+                <div class="cover-subtitle">${trip.subtitle || trip.difficulty + ' · ' + trip.duration}</div>
             </div>
 
             <!-- 2. Quote Page -->
             <div class="page quote-page dark-page">
                 <div class="gps-coords">NOMADLLER PHILOSOPHY</div>
-                <h2 class="large-quote">“${tripQuote}”</h2>
+                <div style="width: 60px; height: 4px; background: #B84500; margin: 0 auto 40px; border-radius: 2px;"></div>
+                <h2 class="large-quote">"${tripQuote}"</h2>
+                <div style="width: 40px; height: 1px; background: rgba(255,255,255,0.3); margin: 30px auto 20px;"></div>
                 <div class="quote-author">Nomadller Expeditions</div>
             </div>
         `;
@@ -139,7 +122,7 @@ async function loadItinerary() {
             html: '',
             currentPageHtml: '',
             currentHeight: 0,
-            maxHeight: 740, // Strict physical usable height in pixels for A4 page (ensures content NEVER touches footer)
+            maxHeight: 740, 
             
             closePage() {
                 if (this.currentPageHtml) {
@@ -155,25 +138,26 @@ async function loadItinerary() {
                 }
             },
             
-            addSectionHeader(heading, subheading, subtitleColor='rgba(0,0,0,0.5)') {
-                const heightNeeded = (this.currentHeight > 0 ? 40 : 0) + 65 + (subheading ? 40 : 0); // h2 + subheading + margins
+            addSectionHeader(heading, subheading, subtitleColor='var(--orange)') {
+                const heightNeeded = (this.currentHeight > 0 ? 40 : 0) + 65 + (subheading ? 40 : 0);
                 
-                // Anti-orphan logic: require at least 250px of extra space for content to follow the header
                 if (this.currentHeight + heightNeeded + 250 > this.maxHeight && this.currentHeight > 0) {
                     this.closePage();
                 }
-                const marginTop = this.currentHeight > 0 ? 'margin-top: 40px;' : '';
+                const marginTop = this.currentHeight > 0 ? 'margin-top: 44px;' : '';
                 this.currentPageHtml += `
-                    <h2 class="section-heading" style="${marginTop}">${heading}</h2>
-                    ${subheading ? `<div class="section-subheading" style="color: ${subtitleColor}; margin-bottom: 20px;">${subheading}</div>` : ''}
+                    <div style="${marginTop} border-left: 4px solid #B84500; padding-left: 18px; margin-bottom: 6px;">
+                        <h2 class="section-heading">${heading}</h2>
+                    </div>
+                    ${subheading ? `<div class="section-subheading" style="color: ${subtitleColor}; margin-bottom: 28px;">${subheading}</div>` : ''}
                 `;
                 this.currentHeight += (this.currentHeight === 0 ? (65 + (subheading ? 40 : 0)) : heightNeeded);
             },
 
             addDay(dayNum, title, desc, metricsHtml, isHighlight) {
-                const descHeight = Math.ceil((desc || '').length / 50) * 32; // 32px per line
+                const descHeight = Math.ceil((desc || '').length / 50) * 32; 
                 const metricsHeight = metricsHtml ? (isHighlight ? 80 : 50) : 0;
-                const baseHeight = isHighlight ? 170 : 150; // titles, paddings, margins
+                const baseHeight = isHighlight ? 170 : 150;
                 const heightNeeded = baseHeight + descHeight + metricsHeight;
 
                 if (this.currentHeight + heightNeeded > this.maxHeight && this.currentHeight > 0) {
@@ -183,12 +167,12 @@ async function loadItinerary() {
 
                 if (isHighlight) {
                     this.currentPageHtml += `
-                        <div class="day-container" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 30px;">
-                            <div class="day-number" style="color: var(--orange);">${String(dayNum).padStart(2, '0')}</div>
+                        <div class="day-container" style="border-bottom: 1.5px solid rgba(184,69,0,0.15); padding-bottom: 28px; margin-bottom: 28px;">
+                            <div class="day-number">${String(dayNum).padStart(2, '0')}</div>
                             <div class="day-details">
-                                <h3 class="day-title" style="font-size: 2rem;">${title}</h3>
+                                <h3 class="day-title" style="font-size: 1.7rem;">${title}</h3>
                                 <p class="day-desc">${desc || ''}</p>
-                                <div class="data-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 20px;">
+                                <div class="data-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 16px;">
                                     ${metricsHtml}
                                 </div>
                             </div>
@@ -223,14 +207,13 @@ async function loadItinerary() {
                     let isFirstChunk = true;
 
                     while(remainingItems.length > 0) {
-                        const cardOverhead = 130; // padding: 30px (top+bottom=60), margin-bottom: 20, h3+margins: 50
+                        const cardOverhead = 140;
                         if (this.currentHeight + cardOverhead >= this.maxHeight && this.currentHeight > 0) {
                             this.closePage();
                         }
                         
                         const availableHeight = this.maxHeight - this.currentHeight - cardOverhead;
-                        // each row in 2 columns takes ~35px (font + line-height + margin-bottom: 12px)
-                        const maxRows = Math.floor(availableHeight / 35);
+                        const maxRows = Math.floor(availableHeight / 38);
                         let maxItemsForChunk = maxRows * 2;
                         
                         if (maxItemsForChunk <= 0) {
@@ -241,15 +224,15 @@ async function loadItinerary() {
                         let chunk = remainingItems.splice(0, maxItemsForChunk);
                         if (chunk.length > 0) {
                             this.currentPageHtml += `
-                            <div class="data-card" style="margin-bottom: 20px;">
-                                <h3>${card.title} ${!isFirstChunk ? '(Cont.)' : ''}</h3>
-                                <ul style="font-size: 0.8rem; line-height: 1.5; padding-left: 20px; column-count: 2; column-gap: 40px;">
-                                    ${chunk.map(item => `<li style="margin-bottom: 8px; break-inside: avoid; page-break-inside: avoid;">${item.trim()}</li>`).join('')}
+                            <div class="data-card" style="margin-bottom: 22px;">
+                                <h3>${card.title}${!isFirstChunk ? ' (Cont.)' : ''}</h3>
+                                <ul style="font-size: 1rem; font-family: 'Source Sans 3', sans-serif; line-height: 1.7; padding-left: 20px; column-count: 2; column-gap: 40px;">
+                                    ${chunk.map(item => `<li style="margin-bottom: 9px; break-inside: avoid; page-break-inside: avoid; color: #1A1A1A;">${item.trim()}</li>`).join('')}
                                 </ul>
                             </div>
                             `;
                             const rowsUsed = Math.ceil(chunk.length / 2);
-                            this.currentHeight += cardOverhead + (rowsUsed * 35);
+                            this.currentHeight += cardOverhead + (rowsUsed * 38);
                             isFirstChunk = false;
                         }
                         if (this.currentHeight >= this.maxHeight) {
@@ -355,12 +338,16 @@ async function loadItinerary() {
 
         html += `
             <!-- Final Page -->
-            <div class="page cover-page" style="background-image: linear-gradient(180deg, rgba(11,17,32,0.1) 0%, rgba(11,17,32,0.95) 100%), url('${backCoverImage}'); text-align: center; justify-content: center; align-items: center;">
-                <h2 class="t-serif" style="font-size: 2.5rem; font-weight: 400; line-height: 1.4; max-width: 600px; margin-bottom: 40px; color: var(--white);">
-                    "Some journeys end at the destination.<br><span style="color: var(--orange);">This one stays with you forever.</span>"
-                </h2>
-                <div class="brand-badge" style="letter-spacing: 4px; color: rgba(255,255,255,0.4);">NOMADLLER LUXURY EXPEDITIONS</div>
-            </div> <!-- End of Brand Badge Container -->
+            <div class="page cover-page" style="background-image: linear-gradient(180deg, rgba(20,10,0,0.15) 0%, rgba(20,10,0,0.92) 100%), url('${backCoverImage}'); text-align: center; justify-content: center; align-items: center;">
+                <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 0 60px;">
+                    <div style="width: 50px; height: 3px; background: #B84500; border-radius: 2px;"></div>
+                    <h2 style="font-family: 'Lora', serif; font-size: 2.4rem; font-weight: 700; line-height: 1.5; max-width: 540px; color: #FFFFFF; text-align: center;">
+                        "Some journeys end at the destination.<br><span style="color: #F4A261;">This one stays with you forever.</span>"
+                    </h2>
+                    <div style="width: 50px; height: 3px; background: #B84500; border-radius: 2px;"></div>
+                    <div style="font-family: 'Source Sans 3', sans-serif; font-size: 0.95rem; font-weight: 600; letter-spacing: 5px; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-top: 12px;">NOMADLLER LUXURY EXPEDITIONS</div>
+                </div>
+            </div>
             </div> <!-- End of PDF Wrapper -->
         `;
 
