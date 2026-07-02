@@ -93,11 +93,17 @@ async function loadItinerary() {
                 }
                 @media (max-width: 820px) {
                     body { overflow-x: hidden; background: #121212 !important; }
-                    #action-bar { padding: 10px 16px !important; }
-                    #action-bar .brand-text { font-size: 1rem !important; }
-                    #action-bar button { padding: 7px 12px !important; font-size: 0.72rem !important; }
-                    #action-bar .button-group { gap: 8px !important; }
+                    #action-bar { padding: 10px 14px !important; }
+                    #action-bar .brand-text { font-size: 1rem !important; letter-spacing: 1.5px !important; }
+                    #action-bar button { padding: 7px 10px !important; font-size: 0.72rem !important; letter-spacing: 0.5px !important; }
+                    #action-bar .button-group { gap: 6px !important; }
                     #pdf-wrapper { display: block !important; width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; padding: 20px 0 60px 0 !important; }
+                }
+                @media (max-width: 580px) {
+                    #action-bar { padding: 8px 8px !important; justify-content: space-between !important; }
+                    #action-bar .brand-text { display: none !important; }
+                    #action-bar .button-group { width: 100% !important; justify-content: space-between !important; gap: 6px !important; }
+                    #action-bar button { flex: 1 !important; padding: 9px 4px !important; font-size: 0.72rem !important; letter-spacing: 0.5px !important; display: flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; }
                 }
             </style>
 
