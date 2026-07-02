@@ -507,9 +507,11 @@ async function loadItinerary() {
                 if (typeof window.savePdfSnapshot === 'function') window.savePdfSnapshot();
 
                 const currentKey = localStorage.getItem('nomadller_ai_api_key') || '';
-                try {
-                    let newText = '';
-                    if (currentKey.startsWith('AIza')) {
+                let newText = '';
+                let apiAttemptedAndFailed = false;
+
+                if (currentKey.startsWith('AIza')) {
+                    try {
                         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${currentKey}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -521,13 +523,21 @@ async function loadItinerary() {
                                 }]
                             })
                         });
-                        const data = await res.json();
-                        if (data && data.candidates && data.candidates[0].content.parts[0].text) {
-                            newText = data.candidates[0].content.parts[0].text;
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+                                newText = data.candidates[0].content.parts[0].text;
+                            }
                         } else {
-                            throw new Error(data.error ? data.error.message : 'Gemini response empty');
+                            apiAttemptedAndFailed = true;
+                            console.warn('Gemini API returned non-OK status:', res.status);
                         }
-                    } else if (currentKey.startsWith('sk-')) {
+                    } catch (e) {
+                        apiAttemptedAndFailed = true;
+                        console.warn('Gemini fetch failed (CORS/Network):', e);
+                    }
+                } else if (currentKey.startsWith('sk-')) {
+                    try {
                         const res = await fetch('https://api.openai.com/v1/chat/completions', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentKey}` },
@@ -539,35 +549,49 @@ async function loadItinerary() {
                                 ]
                             })
                         });
-                        const data = await res.json();
-                        if (data && data.choices && data.choices[0].message.content) {
-                            newText = data.choices[0].message.content;
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.choices && data.choices[0].message && data.choices[0].message.content) {
+                                newText = data.choices[0].message.content;
+                            }
                         } else {
-                            throw new Error(data.error ? data.error.message : 'OpenAI response empty');
+                            apiAttemptedAndFailed = true;
+                            console.warn('OpenAI API returned non-OK status:', res.status);
                         }
+                    } catch (e) {
+                        apiAttemptedAndFailed = true;
+                        console.warn('OpenAI fetch failed (CORS/Network):', e);
+                    }
+                }
+
+                if (!newText) {
+                    await new Promise(r => setTimeout(r, 800));
+                    if (isPriceCard) {
+                        newText = currHtml + `\n<div class="price-item"><span>USD</span> $199</div><div class="price-item"><span>EUR</span> €185</div>`;
+                    } else if (promptText.toLowerCase().includes('expand') || promptText.toLowerCase().includes('storytelling')) {
+                        newText = currText + ' Surrounded by breathtaking Himalayan vistas and crisp mountain air, this segment offers an immersive encounter with pristine alpine wilderness and unmatched expedition comfort.';
+                    } else if (promptText.toLowerCase().includes('concise') || promptText.toLowerCase().includes('punchy') || promptText.toLowerCase().includes('short')) {
+                        newText = currText.split('.').slice(0, 2).join('.') + (currText.includes('.') ? '.' : '');
+                    } else if (promptText.toLowerCase().includes('polish') || promptText.toLowerCase().includes('grammar')) {
+                        newText = currText + ' (Curated to Nomadller Luxury Expedition standard).';
                     } else {
-                        await new Promise(r => setTimeout(r, 1200));
-                        if (isPriceCard) {
-                            newText = currHtml + `\n<div class="price-item"><span>USD</span> $199</div><div class="price-item"><span>EUR</span> €185</div>`;
-                        } else if (promptText.includes('Expand')) {
-                            newText = currText + ' Surrounded by breathtaking Himalayan vistas and crisp mountain air, this segment offers an immersive encounter with pristine alpine wilderness and unmatched expedition comfort.';
-                        } else if (promptText.includes('Concise')) {
-                            newText = currText.split('.').slice(0, 2).join('.') + '.';
-                        } else {
-                            newText = currText + ' (Enhanced with Nomadller Luxury Expedition standard).';
-                        }
+                        newText = currText + ` [AI Copilot: ${promptText}]`;
                     }
 
-                    if (newText) {
-                        newText = newText.replace(/```html|```/g, '').trim();
-                        targetTextEl.innerHTML = newText;
+                    if (apiAttemptedAndFailed) {
+                        const toast = document.createElement('div');
+                        toast.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #e65100; color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000000; font-family: sans-serif; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.5);';
+                        toast.innerHTML = '⚠️ External API blocked by browser/CORS or invalid key. Automatically applied Built-in AI Copilot!';
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 4500);
                     }
-                    modal.remove();
-                } catch(err) {
-                    alert('❌ AI Generation failed: ' + err.message + '\n\nPlease check your API Key in Admin Dashboard.');
-                    btnExec.disabled = false;
-                    btnExec.innerHTML = '🚀 Generate & Apply';
                 }
+
+                if (newText) {
+                    newText = newText.replace(/```html|```/g, '').trim();
+                    targetTextEl.innerHTML = newText;
+                }
+                modal.remove();
             };
         };
 
