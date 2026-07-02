@@ -88,17 +88,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const aiKeyBtn = document.getElementById('ai-api-key-btn');
     if (aiKeyBtn) {
         aiKeyBtn.addEventListener('click', () => {
-            const currKey = localStorage.getItem('nomadller_ai_api_key') || '';
+            const currKey = localStorage.getItem('nomadller_ai_api_key') || 'sk-2205166d17754fd7b8d62250169b7499';
             const masked = currKey ? (currKey.slice(0, 8) + '...' + currKey.slice(-4)) : 'None configured';
             const action = prompt(
-                `🤖 Nomadller AI Copilot Configuration\\n\\nCurrent API Key: [ ${masked} ]\\n\\nEnter your Google Gemini API Key (starts with AIza...) or OpenAI API Key (starts with sk-...) to enable magic one-click AI rewriting & expansion across all itineraries:\\n\\n(Get a free Gemini API key in seconds at aistudio.google.com)`,
+                `🤖 Nomadller AI Copilot Configuration\\n\\nCurrent API Key: [ ${masked} ]\\n\\nEnter your DeepSeek API Key (sk-...), Google Gemini API Key (AIza...), or OpenAI API Key to enable magic one-click AI rewriting & expansion across all itineraries:`,
                 currKey
             );
             if (action === null) return;
             const cleanKey = action.trim();
             if (!cleanKey) {
                 localStorage.removeItem('nomadller_ai_api_key');
-                alert('🗑️ AI API Key removed. Copilot will use smart built-in local enhancers.');
+                alert('🗑️ AI API Key reset to default DeepSeek configuration.');
             } else {
                 localStorage.setItem('nomadller_ai_api_key', cleanKey);
                 alert('✅ AI API Key saved successfully! Magic AI Copilot is now enabled on all itinerary edit pages.');

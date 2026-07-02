@@ -444,7 +444,7 @@ async function loadItinerary() {
             
             const currText = targetTextEl.innerText || targetTextEl.textContent;
             const currHtml = targetTextEl.innerHTML || currText;
-            const apiKey = localStorage.getItem('nomadller_ai_api_key') || '';
+            const apiKey = localStorage.getItem('nomadller_ai_api_key') || 'sk-2205166d17754fd7b8d62250169b7499';
             const isPriceCard = block.classList.contains('price-card');
             
             modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(8px); z-index: 1000000; display: flex; align-items: center; justify-content: center; padding: 20px;';
@@ -506,7 +506,7 @@ async function loadItinerary() {
 
                 if (typeof window.savePdfSnapshot === 'function') window.savePdfSnapshot();
 
-                const currentKey = localStorage.getItem('nomadller_ai_api_key') || '';
+                const currentKey = localStorage.getItem('nomadller_ai_api_key') || 'sk-2205166d17754fd7b8d62250169b7499';
                 let newText = '';
                 let apiAttemptedAndFailed = false;
 
@@ -538,13 +538,13 @@ async function loadItinerary() {
                     }
                 } else if (currentKey.startsWith('sk-')) {
                     try {
-                        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                        const res = await fetch('https://api.deepseek.com/chat/completions', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentKey}` },
                             body: JSON.stringify({
-                                model: 'gpt-4o-mini',
+                                model: 'deepseek-chat',
                                 messages: [
-                                    { role: 'system', content: 'You are an elite luxury expedition travel writer for Nomadller Trekking Company. Output ONLY the rewritten replacement text.' },
+                                    { role: 'system', content: 'You are an elite luxury expedition travel writer for Nomadller Trekking Company. Output ONLY the rewritten replacement text without markdown blocks.' },
                                     { role: 'user', content: `Rewrite the following itinerary section according to this prompt: "${promptText}"\n\nOriginal content:\n${currText}` }
                                 ]
                             })
@@ -555,12 +555,30 @@ async function loadItinerary() {
                                 newText = data.choices[0].message.content;
                             }
                         } else {
-                            apiAttemptedAndFailed = true;
-                            console.warn('OpenAI API returned non-OK status:', res.status);
+                            console.warn('DeepSeek API non-OK:', res.status, '- attempting OpenAI fallback...');
+                            const res2 = await fetch('https://api.openai.com/v1/chat/completions', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentKey}` },
+                                body: JSON.stringify({
+                                    model: 'gpt-4o-mini',
+                                    messages: [
+                                        { role: 'system', content: 'You are an elite luxury expedition travel writer for Nomadller Trekking Company. Output ONLY the rewritten replacement text.' },
+                                        { role: 'user', content: `Rewrite the following itinerary section according to this prompt: "${promptText}"\n\nOriginal content:\n${currText}` }
+                                    ]
+                                })
+                            });
+                            if (res2.ok) {
+                                const data2 = await res2.json();
+                                if (data2 && data2.choices && data2.choices[0].message && data2.choices[0].message.content) {
+                                    newText = data2.choices[0].message.content;
+                                }
+                            } else {
+                                apiAttemptedAndFailed = true;
+                            }
                         }
                     } catch (e) {
                         apiAttemptedAndFailed = true;
-                        console.warn('OpenAI fetch failed (CORS/Network):', e);
+                        console.warn('DeepSeek/OpenAI fetch failed (CORS/Network):', e);
                     }
                 }
 
