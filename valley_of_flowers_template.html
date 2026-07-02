@@ -481,6 +481,18 @@
         }
 
         @media print {
+            body {
+                padding: 0 !important;
+                margin: 0 !important;
+                background: none !important;
+            }
+            .page {
+                width: 210mm !important;
+                height: 297mm !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                overflow: hidden !important;
+            }
             #pdf-control-bar, #download-pdf-btn, #top-download-btn, button {
                 display: none !important;
             }

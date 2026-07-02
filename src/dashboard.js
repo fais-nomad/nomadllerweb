@@ -59,6 +59,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    const accessCodeBtn = document.getElementById('generate-access-code-btn');
+    if (accessCodeBtn) {
+        accessCodeBtn.addEventListener('click', async () => {
+            const action = prompt(
+                `🔒 Itinerary Live Edit Security Code\\n\\nTo protect against hackers inspecting source code or storage, security PINs are stored ONLY as one-way cryptographic SHA-256 hashes.\\n\\nType 'GENERATE' to create a random 6-character PIN, or type your desired custom PIN below:`
+            );
+            if (action === null) return;
+            let newCode = action.trim();
+            if (newCode.toUpperCase() === 'GENERATE' || !newCode) {
+                newCode = 'NOMAD-' + Math.floor(1000 + Math.random() * 9000);
+            }
+            if (newCode.length < 3) {
+                alert('Code must be at least 3 characters long!');
+                return;
+            }
+            const msgBuffer = new TextEncoder().encode(newCode);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            localStorage.setItem('nomadller_edit_access_hash', hashHex);
+            localStorage.removeItem('nomadller_edit_access_code'); // Clean up any legacy plaintext
+            
+            alert(`✅ Security Code Generated & Hashed Successfully!\\n\\nYour New Edit Access Code:  ${newCode}\\n\\n⚠️ Save or share this exact PIN now! For maximum security against hackers, this PIN is NOT saved in plaintext anywhere in the code or database.`);
+        });
+    }
+
     // Mobile Sidebar Toggle
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const sidebar = document.querySelector('.sidebar');

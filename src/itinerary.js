@@ -69,7 +69,8 @@ async function loadItinerary() {
             <!-- Action Bar for Web View -->
             <div id="action-bar" style="position: fixed; top: 0; left: 0; right: 0; background: rgba(26,26,26,0.97); backdrop-filter: blur(12px); padding: 14px 32px; display: flex; justify-content: space-between; align-items: center; z-index: 9999; color: white; border-bottom: 2px solid #B84500;">
                 <div class="brand-text" style="font-family: 'Lora', serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 3px; color: #FFFFFF;">NOMADLLER</div>
-                <div class="button-group" style="display: flex; gap: 12px;">
+                <div class="button-group" style="display: flex; gap: 12px; align-items: center;">
+                    <button id="edit-pdf-btn" style="background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.4); color: white; padding: 10px 20px; font-family: 'Source Sans 3', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 1.5px; cursor: pointer; border-radius: 6px; text-transform: uppercase; transition: all 0.3s;">✎ Edit Content</button>
                     <button id="download-pdf-btn" style="background: #B84500; color: white; border: none; padding: 10px 24px; font-family: 'Source Sans 3', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 1.5px; cursor: pointer; border-radius: 6px; text-transform: uppercase;">⬇ Download PDF</button>
                     <button onclick="try { window.close(); } catch(e) {} setTimeout(() => { if(!window.closed) { if(window.history.length > 1) window.history.back(); else window.location.href='/dashboard'; } }, 100);" style="background: transparent; border: 1.5px solid rgba(255,255,255,0.35); color: white; padding: 10px 24px; font-family: 'Source Sans 3', sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 1.5px; cursor: pointer; border-radius: 6px; text-transform: uppercase;">✕ Close</button>
                 </div>
@@ -78,14 +79,25 @@ async function loadItinerary() {
             <div style="margin-top: 60px;"></div> <!-- Spacer -->
 
             <style>
-                /* Fonts loaded from itinerary.html <head> */
+                /* Web PDF Viewer Document Layout */
+                body { background-color: #1A1A1A !important; }
+                #pdf-wrapper { 
+                    display: flex; 
+                    flex-direction: column; 
+                    align-items: center; 
+                    padding: 30px 0 80px 0; 
+                }
+                .page {
+                    box-shadow: 0 15px 40px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.08) !important;
+                    border-radius: 4px;
+                }
                 @media (max-width: 820px) {
-                    body { overflow-x: hidden; background: #222; }
+                    body { overflow-x: hidden; background: #121212 !important; }
                     #action-bar { padding: 10px 16px !important; }
                     #action-bar .brand-text { font-size: 1rem !important; }
                     #action-bar button { padding: 7px 12px !important; font-size: 0.72rem !important; }
                     #action-bar .button-group { gap: 8px !important; }
-                    #pdf-wrapper { display: flex; flex-direction: column; align-items: flex-start; width: 100vw; overflow: hidden; }
+                    #pdf-wrapper { width: 100vw; overflow: hidden; padding: 20px 0 60px 0; align-items: center; }
                 }
             </style>
 
@@ -144,8 +156,8 @@ async function loadItinerary() {
                 // heading ~48px + subheading ~28px + margin ~20px
                 const heightNeeded = (this.currentHeight > 0 ? 30 : 0) + 48 + (subheading ? 28 : 0) + 20;
                 
-                // Anti-orphan: need at least 160px after header for first content
-                if (this.currentHeight + heightNeeded + 160 > this.maxHeight && this.currentHeight > 0) {
+                // Anti-orphan: need at least 280px after header for full content cards
+                if (this.currentHeight + heightNeeded + 280 > this.maxHeight && this.currentHeight > 0) {
                     this.closePage();
                 }
                 const marginTop = this.currentHeight > 0 ? 'margin-top: 32px;' : '';
@@ -222,16 +234,41 @@ async function loadItinerary() {
                         }
                         
                         const availableHeight = this.maxHeight - this.currentHeight - cardOverhead;
-                        // each list row in 2 columns: 1rem * 1.7 lh + 9px margin ≈ 30px
-                        const maxRows = Math.floor(availableHeight / 30);
-                        let maxItemsForChunk = maxRows * 2;
                         
-                        if (maxItemsForChunk <= 0) {
-                            this.closePage();
-                            continue;
+                        let chunk = [];
+                        let col1Height = 0;
+                        let col2Height = 0;
+
+                        for (let i = 0; i < remainingItems.length; i++) {
+                            const item = remainingItems[i];
+                            const lines = Math.max(1, Math.ceil(item.length / 36));
+                            const itemH = lines * 27 + 10;
+                            
+                            if (col1Height <= col2Height) {
+                                col1Height += itemH;
+                            } else {
+                                col2Height += itemH;
+                            }
+                            
+                            const newMaxH = Math.max(col1Height, col2Height);
+                            if (newMaxH > availableHeight && chunk.length >= 2) {
+                                break;
+                            }
+                            chunk.push(item);
                         }
 
-                        let chunk = remainingItems.splice(0, maxItemsForChunk);
+                        if (chunk.length === 0) {
+                            if (this.currentHeight > 0) {
+                                this.closePage();
+                                continue;
+                            } else {
+                                chunk = remainingItems.slice(0, 2);
+                                col1Height = 60;
+                                col2Height = 60;
+                            }
+                        }
+
+                        remainingItems.splice(0, chunk.length);
                         if (chunk.length > 0) {
                             this.currentPageHtml += `
                             <div class="data-card" style="margin-bottom: 22px;">
@@ -241,8 +278,8 @@ async function loadItinerary() {
                                 </ul>
                             </div>
                             `;
-                            const rowsUsed = Math.ceil(chunk.length / 2);
-                            this.currentHeight += cardOverhead + (rowsUsed * 30);
+                            const finalH = Math.max(col1Height, col2Height);
+                            this.currentHeight += cardOverhead + finalH;
                             isFirstChunk = false;
                         }
                         if (this.currentHeight >= this.maxHeight) {
@@ -364,25 +401,425 @@ async function loadItinerary() {
         root.outerHTML = html;
 
         function applyMobileScale() {
+            const pages = document.querySelectorAll('.page');
             if (window.innerWidth <= 820) {
-                const scale = window.innerWidth / 794;
-                const pages = document.querySelectorAll('.page');
+                const scale = Math.min((window.innerWidth - 24) / 794, 1);
                 pages.forEach(p => {
                     p.style.transform = `scale(${scale})`;
-                    p.style.transformOrigin = 'top left';
-                    p.style.marginBottom = `-${1123 * (1 - scale)}px`;
+                    p.style.transformOrigin = 'top center';
+                    // Leave 28px visual gap between scaled pages on mobile
+                    p.style.marginBottom = `${28 - (1123 * (1 - scale))}px`;
                 });
             } else {
-                const pages = document.querySelectorAll('.page');
                 pages.forEach(p => {
                     p.style.transform = 'none';
-                    p.style.marginBottom = '0px';
+                    p.style.marginBottom = '45px'; // Distinct 45px gap between separate pages on desktop
                 });
             }
         }
         
         applyMobileScale();
         window.addEventListener('resize', applyMobileScale);
+
+        window.isPdfEditMode = false;
+        window.togglePdfEditMode = async function() {
+            if (!window.isPdfEditMode) {
+                const inputCode = prompt('🔒 Security Verification\\n\\nPlease enter the Admin Access Code to unlock live itinerary editing:');
+                if (inputCode === null) return;
+                
+                const msgBuffer = new TextEncoder().encode(inputCode.trim());
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+                const targetHash = localStorage.getItem('nomadller_edit_access_hash') || 'b3797d6c583d0edef9f6a17bf7f4ba66d105952ceaa59e68abbd6502de6e81e4';
+                
+                if (hashHex !== targetHash) {
+                    alert('❌ Incorrect Access Code. Edit Mode remains locked.');
+                    return;
+                }
+            }
+            window.isPdfEditMode = !window.isPdfEditMode;
+            const btn = document.getElementById('edit-pdf-btn');
+            const wrapper = document.getElementById('pdf-wrapper');
+            if (!wrapper) return;
+
+            if (window.isPdfEditMode) {
+                window.pdfUndoStack = window.pdfUndoStack || [];
+                if (!window.originalPdfSnapshot) {
+                    window.originalPdfSnapshot = wrapper.innerHTML;
+                }
+
+                window.savePdfSnapshot = function() {
+                    const w = document.getElementById('pdf-wrapper');
+                    if (!w) return;
+                    window.pdfUndoStack.push(w.innerHTML);
+                    if (window.pdfUndoStack.length > 30) window.pdfUndoStack.shift();
+                };
+
+                window.rebindPdfEditControls = function() {
+                    const w = document.getElementById('pdf-wrapper');
+                    if (!w) return;
+                    const selectors = [
+                        '.cover-title', '.cover-subtitle', '.price-item', '.gps-coords',
+                        '.brand-badge', '.large-quote', '.quote-author', '.section-heading',
+                        '.section-subheading', '.day-number', '.day-title', '.day-desc',
+                        '.metric-badge', '.c-metric span', '.data-card h3', '.data-card li', '.page-footer span'
+                    ];
+                    w.querySelectorAll(selectors.join(', ')).forEach(el => {
+                        el.setAttribute('contenteditable', 'true');
+                        el.addEventListener('focus', () => {
+                            if (typeof window.savePdfSnapshot === 'function') window.savePdfSnapshot();
+                        }, { once: false });
+                    });
+
+                    const layoutBlocks = w.querySelectorAll('.day-container, .data-card, .cover-title, .large-quote');
+                    layoutBlocks.forEach(block => {
+                        if (!block.querySelector('.spacing-toolbar')) {
+                            block.style.position = 'relative';
+                            const toolbar = document.createElement('div');
+                            toolbar.className = 'spacing-toolbar';
+                            toolbar.setAttribute('contenteditable', 'false');
+                            const isCard = block.classList.contains('data-card');
+                            toolbar.innerHTML = `
+                                <button onclick="window.moveToPrevPage(this)" title="Pull item back up to previous page">⬆ Prev Page</button>
+                                <button onclick="window.moveToNextPage(this)" title="Move this item and subsequent items to a new page">⬇ Next Page</button>
+                                ${isCard ? '<button onclick="window.splitDataCard(this)" style="background: rgba(230,81,0,0.85);" title="Split this card in half onto the next page">✂ Split Card</button>' : ''}
+                                <span style="margin: 0 2px; opacity: 0.7;">|</span>
+                                <span>↕ Space</span>
+                                <button onclick="window.adjustSpacing(this, -10)" title="Decrease vertical spacing">-</button>
+                                <button onclick="window.adjustSpacing(this, +10)" title="Increase vertical spacing">+</button>
+                            `;
+                            block.appendChild(toolbar);
+                        }
+                    });
+                    if (typeof applyMobileScale === 'function') applyMobileScale();
+                };
+
+                window.undoPdfEdit = function() {
+                    if (!window.pdfUndoStack || window.pdfUndoStack.length === 0) {
+                        alert('Nothing to undo!');
+                        return;
+                    }
+                    const w = document.getElementById('pdf-wrapper');
+                    if (!w) return;
+                    w.innerHTML = window.pdfUndoStack.pop();
+                    window.rebindPdfEditControls();
+                };
+
+                window.resetPdfEdit = function() {
+                    if (!window.originalPdfSnapshot) return;
+                    if (!confirm('Reset all layout spacing and text changes back to original?')) return;
+                    window.savePdfSnapshot();
+                    const w = document.getElementById('pdf-wrapper');
+                    w.innerHTML = window.originalPdfSnapshot;
+                    window.rebindPdfEditControls();
+                };
+
+                if (btn) {
+                    btn.innerHTML = '✅ Done Editing';
+                    btn.style.background = '#2E7D32';
+                    btn.style.borderColor = '#2E7D32';
+                    btn.style.boxShadow = '0 0 15px rgba(46,125,50,0.6)';
+
+                    let buttonGroup = btn.parentElement;
+                    if (buttonGroup && !document.getElementById('pdf-undo-btn')) {
+                        const undoBtn = document.createElement('button');
+                        undoBtn.id = 'pdf-undo-btn';
+                        undoBtn.innerHTML = '↩ Undo';
+                        undoBtn.title = 'Undo last change (Cmd+Z or Ctrl+Z)';
+                        undoBtn.style.cssText = 'background: rgba(255,255,255,0.18); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 4px; padding: 7px 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s;';
+                        undoBtn.onclick = () => window.undoPdfEdit();
+
+                        const resetBtn = document.createElement('button');
+                        resetBtn.id = 'pdf-reset-btn';
+                        resetBtn.innerHTML = '🔄 Reset';
+                        resetBtn.title = 'Reset all layout and text edits back to original';
+                        resetBtn.style.cssText = 'background: rgba(220,53,69,0.25); color: #ff8b8b; border: 1px solid rgba(220,53,69,0.5); border-radius: 4px; padding: 7px 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s;';
+                        resetBtn.onclick = () => window.resetPdfEdit();
+
+                        buttonGroup.insertBefore(undoBtn, btn);
+                        buttonGroup.insertBefore(resetBtn, btn);
+                    } else if (document.getElementById('pdf-undo-btn')) {
+                        document.getElementById('pdf-undo-btn').style.display = 'inline-flex';
+                        document.getElementById('pdf-reset-btn').style.display = 'inline-flex';
+                    }
+                }
+
+                if (!window.undoShortcutAttached) {
+                    window.undoShortcutAttached = true;
+                    document.addEventListener('keydown', (e) => {
+                        if (window.isPdfEditMode && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+                            e.preventDefault();
+                            window.undoPdfEdit();
+                        }
+                    });
+                }
+                let style = document.getElementById('pdf-edit-mode-style');
+                if (!style) {
+                    style = document.createElement('style');
+                    style.id = 'pdf-edit-mode-style';
+                    style.innerHTML = `
+                        #pdf-wrapper [contenteditable="true"] {
+                            transition: outline 0.2s, background 0.2s;
+                            border-radius: 4px;
+                            white-space: pre-wrap !important;
+                        }
+                        #pdf-wrapper [contenteditable="true"]:hover,
+                        #pdf-wrapper [contenteditable="true"]:focus {
+                            outline: 2px dashed #B84500 !important;
+                            background: rgba(184, 69, 0, 0.15) !important;
+                            cursor: text;
+                        }
+                        .spacing-toolbar {
+                            position: absolute;
+                            right: 12px;
+                            top: -12px;
+                            background: #B84500;
+                            color: white;
+                            font-family: 'Source Sans 3', sans-serif;
+                            font-size: 0.72rem;
+                            font-weight: 700;
+                            padding: 3px 10px;
+                            border-radius: 20px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            z-index: 1000;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+                            cursor: default;
+                            user-select: none;
+                            opacity: 0.2;
+                            transform: scale(0.96);
+                            transition: opacity 0.2s ease, transform 0.2s ease;
+                        }
+                        .day-container:hover .spacing-toolbar,
+                        .data-card:hover .spacing-toolbar,
+                        .cover-title:hover .spacing-toolbar,
+                        .large-quote:hover .spacing-toolbar,
+                        .spacing-toolbar:hover {
+                            opacity: 1;
+                            transform: scale(1);
+                            z-index: 10000;
+                        }
+                        .spacing-toolbar button {
+                            background: rgba(0,0,0,0.35);
+                            border: 1px solid rgba(255,255,255,0.25);
+                            color: white;
+                            height: 22px;
+                            padding: 0 7px;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 0.68rem;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            transition: background 0.2s;
+                        }
+                        .spacing-toolbar button:hover {
+                            background: rgba(0,0,0,0.75);
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                let toast = document.getElementById('pdf-edit-toast');
+                if (!toast) {
+                    toast = document.createElement('div');
+                    toast.id = 'pdf-edit-toast';
+                    toast.style.cssText = 'position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1A1A1A; border: 2px solid #B84500; color: white; padding: 14px 28px; border-radius: 50px; z-index: 10000; font-family: "Source Sans 3", sans-serif; font-size: 0.95rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 12px;';
+                    toast.innerHTML = '<span style="color: #F4A261; font-size: 1.2rem;">✨</span> <span>Edit Mode Active: Click text to edit or use layout handles (↕ Space) to adjust spaces!</span>';
+                    document.body.appendChild(toast);
+                } else {
+                    toast.style.display = 'flex';
+                }
+
+                const selectors = [
+                    '.cover-title', '.cover-subtitle', '.price-item', '.gps-coords',
+                    '.brand-badge', '.large-quote', '.quote-author', '.section-heading',
+                    '.section-subheading', '.day-number', '.day-title', '.day-desc',
+                    '.metric-badge', '.c-metric span', '.data-card h3', '.data-card li', '.page-footer span'
+                ];
+                wrapper.querySelectorAll(selectors.join(', ')).forEach(el => {
+                    el.setAttribute('contenteditable', 'true');
+                });
+
+                window.adjustSpacing = function(btn, delta) {
+                    if (typeof window.savePdfSnapshot === 'function') window.savePdfSnapshot();
+                    const block = btn.closest('.day-container, .data-card, .cover-title, .large-quote, .section-heading');
+                    if (!block) return;
+                    let currentMargin = parseInt(window.getComputedStyle(block).marginBottom || '0', 10);
+                    if (isNaN(currentMargin)) currentMargin = 20;
+                    let newMargin = Math.max(0, currentMargin + delta);
+                    block.style.marginBottom = newMargin + 'px';
+                };
+
+                window.splitDataCard = function(btn) {
+                    if (typeof window.savePdfSnapshot === 'function') window.savePdfSnapshot();
+                    const card = btn.closest('.data-card');
+                    if (!card) return;
+                    const currentPage = card.closest('.page');
+                    if (!currentPage) return;
+                    
+                    const lis = Array.from(card.querySelectorAll('li'));
+                    if (lis.length < 2) {
+                        alert('This card has less than 2 items, cannot split further!');
+                        return;
+                    }
+
+                    const h3 = card.querySelector('h3');
+                    let baseTitle = h3 ? h3.innerText.replace(/\s*\(Cont\.\)\s*$/i, '') : 'Details';
+                    
+                    const mid = Math.ceil(lis.length / 2);
+                    const firstHalf = lis.slice(0, mid);
+                    const secondHalf = lis.slice(mid);
+
+                    const ul = card.querySelector('ul');
+                    if (ul) {
+                        ul.innerHTML = firstHalf.map(li => li.outerHTML).join('');
+                    }
+
+                    const newCard = document.createElement('div');
+                    newCard.className = 'data-card';
+                    newCard.style.cssText = card.style.cssText || 'margin-bottom: 22px;';
+                    newCard.innerHTML = `
+                        <h3>${baseTitle} (Cont.)</h3>
+                        <ul style="${ul ? ul.style.cssText : 'font-size: 1rem; font-family: Source Sans 3, sans-serif; line-height: 1.7; padding-left: 20px; column-count: 2; column-gap: 40px;'}">
+                            ${secondHalf.map(li => li.outerHTML).join('')}
+                        </ul>
+                    `;
+
+                    let siblingsToMove = [newCard];
+                    let curr = card.nextElementSibling;
+                    while (curr) {
+                        if (!curr.classList.contains('page-footer') && !curr.classList.contains('spacing-toolbar')) {
+                            siblingsToMove.push(curr);
+                        }
+                        curr = curr.nextElementSibling;
+                    }
+
+                    const nextPage = currentPage.nextElementSibling;
+                    if (nextPage && nextPage.classList.contains('page') && !nextPage.classList.contains('cover-page')) {
+                        const nextContent = nextPage.querySelector('.page-content') || nextPage;
+                        siblingsToMove.slice().reverse().forEach(el => {
+                            nextContent.insertBefore(el, nextContent.firstChild);
+                        });
+                    } else {
+                        const newPage = document.createElement('div');
+                        newPage.className = 'page';
+                        newPage.style.cssText = currentPage.style.cssText;
+                        
+                        const newContent = document.createElement('div');
+                        newContent.className = 'page-content';
+                        
+                        const footer = document.createElement('div');
+                        footer.className = 'page-footer';
+                        footer.innerHTML = '<span>Nomadller Luxury Expeditions</span>';
+
+                        siblingsToMove.forEach(el => newContent.appendChild(el));
+                        
+                        newPage.appendChild(newContent);
+                        newPage.appendChild(footer);
+
+                        currentPage.parentNode.insertBefore(newPage, currentPage.nextElementSibling);
+                    }
+
+                    window.rebindPdfEditControls();
+                    if (typeof applyMobileScale === 'function') applyMobileScale();
+                };
+
+                window.moveToNextPage = function(btn) {
+                    if (typeof window.savePdfSnapshot === 'function') window.savePdfSnapshot();
+                    const block = btn.closest('.day-container, .data-card, .cover-title, .large-quote, .section-heading');
+                    if (!block) return;
+                    const currentPage = block.closest('.page');
+                    if (!currentPage) return;
+                    const currentContent = currentPage.querySelector('.page-content') || currentPage;
+
+                    let siblingsToMove = [];
+                    let curr = block;
+                    while (curr) {
+                        if (!curr.classList.contains('page-footer')) {
+                            siblingsToMove.push(curr);
+                        }
+                        curr = curr.nextElementSibling;
+                    }
+
+                    if (siblingsToMove.length === 0) return;
+
+                    const nextPage = currentPage.nextElementSibling;
+                    if (nextPage && nextPage.classList.contains('page') && !nextPage.classList.contains('cover-page')) {
+                        const nextContent = nextPage.querySelector('.page-content') || nextPage;
+                        siblingsToMove.slice().reverse().forEach(el => {
+                            nextContent.insertBefore(el, nextContent.firstChild);
+                        });
+                    } else {
+                        const newPage = document.createElement('div');
+                        newPage.className = 'page';
+                        newPage.style.cssText = currentPage.style.cssText;
+                        
+                        const newContent = document.createElement('div');
+                        newContent.className = 'page-content';
+                        
+                        const footer = document.createElement('div');
+                        footer.className = 'page-footer';
+                        footer.innerHTML = '<span>Nomadller Luxury Expeditions</span>';
+
+                        siblingsToMove.forEach(el => newContent.appendChild(el));
+                        
+                        newPage.appendChild(newContent);
+                        newPage.appendChild(footer);
+
+                        currentPage.parentNode.insertBefore(newPage, currentPage.nextElementSibling);
+                    }
+
+                    if (currentContent.children.length === 0) {
+                        currentPage.remove();
+                    }
+                    if (typeof applyMobileScale === 'function') applyMobileScale();
+                };
+
+                window.moveToPrevPage = function(btn) {
+                    if (typeof window.savePdfSnapshot === 'function') window.savePdfSnapshot();
+                    const block = btn.closest('.day-container, .data-card, .cover-title, .large-quote, .section-heading');
+                    if (!block) return;
+                    const currentPage = block.closest('.page');
+                    if (!currentPage) return;
+                    const prevPage = currentPage.previousElementSibling;
+                    if (!prevPage || !prevPage.classList.contains('page') || prevPage.classList.contains('cover-page')) {
+                        alert('No previous regular page exists!');
+                        return;
+                    }
+                    const prevContent = prevPage.querySelector('.page-content') || prevPage;
+                    prevContent.appendChild(block);
+
+                    const currentContent = currentPage.querySelector('.page-content') || currentPage;
+                    if (currentContent.children.length === 0) {
+                        currentPage.remove();
+                    }
+                    if (typeof applyMobileScale === 'function') applyMobileScale();
+                };
+
+                window.rebindPdfEditControls();
+            } else {
+                if (btn) {
+                    btn.innerHTML = '✎ Edit Content';
+                    btn.style.background = 'rgba(255,255,255,0.12)';
+                    btn.style.borderColor = 'rgba(255,255,255,0.4)';
+                    btn.style.boxShadow = 'none';
+                }
+                if (document.getElementById('pdf-undo-btn')) document.getElementById('pdf-undo-btn').style.display = 'none';
+                if (document.getElementById('pdf-reset-btn')) document.getElementById('pdf-reset-btn').style.display = 'none';
+                const toast = document.getElementById('pdf-edit-toast');
+                if (toast) toast.style.display = 'none';
+                wrapper.querySelectorAll('[contenteditable]').forEach(el => {
+                    el.removeAttribute('contenteditable');
+                });
+                wrapper.querySelectorAll('.spacing-toolbar').forEach(el => el.remove());
+            }
+        };
+
+        const editBtn = document.getElementById('edit-pdf-btn');
+        if (editBtn) editBtn.addEventListener('click', window.togglePdfEditMode);
 
         document.getElementById('download-pdf-btn').addEventListener('click', generatePDF);
 
@@ -398,8 +835,15 @@ async function loadItinerary() {
 }
 
 async function generatePDF() {
+    const wasEditing = window.isPdfEditMode;
+    if (wasEditing && typeof window.togglePdfEditMode === 'function') {
+        window.togglePdfEditMode(); // Temporarily disable edit mode so outlines/cursors don't appear in PDF
+    }
+
     const actionBar = document.getElementById('action-bar');
+    const toast = document.getElementById('pdf-edit-toast');
     if (actionBar) actionBar.style.display = 'none'; // Hide UI for PDF
+    if (toast) toast.style.display = 'none';
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
@@ -470,6 +914,9 @@ async function generatePDF() {
         alert('Failed to generate PDF. Check console.');
     } finally {
         if (actionBar) actionBar.style.display = 'flex';
+        if (wasEditing && typeof window.togglePdfEditMode === 'function') {
+            window.togglePdfEditMode(); // Restore edit mode after download
+        }
         loadingDiv.remove();
     }
 }
