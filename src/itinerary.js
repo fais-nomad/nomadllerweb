@@ -578,8 +578,8 @@ async function loadItinerary() {
                         }
                         .spacing-toolbar {
                             position: absolute;
-                            right: 12px;
-                            top: -12px;
+                            right: 8px;
+                            top: 6px;
                             background: #B84500;
                             color: white;
                             font-family: 'Source Sans 3', sans-serif;
@@ -594,16 +594,22 @@ async function loadItinerary() {
                             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
                             cursor: default;
                             user-select: none;
-                            opacity: 0.2;
-                            transform: scale(0.96);
-                            transition: opacity 0.2s ease, transform 0.2s ease;
+                            opacity: 0;
+                            pointer-events: none;
+                            transform: scale(0.95);
+                            transition: opacity 0.25s ease, transform 0.25s ease;
                         }
                         .day-container:hover .spacing-toolbar,
+                        .day-container:focus-within .spacing-toolbar,
                         .data-card:hover .spacing-toolbar,
+                        .data-card:focus-within .spacing-toolbar,
                         .cover-title:hover .spacing-toolbar,
+                        .cover-title:focus-within .spacing-toolbar,
                         .large-quote:hover .spacing-toolbar,
+                        .large-quote:focus-within .spacing-toolbar,
                         .spacing-toolbar:hover {
                             opacity: 1;
+                            pointer-events: auto;
                             transform: scale(1);
                             z-index: 10000;
                         }
@@ -633,12 +639,20 @@ async function loadItinerary() {
                 if (!toast) {
                     toast = document.createElement('div');
                     toast.id = 'pdf-edit-toast';
-                    toast.style.cssText = 'position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1A1A1A; border: 2px solid #B84500; color: white; padding: 14px 28px; border-radius: 50px; z-index: 10000; font-family: "Source Sans 3", sans-serif; font-size: 0.95rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 12px;';
-                    toast.innerHTML = '<span style="color: #F4A261; font-size: 1.2rem;">✨</span> <span>Edit Mode Active: Click text to edit or use layout handles (↕ Space) to adjust spaces!</span>';
                     document.body.appendChild(toast);
-                } else {
-                    toast.style.display = 'flex';
                 }
+                toast.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(26, 26, 26, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(244, 162, 97, 0.6); color: white; padding: 10px 18px; border-radius: 40px; z-index: 100000; font-family: "Source Sans 3", sans-serif; font-size: 0.82rem; font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.85); display: flex; align-items: center; gap: 10px; max-width: 92vw; text-align: center; transition: opacity 0.5s ease; opacity: 1; pointer-events: auto;';
+                toast.innerHTML = '<span style="color: #F4A261; font-size: 1.1rem;">✨</span> <span><strong>Edit Mode Active:</strong> Click any text to edit or adjust layout.</span> <button onclick="const t=document.getElementById(\'pdf-edit-toast\'); if(t){t.style.opacity=\'0\'; setTimeout(()=>t.style.display=\'none\',500);}" style="background:transparent; border:none; color:#bbb; cursor:pointer; font-size:1.1rem; padding:0 0 0 4px; line-height:1;">✕</button>';
+                toast.style.display = 'flex';
+                toast.style.opacity = '1';
+
+                clearTimeout(window.editToastTimer);
+                window.editToastTimer = setTimeout(() => {
+                    if (toast) {
+                        toast.style.opacity = '0';
+                        setTimeout(() => { if (toast && toast.style.opacity === '0') toast.style.display = 'none'; }, 500);
+                    }
+                }, 3500);
 
                 const selectors = [
                     '.cover-title', '.cover-subtitle', '.price-item', '.gps-coords',
