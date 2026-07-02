@@ -446,6 +446,8 @@ async function loadItinerary() {
             const currHtml = targetTextEl.innerHTML || currText;
             const apiKey = localStorage.getItem('nomadller_ai_api_key') || 'sk-2205166d17754fd7b8d62250169b7499';
             const isPriceCard = block.classList.contains('price-card');
+            window._activeAiBlock = block;
+            window._activeAiBtn = btn;
             
             modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(8px); z-index: 1000000; display: flex; align-items: center; justify-content: center; padding: 20px;';
             modal.innerHTML = `
@@ -471,6 +473,9 @@ async function loadItinerary() {
                             <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Expand with vivid luxury expedition storytelling, dramatic Himalayan mountain scenery, and premium comfort details without changing core factual highlights.'" style="background: rgba(138,43,226,0.25); border: 1px solid rgba(138,43,226,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">🪄 Expand Storytelling</button>
                             <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Make concise, crisp, and punchy, summarizing paragraphs into professional highlights.'" style="background: rgba(244,162,97,0.2); border: 1px solid rgba(244,162,97,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">✂️ Make Concise</button>
                             <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Fix grammar, structure, and elevate phrasing to ultra-luxury expedition phrasing.'" style="background: rgba(46,125,50,0.3); border: 1px solid rgba(46,125,50,0.6); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">✨ Professional Polish</button>
+                            <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Condense and shorten description into 1 brief, elegant luxury highlight sentence under 20 words to eliminate vertical height overflow and fix footer overlap.'" style="background: rgba(211,47,47,0.35); border: 1px solid rgba(255,82,82,0.6); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">📐 Fix Footer Overlap (AI Condense)</button>
+                            <button class="ai-quick-btn" onclick="window.fixFooterOverlapSpacing()" style="background: rgba(230,81,0,0.35); border: 1px solid rgba(255,152,0,0.6); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">📉 Fix Footer Overlap (Tighten Spacing)</button>
+                            <button class="ai-quick-btn" onclick="window.pushAiBlockToNextPage()" style="background: rgba(0,131,143,0.35); border: 1px solid rgba(0,188,212,0.6); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">📄 Move Section to Next Page</button>
                             `}
                         </div>
                     </div>
@@ -611,6 +616,35 @@ async function loadItinerary() {
                 }
                 modal.remove();
             };
+        };
+
+        window.fixFooterOverlapSpacing = function() {
+            if (!window._activeAiBlock) return;
+            const b = window._activeAiBlock;
+            b.style.paddingTop = '6px';
+            b.style.paddingBottom = '6px';
+            b.style.marginBottom = '8px';
+            b.querySelectorAll('p, .day-desc, div, ul, li').forEach(el => {
+                el.style.marginBottom = '4px';
+                el.style.paddingBottom = '2px';
+                el.style.lineHeight = '1.35';
+            });
+            const modal = document.getElementById('ai-copilot-modal');
+            if (modal) modal.remove();
+            if (typeof window.savePdfSnapshot === 'function') window.savePdfSnapshot();
+        };
+
+        window.pushAiBlockToNextPage = function() {
+            if (!window._activeAiBlock) return;
+            const dummyBtn = document.createElement('button');
+            window._activeAiBlock.appendChild(dummyBtn);
+            if (typeof window.moveToNextPage === 'function') {
+                window.moveToNextPage(dummyBtn);
+            }
+            dummyBtn.remove();
+            const modal = document.getElementById('ai-copilot-modal');
+            if (modal) modal.remove();
+            if (typeof window.savePdfSnapshot === 'function') window.savePdfSnapshot();
         };
 
         window.togglePdfEditMode = async function() {
