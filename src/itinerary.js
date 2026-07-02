@@ -431,9 +431,9 @@ async function loadItinerary() {
         window.isPdfEditMode = false;
 
         window.openAIItemModal = function(btn) {
-            const block = btn ? btn.closest('.day-container, .data-card, .cover-title, .large-quote') : document.querySelector('.day-container') || document.getElementById('pdf-wrapper');
+            const block = btn ? btn.closest('.day-container, .data-card, .cover-title, .large-quote, .price-card, .cover-subtitle, .section-heading') : document.querySelector('.day-container') || document.getElementById('pdf-wrapper');
             if (!block) return;
-            const targetTextEl = block.querySelector('.day-desc, .data-card ul, .data-card p, .cover-title, .large-quote') || block;
+            const targetTextEl = block.querySelector('.day-desc, .data-card ul, .data-card p, .cover-title, .large-quote, .price-list') || block;
             
             let modal = document.getElementById('ai-copilot-modal');
             if (!modal) {
@@ -443,7 +443,9 @@ async function loadItinerary() {
             }
             
             const currText = targetTextEl.innerText || targetTextEl.textContent;
+            const currHtml = targetTextEl.innerHTML || currText;
             const apiKey = localStorage.getItem('nomadller_ai_api_key') || '';
+            const isPriceCard = block.classList.contains('price-card');
             
             modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(8px); z-index: 1000000; display: flex; align-items: center; justify-content: center; padding: 20px;';
             modal.innerHTML = `
@@ -462,9 +464,14 @@ async function loadItinerary() {
                     <div style="margin-bottom: 16px;">
                         <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #e0aaff; margin-bottom: 8px;">⚡ One-Click Editorial Magic</label>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${isPriceCard ? `
+                            <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Add USD $199 and EUR €185 to the price list while maintaining exact HTML structure <div class=\\'price-item\\'><span>CURRENCY</span> AMOUNT</div>'" style="background: rgba(138,43,226,0.25); border: 1px solid rgba(138,43,226,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">💱 Add USD & EUR</button>
+                            <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Format pricing cleanly with luxury numbers and keep multi-currency layout intact'" style="background: rgba(244,162,97,0.2); border: 1px solid rgba(244,162,97,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">✨ Format Pricing</button>
+                            ` : `
                             <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Expand with vivid luxury expedition storytelling, dramatic Himalayan mountain scenery, and premium comfort details without changing core factual highlights.'" style="background: rgba(138,43,226,0.25); border: 1px solid rgba(138,43,226,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">🪄 Expand Storytelling</button>
                             <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Make concise, crisp, and punchy, summarizing paragraphs into professional highlights.'" style="background: rgba(244,162,97,0.2); border: 1px solid rgba(244,162,97,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">✂️ Make Concise</button>
                             <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Fix grammar, structure, and elevate phrasing to ultra-luxury expedition phrasing.'" style="background: rgba(46,125,50,0.3); border: 1px solid rgba(46,125,50,0.6); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">✨ Professional Polish</button>
+                            `}
                         </div>
                     </div>
 
@@ -540,7 +547,9 @@ async function loadItinerary() {
                         }
                     } else {
                         await new Promise(r => setTimeout(r, 1200));
-                        if (promptText.includes('Expand')) {
+                        if (isPriceCard) {
+                            newText = currHtml + `\n<div class="price-item"><span>USD</span> $199</div><div class="price-item"><span>EUR</span> €185</div>`;
+                        } else if (promptText.includes('Expand')) {
                             newText = currText + ' Surrounded by breathtaking Himalayan vistas and crisp mountain air, this segment offers an immersive encounter with pristine alpine wilderness and unmatched expedition comfort.';
                         } else if (promptText.includes('Concise')) {
                             newText = currText.split('.').slice(0, 2).join('.') + '.';
@@ -611,18 +620,23 @@ async function loadItinerary() {
                         }, { once: false });
                     });
 
-                    const layoutBlocks = w.querySelectorAll('.day-container, .data-card, .cover-title, .large-quote');
+                    const layoutBlocks = w.querySelectorAll('.day-container, .data-card, .cover-title, .large-quote, .price-card, .cover-subtitle, .section-heading');
                     layoutBlocks.forEach(block => {
                         if (!block.querySelector('.spacing-toolbar')) {
-                            block.style.position = 'relative';
+                            if (window.getComputedStyle(block).position === 'static') {
+                                block.style.position = 'relative';
+                            }
                             const toolbar = document.createElement('div');
                             toolbar.className = 'spacing-toolbar';
                             toolbar.setAttribute('contenteditable', 'false');
                             const isCard = block.classList.contains('data-card');
+                            const isFixedCoverItem = block.classList.contains('price-card') || block.classList.contains('cover-title') || block.classList.contains('cover-subtitle') || block.classList.contains('large-quote');
                             toolbar.innerHTML = `
                                 <button onclick="window.openAIItemModal(this)" style="background: linear-gradient(135deg, #8a2be2, #f4a261); border: none; font-weight: 700; color: white; box-shadow: 0 0 8px rgba(138,43,226,0.6);" title="AI Rewrite / Polish section">✨ AI</button>
+                                ${!isFixedCoverItem ? `
                                 <button onclick="window.moveToPrevPage(this)" title="Pull item back up to previous page">⬆ Prev Page</button>
                                 <button onclick="window.moveToNextPage(this)" title="Move this item and subsequent items to a new page">⬇ Next Page</button>
+                                ` : ''}
                                 ${isCard ? '<button onclick="window.splitDataCard(this)" style="background: rgba(230,81,0,0.85);" title="Split this card in half onto the next page">✂ Split Card</button>' : ''}
                                 <span style="margin: 0 2px; opacity: 0.7;">|</span>
                                 <span>↕ Space</span>
@@ -742,14 +756,24 @@ async function loadItinerary() {
                             transform: scale(0.95);
                             transition: opacity 0.25s ease, transform 0.25s ease;
                         }
+                        .price-card .spacing-toolbar {
+                            top: -34px;
+                            right: 0;
+                        }
                         .day-container:hover .spacing-toolbar,
                         .day-container:focus-within .spacing-toolbar,
                         .data-card:hover .spacing-toolbar,
                         .data-card:focus-within .spacing-toolbar,
                         .cover-title:hover .spacing-toolbar,
                         .cover-title:focus-within .spacing-toolbar,
+                        .cover-subtitle:hover .spacing-toolbar,
+                        .cover-subtitle:focus-within .spacing-toolbar,
+                        .price-card:hover .spacing-toolbar,
+                        .price-card:focus-within .spacing-toolbar,
                         .large-quote:hover .spacing-toolbar,
                         .large-quote:focus-within .spacing-toolbar,
+                        .section-heading:hover .spacing-toolbar,
+                        .section-heading:focus-within .spacing-toolbar,
                         .spacing-toolbar:hover {
                             opacity: 1;
                             pointer-events: auto;
