@@ -97,7 +97,7 @@ async function loadItinerary() {
                     #action-bar .brand-text { font-size: 1rem !important; }
                     #action-bar button { padding: 7px 12px !important; font-size: 0.72rem !important; }
                     #action-bar .button-group { gap: 8px !important; }
-                    #pdf-wrapper { width: 100vw; overflow: hidden; padding: 20px 0 60px 0; align-items: center; }
+                    #pdf-wrapper { display: block !important; width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; padding: 20px 0 60px 0 !important; }
                 }
             </style>
 
@@ -402,18 +402,25 @@ async function loadItinerary() {
 
         function applyMobileScale() {
             const pages = document.querySelectorAll('.page');
+            const wrapper = document.getElementById('pdf-wrapper');
             if (window.innerWidth <= 820) {
-                const scale = Math.min((window.innerWidth - 24) / 794, 1);
+                if (wrapper) wrapper.style.display = 'block';
+                const pageWidth = 793.7;
+                const scale = Math.min((window.innerWidth - 24) / pageWidth, 1);
+                const offsetX = Math.max(0, (window.innerWidth - (pageWidth * scale)) / 2);
                 pages.forEach(p => {
+                    p.style.transformOrigin = 'top left';
                     p.style.transform = `scale(${scale})`;
-                    p.style.transformOrigin = 'top center';
-                    // Leave 28px visual gap between scaled pages on mobile
-                    p.style.marginBottom = `${28 - (1123 * (1 - scale))}px`;
+                    p.style.marginLeft = `${offsetX}px`;
+                    p.style.marginRight = '0px';
+                    p.style.marginBottom = `${28 - (1122.5 * (1 - scale))}px`;
                 });
             } else {
+                if (wrapper) wrapper.style.display = 'flex';
                 pages.forEach(p => {
+                    p.style.transformOrigin = 'top center';
                     p.style.transform = 'none';
-                    p.style.marginBottom = '45px'; // Distinct 45px gap between separate pages on desktop
+                    p.style.margin = '0 auto 45px auto';
                 });
             }
         }
