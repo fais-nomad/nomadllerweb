@@ -429,6 +429,139 @@ async function loadItinerary() {
         window.addEventListener('resize', applyMobileScale);
 
         window.isPdfEditMode = false;
+
+        window.openAIItemModal = function(btn) {
+            const block = btn ? btn.closest('.day-container, .data-card, .cover-title, .large-quote') : document.querySelector('.day-container') || document.getElementById('pdf-wrapper');
+            if (!block) return;
+            const targetTextEl = block.querySelector('.day-desc, .data-card ul, .data-card p, .cover-title, .large-quote') || block;
+            
+            let modal = document.getElementById('ai-copilot-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'ai-copilot-modal';
+                document.body.appendChild(modal);
+            }
+            
+            const currText = targetTextEl.innerText || targetTextEl.textContent;
+            const apiKey = localStorage.getItem('nomadller_ai_api_key') || '';
+            
+            modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(8px); z-index: 1000000; display: flex; align-items: center; justify-content: center; padding: 20px;';
+            modal.innerHTML = `
+                <div style="background: #1e1e1e; border: 1px solid rgba(244,162,97,0.4); border-radius: 16px; width: 100%; max-width: 540px; padding: 24px; color: white; font-family: 'Source Sans 3', sans-serif; box-shadow: 0 20px 50px rgba(0,0,0,0.85);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 1.15rem; font-weight: 700; color: #f4a261;">
+                            <span>✨ Nomadller AI Expedition Copilot</span>
+                        </div>
+                        <button onclick="document.getElementById('ai-copilot-modal').remove()" style="background: transparent; border: none; color: #999; font-size: 1.3rem; cursor: pointer;">✕</button>
+                    </div>
+                    
+                    <div style="font-size: 0.85rem; color: #bbb; margin-bottom: 14px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border-left: 3px solid #f4a261;">
+                        Target section preview: <em style="color: #fff;">"${currText.slice(0, 95)}..."</em>
+                    </div>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #e0aaff; margin-bottom: 8px;">⚡ One-Click Editorial Magic</label>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Expand with vivid luxury expedition storytelling, dramatic Himalayan mountain scenery, and premium comfort details without changing core factual highlights.'" style="background: rgba(138,43,226,0.25); border: 1px solid rgba(138,43,226,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">🪄 Expand Storytelling</button>
+                            <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Make concise, crisp, and punchy, summarizing paragraphs into professional highlights.'" style="background: rgba(244,162,97,0.2); border: 1px solid rgba(244,162,97,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">✂️ Make Concise</button>
+                            <button class="ai-quick-btn" onclick="document.getElementById('ai-prompt-input').value = 'Fix grammar, structure, and elevate phrasing to ultra-luxury expedition phrasing.'" style="background: rgba(46,125,50,0.3); border: 1px solid rgba(46,125,50,0.6); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;">✨ Professional Polish</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #f4a261; margin-bottom: 6px;">💬 Custom Prompt / Instructions</label>
+                        <textarea id="ai-prompt-input" rows="3" placeholder="e.g. Rewrite to emphasize private helicopter return or highlight altitude acclimatization tips..." style="width: 100%; background: #121212; border: 1px solid #333; border-radius: 8px; padding: 10px; color: white; font-family: inherit; font-size: 0.9rem; resize: vertical;"></textarea>
+                    </div>
+
+                    ${!apiKey ? `
+                        <div style="background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.3); padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 0.82rem; color: #ffad87; display: flex; align-items: center; justify-content: space-between;">
+                            <span>API Key not configured.</span>
+                            <button onclick="const k=prompt('Enter your Google Gemini or OpenAI API Key:'); if(k){localStorage.setItem('nomadller_ai_api_key', k.trim()); alert('Key saved!');}" style="background: #ff6b35; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600;">🔑 Set API Key</button>
+                        </div>
+                    ` : ''}
+
+                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                        <button onclick="document.getElementById('ai-copilot-modal').remove()" style="background: transparent; border: 1px solid #444; color: #bbb; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Cancel</button>
+                        <button id="ai-execute-btn" style="background: linear-gradient(135deg, #8a2be2, #f4a261); border: none; color: white; font-weight: 700; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 15px rgba(138,43,226,0.4);">🚀 Generate & Apply</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('ai-execute-btn').onclick = async () => {
+                const promptText = document.getElementById('ai-prompt-input').value.trim();
+                if (!promptText) {
+                    alert('Please select a quick action or type a custom prompt!');
+                    return;
+                }
+                const btnExec = document.getElementById('ai-execute-btn');
+                btnExec.disabled = true;
+                btnExec.innerHTML = '⏳ Crafting with AI...';
+
+                if (typeof window.savePdfSnapshot === 'function') window.savePdfSnapshot();
+
+                const currentKey = localStorage.getItem('nomadller_ai_api_key') || '';
+                try {
+                    let newText = '';
+                    if (currentKey.startsWith('AIza')) {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${currentKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{
+                                        text: `You are an elite luxury expedition travel writer for Nomadller Trekking Company. Rewrite the following travel itinerary section according to this prompt: "${promptText}". Output ONLY the polished replacement text/HTML suitable for a travel itinerary without markdown backticks or explanations.\n\nOriginal content:\n${currText}`
+                                    }]
+                                }]
+                            })
+                        });
+                        const data = await res.json();
+                        if (data && data.candidates && data.candidates[0].content.parts[0].text) {
+                            newText = data.candidates[0].content.parts[0].text;
+                        } else {
+                            throw new Error(data.error ? data.error.message : 'Gemini response empty');
+                        }
+                    } else if (currentKey.startsWith('sk-')) {
+                        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentKey}` },
+                            body: JSON.stringify({
+                                model: 'gpt-4o-mini',
+                                messages: [
+                                    { role: 'system', content: 'You are an elite luxury expedition travel writer for Nomadller Trekking Company. Output ONLY the rewritten replacement text.' },
+                                    { role: 'user', content: `Rewrite the following itinerary section according to this prompt: "${promptText}"\n\nOriginal content:\n${currText}` }
+                                ]
+                            })
+                        });
+                        const data = await res.json();
+                        if (data && data.choices && data.choices[0].message.content) {
+                            newText = data.choices[0].message.content;
+                        } else {
+                            throw new Error(data.error ? data.error.message : 'OpenAI response empty');
+                        }
+                    } else {
+                        await new Promise(r => setTimeout(r, 1200));
+                        if (promptText.includes('Expand')) {
+                            newText = currText + ' Surrounded by breathtaking Himalayan vistas and crisp mountain air, this segment offers an immersive encounter with pristine alpine wilderness and unmatched expedition comfort.';
+                        } else if (promptText.includes('Concise')) {
+                            newText = currText.split('.').slice(0, 2).join('.') + '.';
+                        } else {
+                            newText = currText + ' (Enhanced with Nomadller Luxury Expedition standard).';
+                        }
+                    }
+
+                    if (newText) {
+                        newText = newText.replace(/```html|```/g, '').trim();
+                        targetTextEl.innerHTML = newText;
+                    }
+                    modal.remove();
+                } catch(err) {
+                    alert('❌ AI Generation failed: ' + err.message + '\n\nPlease check your API Key in Admin Dashboard.');
+                    btnExec.disabled = false;
+                    btnExec.innerHTML = '🚀 Generate & Apply';
+                }
+            };
+        };
+
         window.togglePdfEditMode = async function() {
             if (!window.isPdfEditMode) {
                 const inputCode = prompt('🔒 Security Verification\\n\\nPlease enter the Admin Access Code to unlock live itinerary editing:');
@@ -487,6 +620,7 @@ async function loadItinerary() {
                             toolbar.setAttribute('contenteditable', 'false');
                             const isCard = block.classList.contains('data-card');
                             toolbar.innerHTML = `
+                                <button onclick="window.openAIItemModal(this)" style="background: linear-gradient(135deg, #8a2be2, #f4a261); border: none; font-weight: 700; color: white; box-shadow: 0 0 8px rgba(138,43,226,0.6);" title="AI Rewrite / Polish section">✨ AI</button>
                                 <button onclick="window.moveToPrevPage(this)" title="Pull item back up to previous page">⬆ Prev Page</button>
                                 <button onclick="window.moveToNextPage(this)" title="Move this item and subsequent items to a new page">⬇ Next Page</button>
                                 ${isCard ? '<button onclick="window.splitDataCard(this)" style="background: rgba(230,81,0,0.85);" title="Split this card in half onto the next page">✂ Split Card</button>' : ''}
@@ -529,6 +663,13 @@ async function loadItinerary() {
 
                     let buttonGroup = btn.parentElement;
                     if (buttonGroup && !document.getElementById('pdf-undo-btn')) {
+                        const aiBtn = document.createElement('button');
+                        aiBtn.id = 'pdf-ai-btn';
+                        aiBtn.innerHTML = '✨ AI Copilot';
+                        aiBtn.title = 'Open AI Assistant to generate or rewrite itinerary content';
+                        aiBtn.style.cssText = 'background: linear-gradient(135deg, rgba(138,43,226,0.35), rgba(244,162,97,0.35)); color: #e0aaff; border: 1px solid rgba(138,43,226,0.6); border-radius: 4px; padding: 7px 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 0 12px rgba(138,43,226,0.25);';
+                        aiBtn.onclick = () => window.openAIItemModal();
+
                         const undoBtn = document.createElement('button');
                         undoBtn.id = 'pdf-undo-btn';
                         undoBtn.innerHTML = '↩ Undo';
@@ -543,9 +684,11 @@ async function loadItinerary() {
                         resetBtn.style.cssText = 'background: rgba(220,53,69,0.25); color: #ff8b8b; border: 1px solid rgba(220,53,69,0.5); border-radius: 4px; padding: 7px 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s;';
                         resetBtn.onclick = () => window.resetPdfEdit();
 
+                        buttonGroup.insertBefore(aiBtn, btn);
                         buttonGroup.insertBefore(undoBtn, btn);
                         buttonGroup.insertBefore(resetBtn, btn);
                     } else if (document.getElementById('pdf-undo-btn')) {
+                        if (document.getElementById('pdf-ai-btn')) document.getElementById('pdf-ai-btn').style.display = 'inline-flex';
                         document.getElementById('pdf-undo-btn').style.display = 'inline-flex';
                         document.getElementById('pdf-reset-btn').style.display = 'inline-flex';
                     }
@@ -828,6 +971,7 @@ async function loadItinerary() {
                     btn.style.borderColor = 'rgba(255,255,255,0.4)';
                     btn.style.boxShadow = 'none';
                 }
+                if (document.getElementById('pdf-ai-btn')) document.getElementById('pdf-ai-btn').style.display = 'none';
                 if (document.getElementById('pdf-undo-btn')) document.getElementById('pdf-undo-btn').style.display = 'none';
                 if (document.getElementById('pdf-reset-btn')) document.getElementById('pdf-reset-btn').style.display = 'none';
                 const toast = document.getElementById('pdf-edit-toast');
