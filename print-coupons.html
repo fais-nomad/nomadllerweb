@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Campaign Coupons</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        @page {
+            size: A3 portrait;
+            margin: 12mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            background-color: white;
+            color: black;
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            width: 100%;
+        }
+
+        @media print {
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                overflow: visible !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .coupons-grid {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+        }
+
+        .print-header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-family: sans-serif;
+        }
+
+        .btn-print {
+            padding: 15px 30px;
+            background: #FF6B35;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px auto;
+            display: inline-block;
+        }
+
+        /* Grid for A3 Portrait: 2 columns to fit wide landscape tickets */
+        .coupons-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15mm 10mm;
+            width: 100%;
+        }
+
+        /* The Ticket Container */
+        .ticket {
+            display: flex;
+            width: 100%;
+            min-height: 260px;
+            height: auto;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            background: #fff;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            border: 1px solid #ccc;
+        }
+
+        /* Left Panel - Dark Blue with mountain background */
+        .ticket-left {
+            background-color: #1A365D;
+            background-image: url('/images/coupon-mountain-bg.png');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            width: 40%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        
+        /* Dark overlay to keep text readable over the image */
+        .ticket-left::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(26,54,93,0.82) 0%, rgba(10,25,50,0.88) 100%);
+            pointer-events: none;
+        }
+
+        .ticket-left > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .ticket-brand {
+            font-weight: 900;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            color: #FF6B35;
+            margin-bottom: 5px;
+        }
+
+        .ticket-title {
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .ticket-title span {
+            font-size: 2.1rem;
+            font-weight: 900;
+            color: white;
+            display: block;
+            line-height: 1.1;
+            margin-top: 5px;
+        }
+
+        .ticket-desc {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        /* Middle Panel - Orange/Yellow */
+        .ticket-middle {
+            background-color: #FDB833;
+            color: #1A365D;
+            width: 25%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-left: 3px dashed rgba(255,255,255,0.5);
+            border-right: 3px dashed rgba(0,0,0,0.1);
+        }
+
+        .stars {
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            color: #1A365D;
+            margin: 10px 0;
+        }
+
+        .discount {
+            font-size: 3.2rem;
+            font-weight: 900;
+            line-height: 1;
+            margin: 5px 0 0 0;
+        }
+
+        .discount-sub {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+
+        /* Right Panel - White (QR Code) */
+        .ticket-right {
+            background-color: #F5F7FA;
+            width: 35%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            position: relative;
+        }
+
+        /* Decorative triangle cut at top of right panel */
+        .ticket-right::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 15px solid #1A365D;
+        }
+
+        .qr-title {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #666;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+        }
+        
+        .qr-container img {
+            width: 120px;
+            height: 120px;
+        }
+
+        .qr-code-text {
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #1A365D;
+            margin-top: 12px;
+            background: #E2E8F0;
+            padding: 5px 12px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print print-header">
+        <h1>Coupons Generated Successfully</h1>
+        <p>Download all coupons as a <strong>ZIP of images</strong> or send to printer directly.</p>
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+            <button class="btn-print" onclick="window.print()" style="margin: 0;">
+                <i class="ph ph-printer"></i> PRINT (A3)
+            </button>
+            <button class="btn-print" id="download-zip-btn" onclick="downloadZip()" disabled style="margin: 0; background: #1A365D; opacity: 0.7;">
+                ⏳ Loading...
+            </button>
+        </div>
+        <div id="zip-progress" style="margin-top:15px; font-size:0.9rem; color:#1A365D; display:none;">Generating images... <span id="zip-count">0</span> / <span id="zip-total">0</span></div>
+    </div>
+
+    <div class="coupons-grid" id="coupons-container">
+        <!-- Rendered by JS -->
+    </div>
+
+
+    <script>
+        // Store codes globally so downloadZip can access them
+        window._campId = null;
+        window._codes  = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('coupons-container');
+            
+            const campId = sessionStorage.getItem('print_campaign_id');
+            const codesStr = sessionStorage.getItem('print_campaign_codes');
+            
+            if (!campId || !codesStr) {
+                container.innerHTML = '<h2 style="grid-column: 1 / -1; text-align:center;">No coupons found. Please generate them from the dashboard.</h2>';
+                return;
+            }
+
+            window._campId = campId;
+            const codes = JSON.parse(codesStr);
+            window._codes = codes;
+
+            codes.forEach(code => {
+                const card = document.createElement('div');
+                card.className = 'ticket';
+                
+                const claimUrl = `${window.location.origin}/campaign.html?id=${campId}&code=${code}`;
+
+                card.innerHTML = `
+                    <div class="ticket-left">
+                        <div class="ticket-brand">NOMADLLER</div>
+                        <div class="ticket-title">EXCLUSIVE OFFER<br><span>TREK COUPON</span></div>
+                        <div class="ticket-desc">Scan the QR code to instantly unlock your special discount for the <strong style="white-space: nowrap; color: white;">Everest Base Camp trek</strong>.</div>
+                        <div style="font-size: 0.55rem; color: rgba(255,255,255,0.4); margin-top: auto; padding-top: 15px;">*Terms and Conditions apply</div>
+                    </div>
+                    <div class="ticket-middle">
+                        <div class="stars">★★★★★</div>
+                        <div class="discount">₹15K</div>
+                        <div class="discount-sub">OFF</div>
+                        <div class="stars">★★★★★</div>
+                    </div>
+                    <div class="ticket-right">
+                        <div class="qr-title">SCAN THIS QR CODE</div>
+                        <div class="qr-container" id="qr-${code}"></div>
+                        <div class="qr-code-text">${code}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+
+                new QRCode(document.getElementById(`qr-${code}`), {
+                    text: claimUrl,
+                    width: 120,
+                    height: 120,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+            });
+
+            // Give QR codes time to fully render before allowing download
+            await new Promise(r => setTimeout(r, 1000));
+            const zipBtn = document.getElementById('download-zip-btn');
+            zipBtn.disabled = false;
+            zipBtn.style.opacity = '1';
+            zipBtn.textContent = '⬇ DOWNLOAD ZIP';
+        });
+
+        window.downloadZip = async function() {
+            try {
+                const tickets = document.querySelectorAll('.ticket');
+                const btn = document.getElementById('download-zip-btn');
+                const progress = document.getElementById('zip-progress');
+                const countEl = document.getElementById('zip-count');
+                const totalEl = document.getElementById('zip-total');
+
+                if (tickets.length === 0) {
+                    alert('No coupons found! Please go back to the dashboard and generate coupons first.');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = '⏳ GENERATING 0/' + tickets.length + '...';
+                progress.style.display = 'block';
+                totalEl.textContent = tickets.length;
+                countEl.textContent = '0';
+
+                const zip = new JSZip();
+                const campId = window._campId || 'coupon';
+
+                for (let i = 0; i < tickets.length; i++) {
+                    const ticket = tickets[i];
+                    const codeEl = ticket.querySelector('.qr-code-text');
+                    const code = codeEl ? codeEl.textContent.trim().replace(/[^a-zA-Z0-9-]/g, '') : `coupon-${i + 1}`;
+
+                    const canvas = await html2canvas(ticket, {
+                        scale: 3,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#1A365D',
+                        logging: false,
+                        imageTimeout: 15000
+                    });
+
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                    zip.file(`coupon-${String(i + 1).padStart(3, '0')}-${code}.png`, blob);
+
+                    countEl.textContent = i + 1;
+                    btn.textContent = `⏳ GENERATING ${i + 1}/${tickets.length}...`;
+                    await new Promise(r => setTimeout(r, 20));
+                }
+
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                saveAs(zipBlob, `Nomadller_${campId}_Coupons.zip`);
+
+                btn.textContent = '✅ DOWNLOADED!';
+                btn.disabled = false;
+                progress.style.display = 'none';
+
+            } catch (err) {
+                console.error('downloadZip error:', err);
+                alert('Error: ' + err.message);
+                const btn = document.getElementById('download-zip-btn');
+                if (btn) { btn.disabled = false; btn.textContent = '⬇ DOWNLOAD ZIP'; }
+            }
+        };
+    </script>
+</body>
+</html>

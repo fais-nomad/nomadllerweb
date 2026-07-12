@@ -1,5 +1,6 @@
 import gsap from 'gsap';
 import { createClient } from '@supabase/supabase-js';
+import './marketing-admin.js';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;

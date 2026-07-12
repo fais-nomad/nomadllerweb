@@ -117,6 +117,10 @@
 <i class="ph ph-calculator"></i>
                     Costing
                 </a>
+<a class="nav-item" href="#" id="nav-marketing">
+<i class="ph ph-megaphone"></i>
+                    Marketing &amp; Campaigns
+                </a>
 </nav>
 <div style="padding: 1.5rem;">
 <button class="btn" id="logout-btn" style="width: 100%; padding: 0.8rem; font-size: 0.8rem; margin-top: 0; background: transparent; border: 1px solid var(--admin-border);">
@@ -1167,6 +1171,115 @@
 </div>
 </div>
 </div>
+<!-- MARKETING VIEW -->
+<div id="marketing-view-section" style="display: none;">
+
+    <!-- ==============================
+         CAMPAIGNS LIST VIEW
+         ============================== -->
+    <div id="campaigns-list-view">
+
+        <!-- Add Campaign Form -->
+        <div class="trip-form">
+            <div class="section-header">
+                <h3>Add New Campaign</h3>
+            </div>
+            <form id="add-campaign-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="campaignId">Campaign ID (slug)</label>
+                        <input id="campaignId" placeholder="e.g. decathlon-ebc" required type="text"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="campaignName">Campaign Name</label>
+                        <input id="campaignName" placeholder="e.g. Decathlon Everest Base Camp" required type="text"/>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="campaignSuccessMsg">Success Message</label>
+                        <textarea id="campaignSuccessMsg" placeholder="e.g. You got 15000 flat discount..." required rows="3"></textarea>
+                    </div>
+                </div>
+                <button class="submit-btn" id="create-campaign-btn" type="submit">CREATE CAMPAIGN</button>
+            </form>
+        </div>
+
+        <!-- Campaigns Table -->
+        <div class="recent-orders" style="margin-top: 2rem;">
+            <div class="section-header">
+                <h3>All Campaigns</h3>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="campaigns-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div> <!-- end campaigns-list-view -->
+
+    <!-- ==============================
+         CAMPAIGN DETAIL VIEW
+         ============================== -->
+    <div id="campaign-detail-view" style="display: none;">
+
+        <!-- Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button id="btn-back-to-campaigns" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">← Back</button>
+                <div>
+                    <h2 id="detail-camp-name" style="margin: 0; color: white; font-size: 1.5rem;"></h2>
+                    <span id="detail-camp-status" style="font-size: 0.9rem; font-weight: 700;"></span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                <button id="btn-detail-coupons" style="background: #FF6B35; color: white; border: none; padding: 0.55rem 1.1rem; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem;">🖨 Print Coupons</button>
+                <button id="btn-detail-edit" style="background: var(--admin-primary); color: white; border: none; padding: 0.55rem 1.1rem; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem;">✏️ Edit Name</button>
+                <button id="btn-detail-stop" style="background: #6c757d; color: white; border: none; padding: 0.55rem 1.1rem; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem;">⏸ Stop Campaign</button>
+                <button id="btn-detail-delete" style="background: #dc3545; color: white; border: none; padding: 0.55rem 1.1rem; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem;">🗑 Delete</button>
+            </div>
+        </div>
+
+        <!-- Registrations Table -->
+        <div class="recent-orders">
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>Registrations</h3>
+                <span style="background: var(--admin-primary); color: black; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem;">
+                    <span id="detail-leads-count">0</span> total
+                </span>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Coupon Code</th>
+                            <th>Claimed At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detail-leads-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div> <!-- end campaign-detail-view -->
+
+</div> <!-- End MARKETING VIEW -->
+
 </main>
 </div>
 <!-- Guest Details Modal -->
