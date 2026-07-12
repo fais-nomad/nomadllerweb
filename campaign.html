@@ -254,6 +254,86 @@
             min-height: 250px;
         }
 
+        .tc-checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+
+        .tc-checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--orange);
+        }
+
+        .tc-link {
+            color: var(--orange);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .tc-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .tc-modal-content {
+            background: #111;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: scaleIn 0.3s ease;
+        }
+
+        .tc-modal-content h3 {
+            margin-top: 0;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .tc-modal-content ul {
+            padding-left: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .tc-modal-content li {
+            margin-bottom: 0.8rem;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+
+        .tc-close-btn {
+            background: var(--orange);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+
         .error-view {
             display: none;
             flex-direction: column;
@@ -361,6 +441,11 @@
                     <input type="tel" id="guest-phone" placeholder="e.g. +91 98765 43210" required autocomplete="tel">
                 </div>
 
+                <div class="tc-checkbox-group">
+                    <input type="checkbox" id="tc-checkbox" required>
+                    <label for="tc-checkbox">I agree to the <span class="tc-link" id="open-tc-btn">Terms & Conditions</span></label>
+                </div>
+
                 <button type="submit" class="btn-submit" id="submit-btn">
                     CLAIM REWARD
                     <i class="ph ph-arrow-right" style="font-size: 1.2rem;"></i>
@@ -397,6 +482,50 @@
         </div>
     </div>
 
+    <!-- Terms & Conditions Modal -->
+    <div class="tc-modal" id="tc-modal">
+        <div class="tc-modal-content">
+            <h3>Coupon Terms & Conditions</h3>
+            <ul>
+                <li>This coupon is valid from 15 July to 25 October.</li>
+                <li>The coupon is applicable only for the Nomadeller Everest Base Camp Comfort Package scheduled for the first week of November.</li>
+                <li>The coupon must be redeemed before the expiry date.</li>
+                <li>To redeem the coupon, scan the QR code or contact us using the details provided on the coupon.</li>
+                <li>This coupon is non-transferable and cannot be exchanged for cash.</li>
+                <li>Nomadeller reserves the right to modify or withdraw this offer without prior notice.</li>
+            </ul>
+            <button class="tc-close-btn" id="close-tc-btn">Understood</button>
+        </div>
+    </div>
+
     <script type="module" src="/src/marketing.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tcModal = document.getElementById('tc-modal');
+            const openTcBtn = document.getElementById('open-tc-btn');
+            const closeTcBtn = document.getElementById('close-tc-btn');
+
+            if (openTcBtn && tcModal) {
+                openTcBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    tcModal.style.display = 'flex';
+                });
+            }
+
+            if (closeTcBtn && tcModal) {
+                closeTcBtn.addEventListener('click', () => {
+                    tcModal.style.display = 'none';
+                });
+            }
+
+            // Close on outside click
+            window.addEventListener('click', (e) => {
+                if (e.target === tcModal) {
+                    tcModal.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
