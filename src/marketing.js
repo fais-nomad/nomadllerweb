@@ -117,6 +117,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             formView.style.display = 'none';
             successMessageText.innerHTML = campaign.success_message;
             successCoupon.textContent = generatedCoupon;
+            
+            // Set WhatsApp link
+            const whatsappBtn = document.getElementById('whatsapp-booking-btn');
+            if (whatsappBtn) {
+                const message = encodeURIComponent(`Hi, I would like to book a trip. My name is ${name} and my coupon code is ${generatedCoupon}.`);
+                whatsappBtn.href = `https://wa.me/918590171767?text=${message}`;
+            }
+
             successView.style.display = 'block';
 
             // Fire confetti
