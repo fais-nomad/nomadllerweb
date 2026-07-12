@@ -29,6 +29,8 @@ export default defineConfig({
         annapurnaTemplate: resolve(__dirname, 'annapurna_luxury_template.html'),
         valleyTemplate: resolve(__dirname, 'valley_of_flowers_template.html'),
         affordableEbc: resolve(__dirname, 'affordable-everest-base-camp-trek-kerala.html'),
+        campaign: resolve(__dirname, 'campaign.html'),
+        printCoupons: resolve(__dirname, 'print-coupons.html'),
       },
       output: {
         manualChunks(id) {

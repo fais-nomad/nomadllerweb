@@ -9,7 +9,11 @@
     { "source": "/agent-fixed-departures", "destination": "/agent-fixed-departures.html" },
     { "source": "/agent-bookings", "destination": "/agent-bookings.html" },
     { "source": "/agent-costing", "destination": "/agent-costing.html" },
-    { "source": "/policies", "destination": "/policies.html" }
+    { "source": "/policies", "destination": "/policies.html" },
+    { "source": "/campaign", "destination": "/campaign.html" },
+    { "source": "/campaign.html", "destination": "/campaign.html" },
+    { "source": "/print-coupons", "destination": "/print-coupons.html" },
+    { "source": "/print-coupons.html", "destination": "/print-coupons.html" }
   ],
   "headers": [
     {
