@@ -5,14 +5,37 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+export function getTripCategory(trip) {
+    const text = ((trip.title || '') + ' ' + (trip.subtitle || '') + ' ' + (trip.difficulty || '')).toLowerCase();
+    if (text.includes('arctic') || text.includes('russia') || text.includes('malaysia') || text.includes('kyrgyzstan')) {
+        return 'international';
+    }
+    if (text.includes('bali') || text.includes('couple') || text.includes('kerala') || text.includes('munnar') || text.includes('lakshadweep') || text.includes('spiti')) {
+        return 'leisure';
+    }
+    return 'himalayas';
+}
+
+function getDifficultyBadge(diff) {
+    const d = (diff || '').toLowerCase();
+    if (d.includes('easy') || d.includes('leisure') || d.includes('wellness')) {
+        return `<span class="gx-badge gx-badge-easy">Easy / Wellness</span>`;
+    }
+    if (d.includes('hard') || d.includes('difficult') || d.includes('challenging') || d.includes('extreme') || d.includes('expert')) {
+        return `<span class="gx-badge gx-badge-hard">Challenging</span>`;
+    }
+    return `<span class="gx-badge gx-badge-mod">Moderate</span>`;
+}
+
 export async function loadPackagesGrid() {
     const container = document.getElementById('packages-grid-container');
     if (!container) return;
 
-    // Show a loading skeleton/spinner while fetching from Supabase
+    // Show Goxom Skeleton
     container.innerHTML = `
-        <div style="width: 100%; text-align: center; padding: 50px 0;">
-            <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: var(--accent); animation: spin 1s ease-in-out infinite;"></div>
+        <div style="width: 100%; text-align: center; padding: 60px 0;">
+            <div style="display: inline-block; width: 44px; height: 44px; border: 3px solid rgba(23, 189, 84, 0.2); border-radius: 50%; border-top-color: #17BD54; animation: spin 0.8s linear infinite;"></div>
+            <p style="margin-top: 15px; color: #64748b; font-size: 0.95rem; font-weight: 600;">Loading Expeditions...</p>
             <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
         </div>
     `;
@@ -25,104 +48,142 @@ export async function loadPackagesGrid() {
 
         if (error) throw error;
         
-        window.allTrips = trips;
+        window.allTrips = trips || [];
 
         if (!trips || trips.length === 0) {
-            container.innerHTML = '<p style="text-align:center; width:100%; color:var(--text-secondary);">No expeditions available at the moment. Please check back later.</p>';
+            container.innerHTML = '<p style="text-align:center; width:100%; padding: 40px; color:#64748b;">No expeditions available at the moment. Please check back later.</p>';
             return;
         }
 
-        let html = '';
-        trips.forEach(trip => {
-            // Generate list items for highlights
-            let highlightsHtml = '';
-            if (trip.highlights && Array.isArray(trip.highlights)) {
-                highlightsHtml = trip.highlights.map(h => `<li>${h}</li>`).join('');
-            }
+        // Setup filter tabs
+        setupFilterTabs(container, trips);
 
-            const isAnnapurna = trip.title.toLowerCase().includes('annapurna');
-            const isValley = trip.title.toLowerCase().includes('valley of flowers');
-            let viewLink = `/itinerary?id=${trip.id}`;
-            let dlLink = `/itinerary?id=${trip.id}&download=true`;
+        // Render cards
+        renderCards(container, trips, 'all');
 
-            if (isAnnapurna) {
-                viewLink = '/annapurna_luxury_template';
-                dlLink = '/Annapurna_Circuit_Itinerary.pdf';
-            } else if (isValley) {
-                viewLink = '/valley_of_flowers_template';
-                dlLink = '/Valley_of_Flowers_Itinerary.pdf';
-            }
+    } catch (err) {
+        console.error('Error fetching packages:', err);
+        container.innerHTML = `
+            <div style="text-align:center; width:100%; padding: 40px; color: #64748b;">
+                <p style="color: #ef4444; font-weight: 600; margin-bottom: 8px;">Unable to load expeditions.</p>
+                <button onclick="window.loadPackagesGrid()" class="gx-btn gx-btn-primary" style="margin-top: 10px;">Retry Loading</button>
+            </div>
+        `;
+    }
+}
 
-            const coverParts = (trip.cover_image_url || '').split('|');
-            const frontCover = coverParts[0] && coverParts[0].trim() !== '' ? coverParts[0] : '/images/placeholder.jpg';
+function setupFilterTabs(container, trips) {
+    const filtersContainer = document.getElementById('package-filters');
+    if (!filtersContainer) return;
 
-            html += `
-                <div class="package-card reveal">
-                    <img src="${frontCover}" class="package-image" alt="${trip.title}" loading="lazy">
-                    <div class="package-meta">
-                        <span>${trip.duration || 'N/A'}</span>
-                        <span>${trip.difficulty || 'N/A'}</span>
+    const counts = {
+        all: trips.length,
+        himalayas: trips.filter(t => getTripCategory(t) === 'himalayas').length,
+        leisure: trips.filter(t => getTripCategory(t) === 'leisure').length,
+        international: trips.filter(t => getTripCategory(t) === 'international').length
+    };
+
+    filtersContainer.innerHTML = `
+        <button class="gx-filter-pill active" data-cat="all">All Expeditions <span>(${counts.all})</span></button>
+        <button class="gx-filter-pill" data-cat="himalayas">🏔️ Himalayan Treks <span>(${counts.himalayas})</span></button>
+        <button class="gx-filter-pill" data-cat="leisure">🌴 Tropical & Couples <span>(${counts.leisure})</span></button>
+        <button class="gx-filter-pill" data-cat="international">✈️ International & Arctic <span>(${counts.international})</span></button>
+    `;
+
+    filtersContainer.querySelectorAll('.gx-filter-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+            filtersContainer.querySelectorAll('.gx-filter-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const cat = btn.getAttribute('data-cat');
+            renderCards(container, window.allTrips || trips, cat);
+        });
+    });
+}
+
+export function renderCards(container, trips, category = 'all') {
+    const filteredTrips = category === 'all' 
+        ? trips 
+        : trips.filter(t => getTripCategory(t) === category);
+
+    if (filteredTrips.length === 0) {
+        container.innerHTML = '<p style="text-align:center; width:100%; padding: 50px 20px; color:#64748b; font-size:1.05rem;">No expeditions found in this category.</p>';
+        return;
+    }
+
+    let html = '';
+    filteredTrips.forEach(trip => {
+        let highlightsHtml = '';
+        if (trip.highlights && Array.isArray(trip.highlights) && trip.highlights.length > 0) {
+            highlightsHtml = `
+                <ul class="gx-tour-highlights">
+                    ${trip.highlights.slice(0, 2).map(h => `
+                        <li>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#17BD54" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>${h}</span>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        }
+
+        const coverParts = (trip.cover_image_url || '').split('|');
+        const frontCover = coverParts[0] && coverParts[0].trim() !== '' ? coverParts[0] : '/images/everest.webp';
+        const formattedCost = trip.cost ? `₹${parseFloat(trip.cost).toLocaleString('en-IN')}` : 'Custom Pricing';
+        const diffBadge = getDifficultyBadge(trip.difficulty);
+        const durationText = trip.duration || 'Custom Days';
+        const whatsappMsg = encodeURIComponent(`Hi Nomadller! I would like to book or inquire about the "${trip.title}" (${trip.duration || ''}) expedition.`);
+
+        html += `
+            <article class="gx-tour-card" data-category="${getTripCategory(trip)}">
+                <div class="gx-tour-media">
+                    <img src="${frontCover}" alt="${trip.title}" class="gx-tour-img" loading="lazy">
+                    <div class="gx-tour-badges">
+                        <span class="gx-badge gx-badge-duration">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                            ${durationText}
+                        </span>
+                        ${diffBadge}
                     </div>
-                    <h3>${trip.title}</h3>
-                    <p>${trip.subtitle || ''}</p>
-                    <ul class="package-highlights">
-                        ${highlightsHtml}
-                    </ul>
-                    <div style="margin-top: auto;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                            <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Expedition Cost</span>
-                            <span style="color: var(--accent); font-size: 1.5rem; font-weight: 700; font-family: 'Playfair Display', serif;">₹${parseFloat(trip.cost).toLocaleString('en-IN')}</span>
+                </div>
+                <div class="gx-tour-body">
+                    <div class="gx-tour-meta-row">
+                        <span class="gx-stars">★★★★★</span>
+                        <span class="gx-rating-score">5.0 (Nomadller Verified)</span>
+                    </div>
+                    <h3 class="gx-tour-title" title="${trip.title}">
+                        <a href="javascript:void(0)" onclick="window.showTripDetails('${trip.id}')">${trip.title}</a>
+                    </h3>
+                    <p class="gx-tour-subtitle">${trip.subtitle || 'Guided High-Altitude & Adventure Circuit'}</p>
+                    
+                    ${highlightsHtml}
+
+                    <div class="gx-tour-footer">
+                        <div class="gx-tour-price-block">
+                            <span class="gx-price-label">Per Person</span>
+                            <span class="gx-price-val">${formattedCost}</span>
                         </div>
-                        <div style="display: flex; gap: 10px; margin-top: 1rem;">
-                            <button class="btn btn-primary" style="flex: 1; border: 1px solid var(--accent); background: var(--accent); color: white;" onclick="window.showTripDetails('${trip.id}')">VIEW DETAILS</button>
-                            <a href="${viewLink}" target="_blank" class="btn" style="flex: 1; border: 1px solid var(--text-primary); background: transparent; color: var(--text-primary); text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                ITINERARY
+                        <div class="gx-tour-actions">
+                            <button class="gx-btn gx-btn-details" onclick="window.showTripDetails('${trip.id}')">
+                                Details
+                            </button>
+                            <a href="https://wa.me/916238998382?text=${whatsappMsg}" target="_blank" rel="noopener noreferrer" class="gx-btn gx-btn-book">
+                                Book Now
                             </a>
                         </div>
                     </div>
                 </div>
-            `;
-        });
+            </article>
+        `;
+    });
 
-        container.innerHTML = html;
-
-        // Re-trigger scroll animations for the new elements
-        Promise.all([
-            import('gsap'),
-            import('gsap/ScrollTrigger')
-        ]).then(([gsapModule, scrollTriggerModule]) => {
-            const gsap = gsapModule.default || gsapModule;
-            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-            
-            // Animate the newly injected cards much faster
-            gsap.fromTo(container.querySelectorAll('.package-card'), 
-                { opacity: 0, y: 20 },
-                { 
-                    opacity: 1, 
-                    y: 0, 
-                    stagger: 0.05, 
-                    duration: 0.4, 
-                    ease: 'power2.out',
-                    scrollTrigger: {
-                        trigger: container,
-                        start: 'top 95%',
-                        toggleActions: 'play none none none'
-                    }
-                }
-            );
-            
-            ScrollTrigger.refresh();
-        });
-
-    } catch (err) {
-        console.error('Error fetching packages:', err);
-        container.innerHTML = '<p style="text-align:center; width:100%; color:red;">Error loading expeditions. Please refresh the page.</p>';
-    }
+    container.innerHTML = html;
 }
 
+window.loadPackagesGrid = loadPackagesGrid;
+
+// Modal handler
 window.showTripDetails = function(tripId) {
-    const trip = window.allTrips.find(t => t.id === tripId);
+    const trip = (window.allTrips || []).find(t => t.id === tripId);
     if (!trip) return;
 
     const modalBody = document.getElementById('trip-modal-body');
@@ -140,50 +201,73 @@ window.showTripDetails = function(tripId) {
         } else if (Array.isArray(trip.itinerary)) {
             tempDays = trip.itinerary;
         }
-        itinerarySummary = tempDays.map(d => `<tr><td>${d.day < 10 ? '0'+d.day : d.day}</td><td>${d.title}</td></tr>`).join('');
+        if (tempDays.length > 0) {
+            itinerarySummary = tempDays.map(d => `
+                <div class="gx-itin-step">
+                    <div class="gx-itin-day-badge">Day ${d.day < 10 ? '0'+d.day : d.day}</div>
+                    <div class="gx-itin-info">
+                        <h4>${d.title || 'Day ' + d.day}</h4>
+                        ${d.desc ? `<p>${d.desc}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
     }
 
-    const isAnnapurna = trip.title.toLowerCase().includes('annapurna');
-    const isValley = trip.title.toLowerCase().includes('valley of flowers');
+    const isAnnapurna = (trip.title || '').toLowerCase().includes('annapurna');
+    const isValley = (trip.title || '').toLowerCase().includes('valley of flowers');
     let viewLink = `/itinerary?id=${trip.id}`;
     if (isAnnapurna) viewLink = '/annapurna_luxury_template';
     if (isValley) viewLink = '/valley_of_flowers_template';
 
+    const formattedCost = trip.cost ? `₹${parseFloat(trip.cost).toLocaleString('en-IN')}` : 'Custom Pricing';
+    const whatsappMsg = encodeURIComponent(`Hi Nomadller! I want to inquire and reserve a slot for the "${trip.title}" (${trip.duration || ''}) expedition.`);
+
     modalBody.innerHTML = `
-        <h2>🏔️ ${trip.title}: ${trip.duration}</h2>
-        <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; font-weight: bold;">
-            <span>Price:</span>
-            <span style="color: var(--accent);">₹${parseFloat(trip.cost).toLocaleString('en-IN')}</span>
-        </div>
-        <p>${trip.subtitle || 'A signature Nomadller Expedition.'}</p>
-        
-        <h3>Daily Overview</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Day</th>
-                    <th>Highlight</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${itinerarySummary || '<tr><td colspan="2">Detailed itinerary available in PDF.</td></tr>'}
-            </tbody>
-        </table>
-
-        <h3>🎒 Package Overview</h3>
-        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 250px;">
-                <h4 style="color: var(--accent-alt);">✅ Inclusions:</h4>
-                <ul>${inclusionsHtml || '<li>All standard inclusions as per Nomadller policy</li>'}</ul>
-            </div>
-            <div style="flex: 1; min-width: 250px;">
-                <h4 style="color: var(--accent);">❌ Exclusions:</h4>
-                <ul>${exclusionsHtml || '<li>Flights, Visa, Personal expenses</li>'}</ul>
+        <div class="gx-modal-header">
+            <span class="gx-badge gx-badge-duration" style="margin-bottom:10px; display:inline-block;">⏱️ ${trip.duration || 'Flexible Days'}</span>
+            <h2>${trip.title}</h2>
+            <p>${trip.subtitle || 'Signature Nomadller Expedition'}</p>
+            <div class="gx-modal-price-box">
+                <div>
+                    <span style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:600;">Expedition Price</span>
+                    <div style="font-size:1.6rem; font-weight:800; color:#17BD54;">${formattedCost}</div>
+                </div>
+                <a href="https://wa.me/916238998382?text=${whatsappMsg}" target="_blank" rel="noopener noreferrer" class="gx-btn gx-btn-primary">
+                    Reserve via WhatsApp
+                </a>
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
-            <a href="${viewLink}" target="_blank" class="pdf-download-btn">📝 View Full Luxury Itinerary</a>
+        <div class="gx-modal-section">
+            <h3>Day-by-Day Itinerary</h3>
+            <div class="gx-itin-timeline">
+                ${itinerarySummary || '<p style="color:#64748b;">Complete itinerary overview available on PDF inquiry.</p>'}
+            </div>
+        </div>
+
+        <div class="gx-modal-grid-2">
+            <div class="gx-inc-box">
+                <h4>✅ What is Included:</h4>
+                <ul>
+                    ${inclusionsHtml || '<li>All accommodation, certified guides, permits & local logistics</li>'}
+                </ul>
+            </div>
+            <div class="gx-exc-box">
+                <h4>❌ What is Excluded:</h4>
+                <ul>
+                    ${exclusionsHtml || '<li>International/Domestic flights, personal travel insurance, personal expenses</li>'}
+                </ul>
+            </div>
+        </div>
+
+        <div class="gx-modal-actions">
+            <a href="${viewLink}" target="_blank" class="gx-btn gx-btn-outline">
+                📄 Full Itinerary Document
+            </a>
+            <a href="https://wa.me/916238998382?text=${whatsappMsg}" target="_blank" rel="noopener noreferrer" class="gx-btn gx-btn-primary">
+                Chat with Expedition Leader
+            </a>
         </div>
     `;
 

@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+dist/
+website/dist/
+website/node_modules/
+.env
+website/.env
+.venv/
+venv/
+website/.venv/
+website/venv/

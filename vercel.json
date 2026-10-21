@@ -1,0 +1,55 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "website/dist",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/guest-form", "destination": "/guest-form.html" },
+    { "source": "/agent-login", "destination": "/agent-login.html" },
+    { "source": "/agent-dashboard", "destination": "/agent-dashboard.html" },
+    { "source": "/agent-fixed-departures", "destination": "/agent-fixed-departures.html" },
+    { "source": "/agent-bookings", "destination": "/agent-bookings.html" },
+    { "source": "/agent-costing", "destination": "/agent-costing.html" },
+    { "source": "/policies", "destination": "/policies.html" },
+    { "source": "/campaign", "destination": "/campaign.html" },
+    { "source": "/campaign.html", "destination": "/campaign.html" },
+    { "source": "/print-coupons", "destination": "/print-coupons.html" },
+    { "source": "/print-coupons.html", "destination": "/print-coupons.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "unsafe-none"
+        }
+      ]
+    }
+  ]
+}

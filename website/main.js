@@ -2,52 +2,65 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 
-// Delay initialization to unblock main thread for Mobile PageSpeed
-setTimeout(() => {
-  // Initialize Lenis
-  const lenis = new Lenis({
-    duration: 1.2,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    smoothWheel: true,
-  });
+// Register ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
 
-  function raf(time) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  }
+// Initialize Lenis with GSAP sync
+const lenis = new Lenis({
+  duration: 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smoothWheel: true,
+});
 
-  requestAnimationFrame(raf);
-}, 100);
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add((time) => {
+  lenis.raf(time * 1000);
+});
+gsap.ticker.lagSmoothing(0);
 
-// Mobile Menu Toggle
+// Mobile Menu Toggle (Legacy Guarded + Goxom)
 const menuToggle = document.querySelector('.menu-toggle');
 const navLinks = document.querySelector('.nav-links');
-
-menuToggle.addEventListener('click', () => {
-  menuToggle.classList.toggle('active');
-  navLinks.classList.toggle('active');
-});
-
-// Close menu when a link is clicked
-document.querySelectorAll('.nav-links a').forEach(link => {
-  link.addEventListener('click', () => {
-    menuToggle.classList.remove('active');
-    navLinks.classList.remove('active');
+if (menuToggle && navLinks) {
+  menuToggle.addEventListener('click', () => {
+    menuToggle.classList.toggle('active');
+    navLinks.classList.toggle('active');
   });
-});
 
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+      menuToggle.classList.remove('active');
+      navLinks.classList.remove('active');
+    });
+  });
+}
+
+// Goxom Mobile Menu Toggle
+const gxMobileToggle = document.getElementById('gx-mobile-toggle');
+const gxNavMenu = document.getElementById('gx-nav-menu');
+if (gxMobileToggle && gxNavMenu) {
+  gxMobileToggle.addEventListener('click', () => {
+    gxNavMenu.classList.toggle('active');
+  });
+
+  gxNavMenu.querySelectorAll('.gx-nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      gxNavMenu.classList.remove('active');
+    });
+  });
+}
+
+// Header Scroll Effect
 const nav = document.querySelector('nav');
+const gxHeader = document.getElementById('gx-header');
 
 window.addEventListener('scroll', () => {
-  if (window.scrollY > 50) {
-    nav.classList.add('scrolled');
-  } else {
-    nav.classList.remove('scrolled');
-  }
+  const isScrolled = window.scrollY > 40;
+  if (nav) nav.classList.toggle('scrolled', isScrolled);
+  if (gxHeader) gxHeader.classList.toggle('scrolled', isScrolled);
 });
 
-// Register ScrollTrigger
-gsap.registerPlugin(ScrollTrigger);
+
 
 // Hero Parallax
 gsap.to('.hero-slider', {
@@ -226,13 +239,15 @@ const prevBtn = document.getElementById('prev-btn');
 
 if (grid && nextBtn && prevBtn) {
   nextBtn.addEventListener('click', () => {
-    const cardWidth = grid.querySelector('.package-card').offsetWidth + 32; // width + gap
-    grid.scrollBy({ left: cardWidth, behavior: 'smooth' });
+    const card = grid.querySelector('.package-card');
+    const scrollAmount = card ? (card.offsetWidth + 28) : 380;
+    grid.scrollBy({ left: scrollAmount, behavior: 'smooth' });
   });
 
   prevBtn.addEventListener('click', () => {
-    const cardWidth = grid.querySelector('.package-card').offsetWidth + 32; // width + gap
-    grid.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+    const card = grid.querySelector('.package-card');
+    const scrollAmount = card ? (card.offsetWidth + 28) : 380;
+    grid.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
   });
 }
 
@@ -270,11 +285,65 @@ if (whyGrid && whyNext && whyPrev) {
   });
 }
 
-import { loadPackagesGrid } from './src/packages.js';
+import { loadPackagesGrid, renderCards, getTripCategory } from './src/packages.js';
 
 // Load dynamic packages if we are on the homepage
 if (document.getElementById('packages-grid-container')) {
   loadPackagesGrid();
 }
 
-console.log('Nomadller Website Initialized');
+// Goxom Search Engine Handler
+window.handleSearchSubmit = function() {
+  const destSelect = document.getElementById('search-dest');
+  const typeSelect = document.getElementById('search-activity') || document.getElementById('search-type');
+  const container = document.getElementById('packages-grid-container');
+  
+  if (!container || !window.allTrips) return;
+  
+  const destVal = (destSelect ? destSelect.value : '').toLowerCase().trim();
+  const typeVal = (typeSelect ? typeSelect.value : '').toLowerCase().trim();
+
+  let results = [...window.allTrips];
+
+  if (destVal && destVal !== 'all' && destVal !== '') {
+    results = results.filter(t => {
+      const fullText = ((t.title || '') + ' ' + (t.subtitle || '') + ' ' + (t.difficulty || '')).toLowerCase();
+      return fullText.includes(destVal);
+    });
+  }
+
+  if (typeVal && typeVal !== 'all' && typeVal !== '') {
+    results = results.filter(t => {
+      const cat = getTripCategory(t);
+      if (cat === typeVal) return true;
+      const fullText = ((t.title || '') + ' ' + (t.subtitle || '') + ' ' + (t.difficulty || '')).toLowerCase();
+      return fullText.includes(typeVal);
+    });
+  }
+
+  // Smooth scroll to expeditions
+  const expSection = document.getElementById('expeditions');
+  if (expSection) {
+    expSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Highlight 'All Expeditions' pill
+  const filterPills = document.querySelectorAll('.gx-filter-pill');
+  filterPills.forEach(p => p.classList.remove('active'));
+  const allPill = document.querySelector('.gx-filter-pill[data-cat="all"]');
+  if (allPill) allPill.classList.add('active');
+
+  renderCards(container, results, 'all');
+};
+
+// Destination Card Click Quick Filter
+window.filterByDestination = function(dest) {
+  const destSelect = document.getElementById('search-dest');
+  if (destSelect) {
+    destSelect.value = dest;
+  }
+  window.handleSearchSubmit();
+};
+
+console.log('Nomadller Goxom Travel Website Initialized');
+

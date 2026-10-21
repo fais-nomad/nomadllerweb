@@ -2364,18 +2364,24 @@ window.calculateCostingTotal = () => {
     total += guideTotal;
 
     // Porter Allocation
-    const porterCount = Math.floor(pax / 2);
+    const porterSelection = document.getElementById('calc-porter') ? document.getElementById('calc-porter').value : 'Yes';
+    let porterCount = 0;
     let porterCostPerDay = 0;
-    if (costingCache.porters.length > 0) {
-        porterCostPerDay = parseFloat(costingCache.porters[0].cost_per_day) || 0;
+    let porterDays = 0;
+    let porterTotal = 0;
+    if (porterSelection !== 'No') {
+        porterCount = Math.floor(pax / 2);
+        if (costingCache.porters.length > 0) {
+            porterCostPerDay = parseFloat(costingCache.porters[0].cost_per_day) || 0;
+        }
+        porterDays = (cCode === 'gokyo' || cCode === 'ebc-gokyo') ? Math.max(1, days - 1) : Math.max(1, days - 3);
+        if (cCode === 'abc') {
+            porterDays = 7;
+        } else if (cCode.includes('annapurna')) {
+            porterDays = 15;
+        }
+        porterTotal = porterCostPerDay * porterCount * porterDays;
     }
-    let porterDays = (cCode === 'gokyo' || cCode === 'ebc-gokyo') ? Math.max(1, days - 1) : Math.max(1, days - 3);
-    if (cCode === 'abc') {
-        porterDays = 7;
-    } else if (cCode.includes('annapurna')) {
-        porterDays = 15;
-    }
-    const porterTotal = porterCostPerDay * porterCount * porterDays;
     
     const pPaxEl = document.getElementById('calc-porter-pax');
     if (pPaxEl) pPaxEl.textContent = pax;
@@ -2431,11 +2437,14 @@ window.calculateCostingTotal = () => {
 
         let lunchesSum = 0;
         let lunchesHtml = '';
-        costingCache.lunches.forEach(l => {
-            const cost = parseFloat(l.cost) || 0;
-            lunchesSum += cost;
-            lunchesHtml += `<div style="display: flex; align-items: center; gap: 0.5rem;"><i class="ph-fill ph-check-circle" style="color: var(--admin-primary);"></i> ${l.place} (NPR ${cost})</div>`;
-        });
+        const lunchSelection = document.getElementById('calc-lunch') ? document.getElementById('calc-lunch').value : 'Yes';
+        if (lunchSelection !== 'No') {
+            costingCache.lunches.forEach(l => {
+                const cost = parseFloat(l.cost) || 0;
+                lunchesSum += cost;
+                lunchesHtml += `<div style="display: flex; align-items: center; gap: 0.5rem;"><i class="ph-fill ph-check-circle" style="color: var(--admin-primary);"></i> ${l.place} (NPR ${cost})</div>`;
+            });
+        }
         const lunchesContainer = document.getElementById('calc-lunches-container');
         if (lunchesContainer) lunchesContainer.innerHTML = lunchesHtml || 'No lunches added.';
 
@@ -2989,6 +2998,8 @@ window.calculateCostingTotal = () => {
 document.getElementById('calc-pax')?.addEventListener('input', calculateCostingTotal);
 document.getElementById('calc-days')?.addEventListener('input', calculateCostingTotal);
 document.getElementById('calc-meal-inclusion')?.addEventListener('change', calculateCostingTotal);
+document.getElementById('calc-porter')?.addEventListener('change', calculateCostingTotal);
+document.getElementById('calc-lunch')?.addEventListener('change', calculateCostingTotal);
 document.getElementById('calc-flight-opt')?.addEventListener('change', (e) => {
     document.getElementById('calc-ramechhap-mode-group').style.display = e.target.value === 'Ramechhap' ? 'block' : 'none';
     calculateCostingTotal();
