@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS college_trips (
     destination TEXT NOT NULL,
     dates TEXT NOT NULL,
     duration TEXT NOT NULL,
-    coaches TEXT,
     lead_faculty TEXT,
     faculty_phone TEXT,
     nomad_guide TEXT,
@@ -23,6 +22,21 @@ CREATE TABLE IF NOT EXISTS college_trips (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Schema migration if table was already created with older schema:
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS dates TEXT;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS duration TEXT;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS lead_faculty TEXT;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS faculty_phone TEXT;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS nomad_guide TEXT;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS nomad_phone TEXT;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS emergency_helpline TEXT;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS itinerary_data JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS inclusions JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS exclusions JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS packing_list JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE college_trips ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now());
+ALTER TABLE college_trips DROP COLUMN IF EXISTS coaches;
 
 -- 2. Create college_students table
 CREATE TABLE IF NOT EXISTS college_students (

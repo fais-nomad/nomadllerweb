@@ -24,7 +24,6 @@ function renderHeroMetadata(trip) {
   const elDesc = document.getElementById('hero-trip-desc');
   const elDates = document.getElementById('hero-trip-dates');
   const elDuration = document.getElementById('hero-trip-duration');
-  const elCoaches = document.getElementById('hero-trip-coaches');
   const elHelpline = document.getElementById('hero-trip-helpline');
 
   if (elCollege) elCollege.textContent = trip.college_name || 'College Youth Expedition';
@@ -32,7 +31,6 @@ function renderHeroMetadata(trip) {
   if (elDesc) elDesc.textContent = `${trip.destination}. Comprehensive itinerary, verified safety guidelines, and live tracking for students, faculty, and parents.`;
   if (elDates) elDates.textContent = trip.dates || 'Upcoming';
   if (elDuration) elDuration.textContent = trip.duration || '5 Nights / 6 Days';
-  if (elCoaches) elCoaches.textContent = trip.coaches || 'Luxury AC Coaches';
   if (elHelpline) elHelpline.textContent = trip.emergency_helpline || '+91 62389 98382';
 }
 

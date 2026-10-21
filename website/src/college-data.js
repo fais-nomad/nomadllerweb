@@ -19,7 +19,6 @@ export const INITIAL_TRIP_DATA = {
   destination: 'Manali • Solang Snow Valley • Kasol • Tosh Trek',
   duration: '5 Nights / 6 Days',
   dates: 'Nov 12 - Nov 17, 2026',
-  coaches: '2 Luxury AC Air-Suspension BharatBenz Coaches',
   lead_faculty: 'Prof. K. Rajagopal (HOD)',
   faculty_phone: '+91 98470 12345',
   nomad_guide: 'Arjun Negi (Chief Guide)',
@@ -409,6 +408,8 @@ function setStorage(key, val) {
 // 1. Fetch Dynamic Trip Metadata (With Checkpoints & Itinerary)
 // -------------------------------------------------------------
 export async function fetchTripMetadata() {
+  const cached = getStorage('trip_config', INITIAL_TRIP_DATA);
+
   if (supabase) {
     try {
       const { data, error } = await supabase
@@ -420,51 +421,85 @@ export async function fetchTripMetadata() {
       if (data && !error) {
         const full = {
           ...INITIAL_TRIP_DATA,
+          ...cached,
           ...data,
-          itinerary: (data.itinerary_data && data.itinerary_data.length > 0) ? data.itinerary_data : INITIAL_TRIP_DATA.itinerary,
-          inclusions: (data.inclusions && data.inclusions.length > 0) ? data.inclusions : INITIAL_TRIP_DATA.inclusions,
-          exclusions: (data.exclusions && data.exclusions.length > 0) ? data.exclusions : INITIAL_TRIP_DATA.exclusions
+          college_name: data.college_name || cached.college_name || INITIAL_TRIP_DATA.college_name,
+          trip_title: data.trip_title || cached.trip_title || INITIAL_TRIP_DATA.trip_title,
+          destination: data.destination || cached.destination || INITIAL_TRIP_DATA.destination,
+          dates: data.dates || cached.dates || INITIAL_TRIP_DATA.dates,
+          duration: data.duration || cached.duration || INITIAL_TRIP_DATA.duration,
+          lead_faculty: data.lead_faculty || data.coordinator_name || cached.lead_faculty || INITIAL_TRIP_DATA.lead_faculty,
+          faculty_phone: data.faculty_phone || data.coordinator_phone || cached.faculty_phone || INITIAL_TRIP_DATA.faculty_phone,
+          nomad_guide: data.nomad_guide || data.guide_name || cached.nomad_guide || INITIAL_TRIP_DATA.nomad_guide,
+          nomad_phone: data.nomad_phone || data.guide_phone || cached.nomad_phone || INITIAL_TRIP_DATA.nomad_phone,
+          emergency_helpline: data.emergency_helpline || data.guide_phone || cached.emergency_helpline || INITIAL_TRIP_DATA.emergency_helpline,
+          itinerary: (Array.isArray(data.itinerary_data) && data.itinerary_data.length > 0)
+            ? data.itinerary_data
+            : ((Array.isArray(cached.itinerary) && cached.itinerary.length > 0) ? cached.itinerary : INITIAL_TRIP_DATA.itinerary),
+          inclusions: (Array.isArray(data.inclusions) && data.inclusions.length > 0)
+            ? data.inclusions
+            : ((Array.isArray(cached.inclusions) && cached.inclusions.length > 0) ? cached.inclusions : INITIAL_TRIP_DATA.inclusions),
+          exclusions: (Array.isArray(data.exclusions) && data.exclusions.length > 0)
+            ? data.exclusions
+            : ((Array.isArray(cached.exclusions) && cached.exclusions.length > 0) ? cached.exclusions : INITIAL_TRIP_DATA.exclusions)
         };
         setStorage('trip_config', full);
         return full;
       }
     } catch (e) {
-      console.warn('Supabase trip fetch failed, falling back to cache');
+      console.warn('Supabase trip fetch failed, falling back to cache:', e);
     }
   }
-  return getStorage('trip_config', INITIAL_TRIP_DATA);
+  return cached;
 }
 
 // -------------------------------------------------------------
 // 2. Save Entire Dynamic Trip Configuration
 // -------------------------------------------------------------
 export async function saveTripConfig(newConfig) {
-  const merged = { ...INITIAL_TRIP_DATA, ...newConfig, updated_at: new Date().toISOString() };
+  const cached = getStorage('trip_config', INITIAL_TRIP_DATA);
+  const merged = { ...cached, ...newConfig, updated_at: new Date().toISOString() };
   setStorage('trip_config', merged);
 
   if (supabase) {
     try {
-      await supabase
+      const payload = {
+        trip_code: TRIP_CODE,
+        college_name: merged.college_name || '',
+        trip_title: merged.trip_title || '',
+        destination: merged.destination || '',
+        dates: merged.dates || '',
+        duration: merged.duration || '',
+        lead_faculty: merged.lead_faculty || '',
+        faculty_phone: merged.faculty_phone || '',
+        nomad_guide: merged.nomad_guide || '',
+        nomad_phone: merged.nomad_phone || '',
+        emergency_helpline: merged.emergency_helpline || '',
+        itinerary_data: merged.itinerary || [],
+        inclusions: merged.inclusions || [],
+        exclusions: merged.exclusions || [],
+        updated_at: new Date().toISOString()
+      };
+
+      // Also set legacy column names for 100% backward compatibility
+      payload.coordinator_name = merged.lead_faculty || '';
+      payload.coordinator_phone = merged.faculty_phone || '';
+      payload.guide_name = merged.nomad_guide || '';
+      payload.guide_phone = merged.nomad_phone || merged.emergency_helpline || '';
+
+      const { error } = await supabase
         .from('college_trips')
-        .upsert({
-          trip_code: TRIP_CODE,
-          college_name: merged.college_name,
-          trip_title: merged.trip_title,
-          destination: merged.destination,
-          dates: merged.dates,
-          duration: merged.duration,
-          coaches: merged.coaches,
-          lead_faculty: merged.lead_faculty,
-          faculty_phone: merged.faculty_phone,
-          nomad_guide: merged.nomad_guide,
-          nomad_phone: merged.nomad_phone,
-          emergency_helpline: merged.emergency_helpline,
-          itinerary_data: merged.itinerary,
-          inclusions: merged.inclusions,
-          exclusions: merged.exclusions
-        }, { onConflict: 'trip_code' });
+        .upsert(payload, { onConflict: 'trip_code' });
+
+      if (error) {
+        console.warn('Supabase upsert returned error, attempting update on existing columns:', error);
+        await supabase
+          .from('college_trips')
+          .update(payload)
+          .eq('trip_code', TRIP_CODE);
+      }
     } catch (e) {
-      console.warn('Supabase trip config save failed, saved locally');
+      console.warn('Supabase trip config save failed, saved locally:', e);
     }
   }
 

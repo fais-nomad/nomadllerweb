@@ -398,10 +398,11 @@ function prefillPlanEditor(trip) {
   document.getElementById('edit-trip-title').value = trip.trip_title || '';
   document.getElementById('edit-destination').value = trip.destination || '';
   document.getElementById('edit-dates').value = trip.dates || '';
-  document.getElementById('edit-coaches').value = trip.coaches || '';
+  const durEl = document.getElementById('edit-duration');
+  if (durEl) durEl.value = trip.duration || '';
   document.getElementById('edit-emergency').value = trip.emergency_helpline || '';
-  document.getElementById('edit-faculty').value = `${trip.lead_faculty || ''} (${trip.faculty_phone || ''})`;
-  document.getElementById('edit-guide').value = `${trip.nomad_guide || ''} (${trip.nomad_phone || ''})`;
+  document.getElementById('edit-faculty').value = trip.lead_faculty || (trip.coordinator_name ? `${trip.coordinator_name} (${trip.coordinator_phone || ''})` : '');
+  document.getElementById('edit-guide').value = trip.nomad_guide || (trip.guide_name ? `${trip.guide_name} (${trip.guide_phone || ''})` : '');
 
   // Inclusions & Exclusions
   const incEl = document.getElementById('edit-inclusions');
@@ -416,21 +417,23 @@ function setupPlanEditorForms() {
   if (formMeta) {
     formMeta.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const facultyRaw = document.getElementById('edit-faculty').value;
-      const guideRaw = document.getElementById('edit-guide').value;
+      const facultyRaw = document.getElementById('edit-faculty').value.trim();
+      const guideRaw = document.getElementById('edit-guide').value.trim();
+      const durEl = document.getElementById('edit-duration');
 
       currentTrip.college_name = document.getElementById('edit-college-name').value.trim();
       currentTrip.trip_title = document.getElementById('edit-trip-title').value.trim();
       currentTrip.destination = document.getElementById('edit-destination').value.trim();
       currentTrip.dates = document.getElementById('edit-dates').value.trim();
-      currentTrip.coaches = document.getElementById('edit-coaches').value.trim();
+      currentTrip.duration = durEl ? durEl.value.trim() : (currentTrip.duration || '5 Nights / 6 Days');
       currentTrip.emergency_helpline = document.getElementById('edit-emergency').value.trim();
       currentTrip.lead_faculty = facultyRaw;
       currentTrip.nomad_guide = guideRaw;
 
       await saveTripConfig(currentTrip);
       alert('🏛️ Master trip information successfully updated and live across all portals!');
-      loadAllDashboardData();
+      await loadAllDashboardData();
+      prefillPlanEditor(currentTrip);
     });
   }
 
@@ -486,7 +489,7 @@ function setupPlanEditorForms() {
 // =========================================================
 // PDF UPLOADER & AI ITINERARY / INCLUSIONS EXTRACTOR
 // =========================================================
-const DEEPSEEK_API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY;
+const DEEPSEEK_API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY || 'sk-b5efc3008f744aad8122b69e0676c6e8';
 
 function setupPDFUploader() {
   const fileInput = document.getElementById('input-itinerary-pdf');
@@ -517,28 +520,51 @@ function setupPDFUploader() {
 
     if (statusBox) statusBox.style.display = 'block';
     if (statusTitle) statusTitle.textContent = `Reading "${file.name}"...`;
-    if (statusDesc) statusDesc.textContent = 'Extracting pages & text content from PDF...';
+    if (statusDesc) statusDesc.textContent = 'Extracting pages & formatted text layout from PDF...';
 
     try {
       const arrayBuffer = await file.arrayBuffer();
 
       if (typeof window.pdfjsLib === 'undefined') {
-        throw new Error('PDF.js library could not be loaded. Please ensure internet access.');
+        throw new Error('PDF.js library could not be loaded. Please check your internet connection.');
       }
 
       const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       let fullText = '';
+
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(' ');
-        fullText += `\n--- PAGE ${i} ---\n` + pageText;
+        const items = textContent.items || [];
+        
+        // Group items into visual lines by rounded Y coordinate
+        const linesMap = new Map();
+        for (const item of items) {
+          const str = (item.str || '').trim();
+          if (!str) continue;
+          const y = Math.round(item.transform[5] / 4) * 4;
+          if (!linesMap.has(y)) {
+            linesMap.set(y, []);
+          }
+          linesMap.get(y).push({ x: item.transform[4], text: str });
+        }
+
+        // Sort lines top-to-bottom (higher Y = higher on PDF page)
+        const sortedYs = Array.from(linesMap.keys()).sort((a, b) => b - a);
+        const pageLines = sortedYs.map(y => {
+          const lineItems = linesMap.get(y);
+          // Sort words left-to-right (lower X = left)
+          lineItems.sort((a, b) => a.x - b.x);
+          return lineItems.map(it => it.text).join(' ');
+        });
+
+        fullText += `\n--- PAGE ${i} ---\n` + pageLines.join('\n') + '\n';
       }
 
       if (statusTitle) statusTitle.textContent = 'Analyzing Itinerary, Checkpoints & Inclusions with AI...';
-      if (statusDesc) statusDesc.textContent = `Extracted ${pdf.numPages} pages (${fullText.length} characters). Generating dynamic checkpoints...`;
+      if (statusDesc) statusDesc.textContent = `Extracted ${pdf.numPages} pages (${fullText.length} characters). Structuring tour plan...`;
 
-      // Call AI extraction
+      // Call AI extraction with intelligent fallback
       const extractedPlan = await extractItineraryFromTextWithAI(fullText);
 
       if (extractedPlan) {
@@ -547,8 +573,9 @@ function setupPDFUploader() {
         if (extractedPlan.destination) currentTrip.destination = extractedPlan.destination;
         if (extractedPlan.dates) currentTrip.dates = extractedPlan.dates;
         if (extractedPlan.duration) currentTrip.duration = extractedPlan.duration;
-        if (extractedPlan.coaches) currentTrip.coaches = extractedPlan.coaches;
         if (extractedPlan.lead_faculty) currentTrip.lead_faculty = extractedPlan.lead_faculty;
+        if (extractedPlan.emergency_helpline) currentTrip.emergency_helpline = extractedPlan.emergency_helpline;
+
         if (extractedPlan.itinerary && extractedPlan.itinerary.length > 0) {
           currentTrip.itinerary = extractedPlan.itinerary;
         }
@@ -559,18 +586,21 @@ function setupPDFUploader() {
           currentTrip.exclusions = extractedPlan.exclusions;
         }
 
+        // Save immediately to localStorage & Supabase
         await saveTripConfig(currentTrip);
 
-        if (statusTitle) statusTitle.textContent = '✅ Extraction Complete & Live!';
-        if (statusDesc) statusDesc.textContent = `Extracted ${currentTrip.itinerary.length} Days, ${currentTrip.inclusions.length} Inclusions, and ${currentTrip.exclusions.length} Exclusions!`;
-
-        alert(`🎉 PDF Successfully Processed!\n\nExtracted: ${currentTrip.trip_title || 'Expedition'}\nDestination: ${currentTrip.destination}\nDays: ${currentTrip.itinerary.length} Days\nInclusions: ${currentTrip.inclusions.length} items\nExclusions: ${currentTrip.exclusions.length} items\n\nAll checkpoints are now live for Guide Ticking and Parent Tracking!`);
-
+        // Update UI immediately
         await loadAllDashboardData();
+        prefillPlanEditor(currentTrip);
+
+        if (statusTitle) statusTitle.textContent = '✅ Extraction Complete & Live!';
+        if (statusDesc) statusDesc.textContent = `Successfully extracted ${currentTrip.itinerary.length} Days, ${currentTrip.inclusions.length} Inclusions, and ${currentTrip.exclusions.length} Exclusions!`;
+
+        alert(`🎉 PDF Successfully Processed!\n\n• Title: ${currentTrip.trip_title || 'Expedition'}\n• Destination: ${currentTrip.destination}\n• Total Days: ${currentTrip.itinerary.length} Days\n• Inclusions: ${currentTrip.inclusions.length} items\n• Exclusions: ${currentTrip.exclusions.length} items\n\nAll checkpoints and milestones are now live for Guide Ticking and Parent Tracking!`);
       }
     } catch (err) {
       console.error('PDF Processing Error:', err);
-      alert('Error parsing PDF: ' + (err.message || 'Unknown error') + '\nPlease try again or paste details manually.');
+      alert('Error parsing PDF: ' + (err.message || 'Unknown error') + '\nPlease check console or edit details manually.');
       if (statusBox) statusBox.style.display = 'none';
     } finally {
       fileInput.value = '';
@@ -580,31 +610,49 @@ function setupPDFUploader() {
 
 // AI Extraction with DeepSeek + Intelligent Regex Fallback
 async function extractItineraryFromTextWithAI(text) {
-  const prompt = `You are a travel data assistant. Extract the complete college tour / trip structure from the PDF text below and return ONLY a valid JSON object.
-Do NOT output markdown code fences, backticks, or extra conversational text. Return pure JSON.
+  const prompt = `You are a tour & travel brochure data extractor. Extract the complete college tour or trip structure from the brochure text below and return ONLY a valid JSON object.
+Do NOT output markdown code fences, backticks, or any explanation. Output pure JSON.
 
 SCHEMA:
 {
-  "college_name": "College / University Name or empty string",
-  "trip_title": "Expedition or Tour Title",
-  "destination": "Main Destination (e.g. Manali, Kasol, Wayanad)",
+  "college_name": "College / University Name (or empty string)",
+  "trip_title": "Tour or Expedition Title (e.g. Manali Snow & Adventure Tour)",
+  "destination": "Main Destination (e.g. Manali - Kasol - Solang)",
   "duration": "e.g. 5 Nights / 6 Days",
   "dates": "e.g. Nov 12 - Nov 17, 2026 or Dates TBD",
-  "coaches": "e.g. Luxury AC Air-Suspension Coaches",
-  "lead_faculty": "Faculty in-charge name if mentioned",
+  "lead_faculty": "Faculty or Coordinator Name if mentioned",
+  "emergency_helpline": "Emergency or Contact Phone if mentioned",
   "itinerary": [
     {
       "day": 1,
-      "title": "Day 1 Title / Destination",
-      "altitude": "e.g. 2,050m or empty",
-      "stay": "Resort / Hotel Name",
-      "meals": "e.g. Breakfast, Lunch, Dinner",
+      "title": "Day 1 Title / Activities",
+      "altitude": "Altitude in meters if mentioned, else empty",
+      "stay": "Hotel or Camp Name if mentioned, else Resort Stay",
+      "meals": "Meals included on this day (e.g. Breakfast • Lunch • Dinner)",
       "checkpoints": [
         {
           "id": "cp-1-1",
           "time": "06:00 AM",
-          "title": "Departure from Campus",
-          "desc": "Short details of this checkpoint event",
+          "title": "Departure / Campus Assembly",
+          "desc": "Short details of this milestone",
+          "is_completed": false,
+          "completed_at": null,
+          "completed_by": null
+        },
+        {
+          "id": "cp-1-2",
+          "time": "01:30 PM",
+          "title": "Lunch Halt / Sightseeing Point",
+          "desc": "Details of afternoon schedule",
+          "is_completed": false,
+          "completed_at": null,
+          "completed_by": null
+        },
+        {
+          "id": "cp-1-3",
+          "time": "07:30 PM",
+          "title": "Hotel Check-in & Dinner",
+          "desc": "Evening roll call and dinner",
           "is_completed": false,
           "completed_at": null,
           "completed_by": null
@@ -622,8 +670,8 @@ SCHEMA:
   ]
 }
 
-PDF TEXT CONTENT:
-${text.slice(0, 15000)}
+BROCHURE TEXT CONTENT:
+${text.slice(0, 16000)}
 `;
 
   // 1. Try DeepSeek AI
@@ -644,21 +692,21 @@ ${text.slice(0, 15000)}
 
       if (response.ok) {
         const json = await response.json();
-        let content = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
+        const content = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
         if (content) {
-          // Strip any markdown wrapper if returned
-          content = content.trim();
-          if (content.startsWith('```json')) content = content.slice(7);
-          if (content.startsWith('```')) content = content.slice(3);
-          if (content.endsWith('```')) content = content.slice(0, -3);
-          const parsed = JSON.parse(content.trim());
-          if (parsed && parsed.itinerary && parsed.itinerary.length > 0) {
-            return parsed;
+          const firstBrace = content.indexOf('{');
+          const lastBrace = content.lastIndexOf('}');
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            const cleanJson = content.substring(firstBrace, lastBrace + 1);
+            const parsed = JSON.parse(cleanJson);
+            if (parsed && parsed.itinerary && parsed.itinerary.length > 0) {
+              return parsed;
+            }
           }
         }
       }
     } catch (e) {
-      console.warn('DeepSeek AI fetch failed or returned non-JSON, using intelligent local parser:', e);
+      console.warn('DeepSeek AI call failed or timed out, falling back to intelligent local parser:', e);
     }
   }
 
@@ -666,7 +714,7 @@ ${text.slice(0, 15000)}
   return parseItineraryTextFallback(text);
 }
 
-// Fallback Regex Parser for PDF Text
+// Fallback Regex Parser for Tour Brochure Text
 function parseItineraryTextFallback(text) {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const days = [];
@@ -676,75 +724,105 @@ function parseItineraryTextFallback(text) {
   let inInclusions = false;
   let inExclusions = false;
 
+  let detectedTitle = '';
+  let detectedDestination = '';
+
+  const wordToNum = {
+    one: 1, two: 2, three: 3, four: 4, five: 5,
+    six: 6, seven: 7, eight: 8, nine: 9, ten: 10
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const lower = line.toLowerCase();
 
+    // Check first 10 lines for title
+    if (i < 10 && !detectedTitle && line.length > 10 && line.length < 80 && !lower.includes('page') && !lower.includes('contact')) {
+      detectedTitle = line;
+    }
+
     // Section toggles
-    if (lower.includes('inclusion') || lower.includes('cost includes') || lower.includes('package includes') || lower.includes("what's included")) {
+    if (lower.match(/inclusion|cost include|package include|price include|tour include|what(?:'s|s)? included/i)) {
       inInclusions = true;
       inExclusions = false;
       continue;
     }
-    if (lower.includes('exclusion') || lower.includes('cost excludes') || lower.includes('package excludes') || lower.includes("what's not included")) {
+    if (lower.match(/exclusion|cost exclude|package exclude|price exclude|tour exclude|what(?:'s|s)? (?:not|excluded)/i)) {
       inInclusions = false;
       inExclusions = true;
       continue;
     }
 
     if (inInclusions && !inExclusions) {
-      if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.match(/^[0-9]+\./)) {
-        inclusions.push(line.replace(/^[•\-*\d.]+\s*/, '').trim());
-      } else if (line.length > 8 && line.length < 150) {
+      if (line.match(/^[•\-*✔✓+]\s*(.*)/) || line.match(/^[0-9]+[.)]\s*(.*)/)) {
+        inclusions.push(line.replace(/^[•\-*✔✓+\d.)]+\s*/, '').trim());
+      } else if (line.length > 5 && line.length < 200 && !line.includes(':')) {
         inclusions.push(line);
       }
       continue;
     }
 
     if (inExclusions) {
-      if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.match(/^[0-9]+\./)) {
-        exclusions.push(line.replace(/^[•\-*\d.]+\s*/, '').trim());
-      } else if (line.length > 8 && line.length < 150) {
+      if (line.match(/^[•\-*✔✓+]\s*(.*)/) || line.match(/^[0-9]+[.)]\s*(.*)/)) {
+        exclusions.push(line.replace(/^[•\-*✔✓+\d.)]+\s*/, '').trim());
+      } else if (line.length > 5 && line.length < 200 && !line.includes(':')) {
         exclusions.push(line);
       }
       continue;
     }
 
-    // Day Detection (Day 1, Day 01, Day 2: Arrival...)
-    const dayMatch = line.match(/^Day\s*0?(\d+)[:\s-]*(.*)/i);
-    if (dayMatch) {
-      const dayNum = parseInt(dayMatch[1]);
-      const dayTitle = dayMatch[2].trim() || `Day ${dayNum} Exploration`;
+    // Day Detection (Day 1, Day 01, Day 1: ..., Day One: ..., D1:)
+    let dayNum = null;
+    let dayTitle = '';
+
+    const digitMatch = line.match(/^(?:Day|DAY|D)\s*0?(\d+)[\s:.\-\/]*(.*)/i);
+    if (digitMatch) {
+      dayNum = parseInt(digitMatch[1]);
+      dayTitle = digitMatch[2].trim();
+    } else {
+      const wordMatch = line.match(/^(?:Day|DAY)\s+(one|two|three|four|five|six|seven|eight|nine|ten)[\s:.\-\/]*(.*)/i);
+      if (wordMatch) {
+        dayNum = wordToNum[wordMatch[1].toLowerCase()];
+        dayTitle = wordMatch[2].trim();
+      }
+    }
+
+    if (dayNum !== null) {
+      if (!dayTitle) dayTitle = `Day ${dayNum} Exploration`;
+      if (!detectedDestination && dayTitle.length > 3) {
+        detectedDestination = dayTitle;
+      }
+
       currentDay = {
         day: dayNum,
         title: dayTitle,
         altitude: '',
-        stay: 'Resort / Alpine Camp',
+        stay: 'Mountain Resort / Hotel',
         meals: 'Breakfast • Lunch • Dinner',
         checkpoints: [
           {
             id: `cp-${dayNum}-1`,
-            time: '08:00 AM',
-            title: 'Morning Briefing & Activities',
-            desc: dayTitle,
+            time: '07:30 AM',
+            title: 'Morning Assembly & Breakfast',
+            desc: `Roll call and start of Day ${dayNum} activities.`,
             is_completed: false,
             completed_at: null,
             completed_by: null
           },
           {
             id: `cp-${dayNum}-2`,
-            time: '01:30 PM',
-            title: 'Lunch & Afternoon Program',
-            desc: 'Scheduled tour activity and meal halt.',
+            time: '01:00 PM',
+            title: dayTitle,
+            desc: 'Scheduled tour activities and meal halt.',
             is_completed: false,
             completed_at: null,
             completed_by: null
           },
           {
             id: `cp-${dayNum}-3`,
-            time: '07:30 PM',
+            time: '08:00 PM',
             title: 'Evening Debrief & Dinner',
-            desc: 'Group roll call and dinner.',
+            desc: 'Headcount verification and overnight stay.',
             is_completed: false,
             completed_at: null,
             completed_by: null
@@ -756,13 +834,13 @@ function parseItineraryTextFallback(text) {
   }
 
   return {
-    college_name: 'College Youth Expedition',
-    trip_title: 'College Adventure Expedition',
-    destination: 'Himalayan Mountain Tour',
+    college_name: currentTrip.college_name || 'College Youth Expedition',
+    trip_title: detectedTitle || currentTrip.trip_title || 'College Adventure Expedition',
+    destination: detectedDestination || currentTrip.destination || 'Expedition Destination',
     duration: `${days.length || 5} Days`,
-    dates: 'Upcoming',
-    coaches: 'Luxury AC Coaches',
-    lead_faculty: 'Faculty In-Charge',
+    dates: currentTrip.dates || 'Upcoming',
+    lead_faculty: currentTrip.lead_faculty || 'Faculty In-Charge',
+    emergency_helpline: currentTrip.emergency_helpline || '+91 62389 98382',
     itinerary: days.length > 0 ? days : currentTrip.itinerary,
     inclusions: inclusions.length > 0 ? inclusions : currentTrip.inclusions,
     exclusions: exclusions.length > 0 ? exclusions : currentTrip.exclusions
