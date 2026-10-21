@@ -31,6 +31,9 @@ export default defineConfig({
         affordableEbc: resolve(__dirname, 'affordable-everest-base-camp-trek-kerala.html'),
         campaign: resolve(__dirname, 'campaign.html'),
         printCoupons: resolve(__dirname, 'print-coupons.html'),
+        collegeTrip: resolve(__dirname, 'college-trip.html'),
+        parentTracker: resolve(__dirname, 'parent-tracker.html'),
+        teacherDashboard: resolve(__dirname, 'teacher-dashboard.html'),
       },
       output: {
         manualChunks(id) {

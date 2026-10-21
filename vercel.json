@@ -15,7 +15,10 @@
     { "source": "/campaign", "destination": "/campaign.html" },
     { "source": "/campaign.html", "destination": "/campaign.html" },
     { "source": "/print-coupons", "destination": "/print-coupons.html" },
-    { "source": "/print-coupons.html", "destination": "/print-coupons.html" }
+    { "source": "/print-coupons.html", "destination": "/print-coupons.html" },
+    { "source": "/college-trip", "destination": "/college-trip.html" },
+    { "source": "/parent-tracker", "destination": "/parent-tracker.html" },
+    { "source": "/teacher-dashboard", "destination": "/teacher-dashboard.html" }
   ],
   "headers": [
     {

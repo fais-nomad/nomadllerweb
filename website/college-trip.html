@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Youth Expedition | Complete Itinerary & Student Portal | Nomadller</title>
+  <meta name="description" content="Official student portal for the College Himalayan Expedition. Access the day-by-day itinerary, inclusions, exclusions, packing list, and parent live tracking.">
+  <link rel="stylesheet" href="/college-trip.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/fill/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/regular/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="ct-navbar">
+    <div class="ct-nav-brand">
+      <div class="ct-brand-logo">N</div>
+      <div class="ct-brand-text">
+        <h1>NOMADLLER</h1>
+        <span>College Expedition Portal</span>
+      </div>
+    </div>
+    <nav class="ct-nav-links">
+      <a href="/college-trip" class="ct-nav-pill active">
+        <i class="ph ph-backpack"></i> Itinerary & Plan
+      </a>
+      <a href="/parent-tracker" class="ct-nav-pill">
+        <span class="badge-live"></span>
+        <i class="ph ph-map-pin-line"></i> Parent Live Tracker
+      </a>
+      <a href="/teacher-dashboard" class="ct-nav-pill">
+        <i class="ph ph-chalkboard-teacher"></i> Faculty Portal
+      </a>
+      <a href="/" class="ct-nav-pill">
+        <i class="ph ph-house"></i> Home
+      </a>
+    </nav>
+  </header>
+
+  <main class="ct-container">
+    
+    <!-- Hero Banner -->
+    <section class="ct-hero" id="overview">
+      <div class="ct-hero-badge">
+        <i class="ph-fill ph-shield-check"></i> Verified College Expedition 2026
+      </div>
+      <h1 class="ct-hero-title">
+        College of Engineering &amp; Technology<br>
+        <span>Himalayan Adventure Expedition</span>
+      </h1>
+      <p class="ct-hero-desc">
+        Manali • Solang Snow Valley • Kasol Riverside Camp • Tosh Alpine Trek. 
+        Official comprehensive itinerary, safety guidelines, and live tracking for students, faculty, and parents.
+      </p>
+
+      <!-- Key Metadata Grid -->
+      <div class="ct-hero-meta">
+        <div class="ct-meta-item">
+          <div class="ct-meta-icon"><i class="ph ph-calendar-blank"></i></div>
+          <div class="ct-meta-content">
+            <h4>Dates</h4>
+            <p id="trip-dates">Nov 12 - Nov 17, 2026</p>
+          </div>
+        </div>
+        <div class="ct-meta-item">
+          <div class="ct-meta-icon"><i class="ph ph-clock"></i></div>
+          <div class="ct-meta-content">
+            <h4>Duration</h4>
+            <p>5 Nights / 6 Days</p>
+          </div>
+        </div>
+        <div class="ct-meta-item">
+          <div class="ct-meta-icon"><i class="ph ph-bus"></i></div>
+          <div class="ct-meta-content">
+            <h4>Transport</h4>
+            <p>2 AC Air-Suspension Coaches</p>
+          </div>
+        </div>
+        <div class="ct-meta-item">
+          <div class="ct-meta-icon"><i class="ph ph-phone-call"></i></div>
+          <div class="ct-meta-content">
+            <h4>24/7 Safety Helpline</h4>
+            <p>+91 62389 98382</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="ct-hero-actions">
+        <button class="ct-btn ct-btn-primary" id="btn-open-student-modal">
+          <i class="ph-fill ph-user-plus"></i> Add Student / Register
+        </button>
+        <a href="/parent-tracker" class="ct-btn ct-btn-cyan">
+          <span class="badge-live"></span>
+          <i class="ph-fill ph-broadcast"></i> Open Parent Live Tracker
+        </a>
+        <a href="#itinerary" class="ct-btn ct-btn-secondary">
+          <i class="ph ph-list-numbers"></i> View Day-by-Day Plan
+        </a>
+      </div>
+    </section>
+
+    <!-- Day-by-Day Detailed Itinerary -->
+    <section class="ct-section" id="itinerary">
+      <div class="ct-section-header">
+        <h2 class="ct-section-title">
+          <span class="emoji">🏔️</span> Full Expedition Itinerary (Day-by-Day)
+        </h2>
+        <span class="ct-tag ct-tag-stay">Updated by Expedition Leader</span>
+      </div>
+
+      <div class="ct-timeline" id="itinerary-container">
+        <!-- Rendered dynamically by college-trip.js -->
+      </div>
+    </section>
+
+    <!-- Inclusions & Exclusions -->
+    <section class="ct-section" id="inclusions-exclusions">
+      <div class="ct-section-header">
+        <h2 class="ct-section-title">
+          <span class="emoji">🎒</span> Inclusions &amp; Exclusions
+        </h2>
+        <span class="ct-tag ct-tag-altitude">All-Inclusive Nomadller Standard</span>
+      </div>
+
+      <div class="ct-inc-exc-grid">
+        <!-- Inclusions Box -->
+        <div class="ct-box-inc">
+          <div class="ct-box-header">
+            <i class="ph-fill ph-check-circle"></i> What Is Included (100% Covered)
+          </div>
+          <ul class="ct-list-items" id="inclusions-list">
+            <!-- Dynamic Inclusions -->
+          </ul>
+        </div>
+
+        <!-- Exclusions Box -->
+        <div class="ct-box-exc">
+          <div class="ct-box-header">
+            <i class="ph-fill ph-x-circle"></i> What Is Excluded (Personal)
+          </div>
+          <ul class="ct-list-items" id="exclusions-list">
+            <!-- Dynamic Exclusions -->
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Packing & Survival Checklist -->
+    <section class="ct-section" id="guidelines">
+      <div class="ct-section-header">
+        <h2 class="ct-section-title">
+          <span class="emoji">🧤</span> Mandatory Packing Checklist &amp; Guidelines
+        </h2>
+      </div>
+
+      <div class="ct-card" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+        <div>
+          <h3 style="color: var(--ct-accent-cyan); margin-bottom: 0.8rem; font-family: var(--ct-font-display);">
+            <i class="ph ph-t-shirt"></i> Clothing &amp; Layers
+          </h3>
+          <ul class="ct-list-items">
+            <li><i class="ph-fill ph-check" style="color:var(--ct-accent-cyan)"></i> 1 Heavy Winter Jacket / Down Feather (-5°C rated)</li>
+            <li><i class="ph-fill ph-check" style="color:var(--ct-accent-cyan)"></i> 2 Thermal Inner Tops &amp; Bottoms</li>
+            <li><i class="ph-fill ph-check" style="color:var(--ct-accent-cyan)"></i> Woolen cap / Balaclava &amp; Fleece gloves</li>
+            <li><i class="ph-fill ph-check" style="color:var(--ct-accent-cyan)"></i> 3-4 Quick-dry athletic t-shirts &amp; trek pants</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 style="color: var(--ct-primary); margin-bottom: 0.8rem; font-family: var(--ct-font-display);">
+            <i class="ph ph-sneaker"></i> Footwear &amp; Gear
+          </h3>
+          <ul class="ct-list-items">
+            <li><i class="ph-fill ph-check" style="color:var(--ct-primary)"></i> Sturdy Trekking Shoes with good rubber grip (ankle support)</li>
+            <li><i class="ph-fill ph-check" style="color:var(--ct-primary)"></i> 4 Pairs of thick woolen &amp; cotton socks</li>
+            <li><i class="ph-fill ph-check" style="color:var(--ct-primary)"></i> 20L-30L Daypack backpack for daily walks</li>
+            <li><i class="ph-fill ph-check" style="color:var(--ct-primary)"></i> UV 400 Polarized Sunglasses (protects from snow glare)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 style="color: var(--ct-accent-amber); margin-bottom: 0.8rem; font-family: var(--ct-font-display);">
+            <i class="ph ph-first-aid"></i> Health &amp; Personal Essentials
+          </h3>
+          <ul class="ct-list-items">
+            <li><i class="ph-fill ph-check" style="color:var(--ct-accent-amber)"></i> Personal 10,000mAh Power Bank (cold drains batteries fast)</li>
+            <li><i class="ph-fill ph-check" style="color:var(--ct-accent-amber)"></i> Insulated Thermos Water Bottle (1 Litre)</li>
+            <li><i class="ph-fill ph-check" style="color:var(--ct-accent-amber)"></i> Lip balm, SPF 50 sunscreen &amp; cold cream</li>
+            <li><i class="ph-fill ph-check" style="color:var(--ct-accent-amber)"></i> Personal prescribed medication (if any)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Student Roster Quick View -->
+    <section class="ct-section" id="roster">
+      <div class="ct-section-header">
+        <h2 class="ct-section-title">
+          <span class="emoji">👥</span> Registered Students Roster
+        </h2>
+        <span class="ct-tag" id="student-count-badge">Loading students...</span>
+      </div>
+
+      <div class="ct-card">
+        <div class="ct-table-responsive">
+          <table class="ct-table">
+            <thead>
+              <tr>
+                <th>Roll No</th>
+                <th>Student Name</th>
+                <th>Department</th>
+                <th>Coach</th>
+                <th>Room Allocation</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="students-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Student Self-Registration Modal -->
+  <div class="ct-modal-backdrop" id="student-modal">
+    <div class="ct-modal">
+      <div class="ct-modal-header">
+        <div>
+          <h3 style="font-family: var(--ct-font-display); font-size: 1.4rem;">🎒 Student Trip Registration</h3>
+          <p style="font-size: 0.85rem; color: var(--ct-text-muted);">Join the official college expedition roster</p>
+        </div>
+        <button class="ct-modal-close" id="btn-close-modal"><i class="ph ph-x"></i></button>
+      </div>
+
+      <form id="form-add-student">
+        <div class="ct-form-row">
+          <div class="ct-form-group">
+            <label for="std-name">Full Name *</label>
+            <input type="text" id="std-name" class="ct-form-control" required placeholder="e.g. Aditya Varma">
+          </div>
+          <div class="ct-form-group">
+            <label for="std-roll">College Roll No / ID *</label>
+            <input type="text" id="std-roll" class="ct-form-control" required placeholder="e.g. CET-CS-042">
+          </div>
+        </div>
+
+        <div class="ct-form-row">
+          <div class="ct-form-group">
+            <label for="std-dept">Branch / Department *</label>
+            <input type="text" id="std-dept" class="ct-form-control" required placeholder="e.g. Computer Science">
+          </div>
+          <div class="ct-form-group">
+            <label for="std-phone">Student WhatsApp / Mobile *</label>
+            <input type="tel" id="std-phone" class="ct-form-control" required placeholder="e.g. +91 98461 22334">
+          </div>
+        </div>
+
+        <div class="ct-form-row">
+          <div class="ct-form-group">
+            <label for="std-parent-name">Parent / Guardian Name *</label>
+            <input type="text" id="std-parent-name" class="ct-form-control" required placeholder="e.g. Suresh Varma">
+          </div>
+          <div class="ct-form-group">
+            <label for="std-parent-phone">Parent Mobile (For Tracking) *</label>
+            <input type="tel" id="std-parent-phone" class="ct-form-control" required placeholder="e.g. +91 94471 55667">
+          </div>
+        </div>
+
+        <div class="ct-form-row">
+          <div class="ct-form-group">
+            <label for="std-blood">Blood Group</label>
+            <select id="std-blood" class="ct-form-control">
+              <option value="O +ve">O +ve</option>
+              <option value="A +ve">A +ve</option>
+              <option value="B +ve">B +ve</option>
+              <option value="AB +ve">AB +ve</option>
+              <option value="O -ve">O -ve</option>
+              <option value="A -ve">A -ve</option>
+              <option value="B -ve">B -ve</option>
+              <option value="AB -ve">AB -ve</option>
+            </select>
+          </div>
+          <div class="ct-form-group">
+            <label for="std-food">Meal Preference</label>
+            <select id="std-food" class="ct-form-control">
+              <option value="Non-Veg">Non-Vegetarian</option>
+              <option value="Veg">Vegetarian</option>
+              <option value="Jain">Jain Pure Veg</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ct-form-group">
+          <label for="std-notes">Medical Notes / Allergies (Optional)</label>
+          <input type="text" id="std-notes" class="ct-form-control" placeholder="e.g. Dust allergy, Asthma, None">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="ct-btn ct-btn-secondary" id="btn-cancel-modal">Cancel</button>
+          <button type="submit" class="ct-btn ct-btn-primary" id="btn-submit-student">
+            <i class="ph-fill ph-check"></i> Register Now
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="/src/college-trip.js"></script>
+</body>
+</html>

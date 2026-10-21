@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parent Live Trip Tracker | Student Safety & Real-Time Milestones | Nomadller</title>
+  <meta name="description" content="Dedicated parent tracking portal for the College Himalayan Expedition. Real-time safety status, travel milestones, student verification, and direct coordinator emergency contacts.">
+  <link rel="stylesheet" href="/college-trip.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/fill/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/regular/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="ct-navbar">
+    <div class="ct-nav-brand">
+      <div class="ct-brand-logo">N</div>
+      <div class="ct-brand-text">
+        <h1>NOMADLLER</h1>
+        <span>Parent Safety &amp; Live Tracking</span>
+      </div>
+    </div>
+    <nav class="ct-nav-links">
+      <a href="/parent-tracker" class="ct-nav-pill active">
+        <span class="badge-live"></span>
+        <i class="ph ph-map-pin-line"></i> Parent Live Tracker
+      </a>
+      <a href="/college-trip" class="ct-nav-pill">
+        <i class="ph ph-backpack"></i> Itinerary &amp; Plan
+      </a>
+      <a href="/teacher-dashboard" class="ct-nav-pill">
+        <i class="ph ph-chalkboard-teacher"></i> Faculty Portal
+      </a>
+      <a href="/" class="ct-nav-pill">
+        <i class="ph ph-house"></i> Home
+      </a>
+    </nav>
+  </header>
+
+  <main class="ct-container">
+
+    <!-- Reassurance Banner -->
+    <section class="ct-safety-banner">
+      <div class="ct-safety-status">
+        <div class="ct-pulse-ring"></div>
+        <div class="ct-safety-text">
+          <h3>Group Status: Safe, Active &amp; On Schedule</h3>
+          <p>Continuous faculty supervision • 2 Certified High-Altitude First Responders on board</p>
+        </div>
+      </div>
+      <div>
+        <a href="tel:+916238998382" class="ct-btn ct-btn-primary ct-btn-sm">
+          <i class="ph-fill ph-phone-call"></i> 24x7 Emergency Desk
+        </a>
+      </div>
+    </section>
+
+    <!-- Student Lookup for Parents -->
+    <section class="ct-search-box">
+      <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem;">
+        <i class="ph-fill ph-user-check" style="font-size: 1.5rem; color: var(--ct-primary);"></i>
+        <h2 style="font-family: var(--ct-font-display); font-size: 1.35rem; font-weight: 800;">
+          Verify Your Child's Live Status
+        </h2>
+      </div>
+      <p style="font-size: 0.9rem; color: var(--ct-text-muted);">
+        Enter your child's <strong>College Roll No</strong> (e.g., <code>CET-CS-042</code>) or <strong>Full Name</strong> to see real-time attendance, coach seat, and room location.
+      </p>
+
+      <form class="ct-search-form" id="parent-search-form">
+        <input 
+          type="text" 
+          id="parent-search-input" 
+          class="ct-input" 
+          placeholder="Enter Student Roll No or Full Name..." 
+          required
+        >
+        <button type="submit" class="ct-btn ct-btn-primary">
+          <i class="ph ph-magnifying-glass"></i> Check Status
+        </button>
+      </form>
+
+      <!-- Student Verification Result Card -->
+      <div class="ct-student-status-card" id="student-result-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <h3 id="res-name" style="font-family: var(--ct-font-display); font-size: 1.4rem; color: #ffffff;">Student Name</h3>
+              <span id="res-badge" class="ct-status-badge ct-status-present">Present &amp; Safe</span>
+            </div>
+            <p id="res-roll" style="font-size: 0.85rem; color: var(--ct-accent-cyan); font-weight: 700; margin-top: 0.2rem;">Roll No</p>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--ct-text-subtle); font-weight: 700;">Verified By Faculty</span>
+            <div style="font-size: 0.85rem; color: #a7f3d0;" id="res-verified-time">Just Now</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.25rem; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: var(--ct-radius-sm); border: 1px solid var(--ct-glass-border);">
+          <div>
+            <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--ct-text-subtle);">Assigned Coach</span>
+            <p id="res-bus" style="font-weight: 700; color: #ffffff;">Bus 1</p>
+          </div>
+          <div>
+            <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--ct-text-subtle);">Resort Room</span>
+            <p id="res-room" style="font-weight: 700; color: #ffffff;">Room 204</p>
+          </div>
+          <div>
+            <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--ct-text-subtle);">Department</span>
+            <p id="res-dept" style="font-weight: 700; color: #ffffff;">Computer Science</p>
+          </div>
+          <div>
+            <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--ct-text-subtle);">Latest Activity</span>
+            <p id="res-last-update" style="font-weight: 600; color: #34d399;">At Solang Valley Base</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-Time Milestones Feed -->
+    <section class="ct-section">
+      <div class="ct-section-header">
+        <h2 class="ct-section-title">
+          <span class="emoji">📡</span> Live Travel Milestones &amp; Faculty Broadcasts
+        </h2>
+        <span class="ct-tag ct-tag-altitude" id="updates-count-badge">Updated in Real-Time</span>
+      </div>
+
+      <div id="live-feed-container">
+        <!-- Injected dynamically by parent-tracker.js -->
+      </div>
+    </section>
+
+    <!-- Faculty & Coordinator Contacts for Parents -->
+    <section class="ct-section">
+      <div class="ct-section-header">
+        <h2 class="ct-section-title">
+          <span class="emoji">📞</span> Direct Faculty &amp; Guide Helpline
+        </h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+        <div class="ct-card">
+          <span class="ct-tag ct-tag-stay" style="margin-bottom: 0.8rem; display: inline-block;">Faculty Lead</span>
+          <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">Prof. K. Rajagopal</h3>
+          <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Head of Department (CET)</p>
+          <a href="tel:+919847012345" class="ct-btn ct-btn-secondary ct-btn-sm" style="width: 100%;">
+            <i class="ph-fill ph-phone-call"></i> Call Professor: +91 98470 12345
+          </a>
+        </div>
+
+        <div class="ct-card">
+          <span class="ct-tag ct-tag-altitude" style="margin-bottom: 0.8rem; display: inline-block;">Nomadller Expedition Lead</span>
+          <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">Arjun Negi</h3>
+          <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Senior Mountaineer &amp; Tour Director</p>
+          <a href="tel:+916238998382" class="ct-btn ct-btn-secondary ct-btn-sm" style="width: 100%;">
+            <i class="ph-fill ph-phone-call"></i> Call Guide: +91 62389 98382
+          </a>
+        </div>
+
+        <div class="ct-card">
+          <span class="ct-tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); margin-bottom: 0.8rem; display: inline-block;">Nomadller 24/7 Operations</span>
+          <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">Central Control Room</h3>
+          <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Round-the-clock emergency desk</p>
+          <a href="https://wa.me/916238998382?text=Hello%20Nomadller,%20I%20am%20a%20parent%20inquiring%20about%20the%20CET%20College%20Expedition." target="_blank" rel="noopener noreferrer" class="ct-btn ct-btn-primary ct-btn-sm" style="width: 100%;">
+            <i class="ph-fill ph-whatsapp-logo"></i> WhatsApp Emergency Desk
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="/src/parent-tracker.js"></script>
+</body>
+</html>

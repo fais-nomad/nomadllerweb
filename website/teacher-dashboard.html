@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Command Dashboard | College Expedition Coordinator Portal | Nomadller</title>
+  <meta name="description" content="Faculty & Trip Coordinator Dashboard. Manage student roll calls, update live student status, and broadcast real-time milestones to parents.">
+  <link rel="stylesheet" href="/college-trip.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/fill/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/regular/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="ct-navbar">
+    <div class="ct-nav-brand">
+      <div class="ct-brand-logo">N</div>
+      <div class="ct-brand-text">
+        <h1>NOMADLLER</h1>
+        <span>Faculty &amp; Coordinator Portal</span>
+      </div>
+    </div>
+    <nav class="ct-nav-links">
+      <a href="/teacher-dashboard" class="ct-nav-pill active">
+        <i class="ph ph-chalkboard-teacher"></i> Faculty Dashboard
+      </a>
+      <a href="/parent-tracker" class="ct-nav-pill">
+        <span class="badge-live"></span>
+        <i class="ph ph-map-pin-line"></i> Parent Live Tracker
+      </a>
+      <a href="/college-trip" class="ct-nav-pill">
+        <i class="ph ph-backpack"></i> Itinerary &amp; Plan
+      </a>
+      <a href="/" class="ct-nav-pill">
+        <i class="ph ph-house"></i> Home
+      </a>
+    </nav>
+  </header>
+
+  <main class="ct-container">
+
+    <!-- Auth Gate (PIN Protection) -->
+    <section class="ct-auth-gate" id="auth-gate">
+      <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--ct-primary); font-size: 1.5rem;">
+        <i class="ph-fill ph-lock-key"></i>
+      </div>
+      <h2 style="font-family: var(--ct-font-display); font-size: 1.5rem; margin-bottom: 0.5rem;">
+        Faculty &amp; Guide Access
+      </h2>
+      <p style="font-size: 0.88rem; color: var(--ct-text-muted); margin-bottom: 1.5rem;">
+        Please enter the coordinator 4-digit PIN to access attendance controls &amp; parent broadcasting. (Default PIN: <code>1234</code>)
+      </p>
+
+      <form id="form-auth-pin" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <input 
+          type="password" 
+          id="input-pin" 
+          class="ct-input" 
+          style="text-align: center; font-size: 1.4rem; letter-spacing: 0.3em;" 
+          maxlength="6" 
+          placeholder="••••" 
+          required
+        >
+        <button type="submit" class="ct-btn ct-btn-primary" style="width: 100%;">
+          <i class="ph-fill ph-sign-in"></i> Unlock Dashboard
+        </button>
+      </form>
+    </section>
+
+    <!-- Main Dashboard (Initially Hidden until PIN entered) -->
+    <div id="dashboard-content" style="display: none;">
+
+      <!-- Header & Quick Actions -->
+      <div class="ct-section-header" style="flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 style="font-family: var(--ct-font-display); font-size: 2rem; font-weight: 800;">
+            Expedition Command Dashboard
+          </h1>
+          <p style="font-size: 0.9rem; color: var(--ct-text-muted);">
+            CET Himalayan Expedition • Live Roll Call &amp; Parent Broadcast System
+          </p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="ct-btn ct-btn-primary ct-btn-sm" id="btn-broadcast-modal">
+            <i class="ph-fill ph-broadcast"></i> Broadcast Live Milestone
+          </button>
+          <button class="ct-btn ct-btn-secondary ct-btn-sm" id="btn-export-csv">
+            <i class="ph ph-file-arrow-down"></i> Export Roster (CSV)
+          </button>
+          <button class="ct-btn ct-btn-secondary ct-btn-sm" id="btn-logout-pin">
+            <i class="ph ph-sign-out"></i> Lock
+          </button>
+        </div>
+      </div>
+
+      <!-- Real-Time Statistics Cards -->
+      <div class="ct-stats-grid">
+        <div class="ct-stat-card">
+          <h4>Total Registered</h4>
+          <div class="ct-stat-number" id="stat-total" style="color: #ffffff;">0</div>
+        </div>
+        <div class="ct-stat-card">
+          <h4>Present / Safe</h4>
+          <div class="ct-stat-number" id="stat-present" style="color: #34d399;">0</div>
+        </div>
+        <div class="ct-stat-card">
+          <h4>On Board Coach</h4>
+          <div class="ct-stat-number" id="stat-bus" style="color: #38bdf8;">0</div>
+        </div>
+        <div class="ct-stat-card">
+          <h4>At Resort / Camp</h4>
+          <div class="ct-stat-number" id="stat-hotel" style="color: #a5b4fc;">0</div>
+        </div>
+      </div>
+
+      <!-- Quick Roll Call & Student Attendance Table -->
+      <section class="ct-section">
+        <div class="ct-section-header">
+          <h2 class="ct-section-title">
+            <span class="emoji">📋</span> One-Tap Attendance &amp; Parent Contact Roster
+          </h2>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input 
+              type="text" 
+              id="search-students-input" 
+              class="ct-input" 
+              placeholder="Filter by name, roll no, or bus..." 
+              style="padding: 0.4rem 1rem; font-size: 0.85rem; width: 220px;"
+            >
+          </div>
+        </div>
+
+        <div class="ct-card">
+          <div class="ct-table-responsive">
+            <table class="ct-table">
+              <thead>
+                <tr>
+                  <th>Roll No</th>
+                  <th>Student Name</th>
+                  <th>Coach &amp; Room</th>
+                  <th>Parent Contact</th>
+                  <th>Status (Change Live)</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="teacher-students-table">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Broadcast Live Update to Parents Form -->
+      <section class="ct-section" id="broadcast-section">
+        <div class="ct-section-header">
+          <h2 class="ct-section-title">
+            <span class="emoji">📡</span> Broadcast New Milestone to Parents
+          </h2>
+          <span class="ct-tag ct-tag-altitude">Immediately visible on Parent Live Tracker</span>
+        </div>
+
+        <div class="ct-card">
+          <form id="form-broadcast-update">
+            <div class="ct-form-row">
+              <div class="ct-form-group">
+                <label for="bc-title">Milestone Title *</label>
+                <input 
+                  type="text" 
+                  id="bc-title" 
+                  class="ct-form-control" 
+                  required 
+                  placeholder="e.g. Reached Solang Valley / Lunch Break Underway"
+                >
+              </div>
+              <div class="ct-form-group">
+                <label for="bc-location">Current Location *</label>
+                <input 
+                  type="text" 
+                  id="bc-location" 
+                  class="ct-form-control" 
+                  required 
+                  placeholder="e.g. Solang Valley Base Camp, 2,560m"
+                >
+              </div>
+            </div>
+
+            <div class="ct-form-row">
+              <div class="ct-form-group">
+                <label for="bc-type">Milestone Category</label>
+                <select id="bc-type" class="ct-form-control">
+                  <option value="Milestone">General Milestone</option>
+                  <option value="Departure">Coach Departure / En Route</option>
+                  <option value="Meal">Meal / Refreshment Halt</option>
+                  <option value="Hotel">Resort / Camp Check-in</option>
+                  <option value="Safety">Safety &amp; Roll Call Completed</option>
+                </select>
+              </div>
+              <div class="ct-form-group">
+                <label for="bc-posted-by">Author / Coordinator Name</label>
+                <input 
+                  type="text" 
+                  id="bc-posted-by" 
+                  class="ct-form-control" 
+                  value="Prof. K. Rajagopal (HOD)"
+                >
+              </div>
+            </div>
+
+            <div class="ct-form-group">
+              <label for="bc-desc">Detailed Update Note for Parents *</label>
+              <textarea 
+                id="bc-desc" 
+                class="ct-form-control" 
+                rows="3" 
+                required 
+                placeholder="Describe current activities, weather conditions, next scheduled checkpoint, and reassurance note for parents..."
+              ></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+              <button type="submit" class="ct-btn ct-btn-primary" id="btn-submit-broadcast">
+                <i class="ph-fill ph-paper-plane-tilt"></i> Broadcast to Parents Now
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <script type="module" src="/src/teacher-dashboard.js"></script>
+</body>
+</html>
