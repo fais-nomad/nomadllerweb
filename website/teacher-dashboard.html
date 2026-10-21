@@ -8,6 +8,13 @@
   <link rel="stylesheet" href="/college-trip.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/fill/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/regular/style.css">
+  <!-- PDF.js library for in-browser PDF text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
 </head>
 <body>
 
@@ -86,6 +93,9 @@
           <div style="font-size: 0.8rem; color: var(--ct-text-muted); background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: var(--ct-radius-full); border: 1px solid var(--ct-glass-border);">
             Guide on Duty: <strong id="current-guide-name" style="color: #ffffff;">Arjun Negi</strong>
           </div>
+          <button class="ct-btn ct-btn-cyan ct-btn-sm" id="btn-quick-upload-pdf">
+            <i class="ph-fill ph-file-arrow-up"></i> Upload PDF Plan
+          </button>
           <button class="ct-btn ct-btn-secondary ct-btn-sm" id="btn-logout-pin">
             <i class="ph ph-sign-out"></i> Lock
           </button>
@@ -210,6 +220,41 @@
            TAB 3: DYNAMIC TRIP & PLAN EDITOR (100% CUSTOMIZABLE)
            ======================================================== -->
       <section id="tab-plan-editor" class="ct-tab-content" style="display: none;">
+
+        <!-- Magic AI Itinerary PDF Importer Card -->
+        <div class="ct-card" style="border: 2px dashed rgba(16, 185, 129, 0.45); background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.08) 100%); margin-bottom: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem;">
+            <div>
+              <span class="ct-tag ct-tag-altitude" style="margin-bottom: 0.5rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                <i class="ph-fill ph-sparkle" style="color: #10b981;"></i> AI Auto-Extraction
+              </span>
+              <h3 style="font-family: var(--ct-font-display); font-size: 1.4rem; color: #ffffff;">
+                📄 Upload Itinerary PDF &amp; Auto-Generate Entire Plan
+              </h3>
+              <p style="font-size: 0.88rem; color: var(--ct-text-muted); margin-top: 0.35rem; max-width: 680px;">
+                Upload any college trip PDF brochure, quotation, or itinerary document. Our AI will automatically extract the destination, days, timed checkpoints, inclusions, and exclusions into this portal.
+              </p>
+            </div>
+            <div>
+              <label for="input-itinerary-pdf" class="ct-btn ct-btn-primary" style="cursor: pointer; padding: 0.85rem 1.6rem; font-size: 0.95rem;">
+                <i class="ph-fill ph-file-arrow-up"></i> Select Itinerary PDF
+              </label>
+              <input type="file" id="input-itinerary-pdf" accept="application/pdf" style="display: none;">
+            </div>
+          </div>
+
+          <!-- Loading Progress Indicator -->
+          <div id="pdf-import-status" style="display: none; margin-top: 1.25rem; padding: 1rem 1.25rem; background: rgba(0,0,0,0.5); border-radius: var(--ct-radius-sm); border: 1px solid var(--ct-glass-border);">
+            <div style="display: flex; align-items: center; gap: 0.85rem;">
+              <i class="ph ph-spinner ph-spin" style="font-size: 1.75rem; color: var(--ct-primary);" id="pdf-spinner"></i>
+              <div>
+                <h4 id="pdf-status-title" style="font-size: 1rem; color: #ffffff; font-weight: 700;">Reading PDF Document...</h4>
+                <p id="pdf-status-desc" style="font-size: 0.82rem; color: #a7f3d0;">Extracting day-by-day itinerary, timing checkpoints, inclusions &amp; exclusions with AI...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="ct-card" style="margin-bottom: 2rem;">
           <h3 style="font-family: var(--ct-font-display); font-size: 1.3rem; margin-bottom: 1.25rem; color: #ffffff;">
             🏛️ College &amp; Expedition Master Information
