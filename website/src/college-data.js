@@ -9,122 +9,276 @@ export const supabase = (SUPABASE_URL && SUPABASE_KEY)
 
 export const TRIP_CODE = 'NOMAD-COLLEGE-2026';
 
-// Realistic Default Pre-seeded Data for Immediate Out-Of-The-Box Reliability
-const DEFAULT_TRIP = {
+// -------------------------------------------------------------
+// DEFAULT TRIP CONFIGURATION (Can be customized dynamically)
+// -------------------------------------------------------------
+export const INITIAL_TRIP_DATA = {
   trip_code: TRIP_CODE,
   college_name: 'College of Engineering & Technology (CET)',
-  trip_title: 'Annual Youth Adventure & Himalayan Highland Expedition',
-  destination: 'Manali • Solang Valley • Kasol • Tosh Trek',
+  trip_title: 'Annual Himalayan & Youth Adventure Expedition',
+  destination: 'Manali • Solang Snow Valley • Kasol • Tosh Trek',
   duration: '5 Nights / 6 Days',
   dates: 'Nov 12 - Nov 17, 2026',
-  total_students: 48,
-  coaches: '2 Luxury AC BharatBenz Air-Suspension Coaches',
-  lead_faculty: 'Prof. K. Rajagopal (HOD Mechanical)',
+  coaches: '2 Luxury AC Air-Suspension BharatBenz Coaches',
+  lead_faculty: 'Prof. K. Rajagopal (HOD)',
   faculty_phone: '+91 98470 12345',
-  nomad_guide: 'Arjun Negi (Chief High-Altitude Guide)',
+  nomad_guide: 'Arjun Negi (Chief Guide)',
   nomad_phone: '+91 62389 98382',
   emergency_helpline: '+91 62389 98382',
-  status: '🟢 In Progress - Safe & On Schedule'
+  status: '🟢 In Progress - Safe & On Schedule',
+  itinerary: [
+    {
+      day: 1,
+      title: 'Departure & The Himalayan Ascent Drive',
+      altitude: '2,050m (Manali)',
+      stay: 'Mountain View Resort, Aleo',
+      meals: 'Buffet Breakfast on highway • Lunch halt • Welcome Alpine Dinner',
+      checkpoints: [
+        {
+          id: 'cp-1-1',
+          time: '05:30 AM',
+          title: 'Campus Assembly & Baggage Sanitization',
+          desc: 'All students report to college main porch with faculty in-charge.',
+          is_completed: true,
+          completed_at: '2026-11-12T05:40:00Z',
+          completed_by: 'Prof. K. Rajagopal'
+        },
+        {
+          id: 'cp-1-2',
+          time: '06:15 AM',
+          title: 'Official Flag-Off & Departure',
+          desc: 'Both coaches departed campus. Roll call verified 100% presence.',
+          is_completed: true,
+          completed_at: '2026-11-12T06:20:00Z',
+          completed_by: 'Arjun Negi'
+        },
+        {
+          id: 'cp-1-3',
+          time: '09:00 AM',
+          title: 'Highway Grand Express Breakfast Halt',
+          desc: 'Students enjoying hot buffet breakfast and tea. Group on schedule.',
+          is_completed: true,
+          completed_at: '2026-11-12T09:15:00Z',
+          completed_by: 'Prof. K. Rajagopal'
+        },
+        {
+          id: 'cp-1-4',
+          time: '05:30 PM',
+          title: 'Resort Arrival & Room Check-in',
+          desc: 'Coaches reached Mountain View Resort, Manali. Room keys handed over.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-1-5',
+          time: '07:30 PM',
+          title: 'Campfire Briefing & Expedition Dinner',
+          desc: 'Safety guidelines, weather update & welcome dinner.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        }
+      ]
+    },
+    {
+      day: 2,
+      title: 'Solang Valley Snow Trek & Acclimatization',
+      altitude: '2,560m (Solang Valley)',
+      stay: 'Mountain View Resort, Aleo',
+      meals: 'Continental Breakfast • Packed Valley Lunch • Hot Soup & Dinner',
+      checkpoints: [
+        {
+          id: 'cp-2-1',
+          time: '07:30 AM',
+          title: 'Morning Stretching & Fitness Warm-up',
+          desc: 'Group fitness check before boarding coaches for Solang.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-2-2',
+          time: '09:00 AM',
+          title: 'Arrival at Solang Valley Base Point',
+          desc: 'Coaches parked at snow point base. Trek gear distributed.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-2-3',
+          time: '11:00 AM',
+          title: 'Guided Acclimatization Hike to Waterfall',
+          desc: 'Scenic mountain trail walk led by certified mountaineers.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-2-4',
+          time: '02:00 PM',
+          title: 'Packed Lunch & Snow Activities',
+          desc: 'Warm meals served in heated shelter. Group photo session.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-2-5',
+          time: '07:00 PM',
+          title: 'Return to Resort, Bonfire & Acoustic Session',
+          desc: 'All students accounted for back at resort rooms.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        }
+      ]
+    },
+    {
+      day: 3,
+      title: 'Parvati Valley & The Tosh Village Trek',
+      altitude: '2,400m (Tosh Village)',
+      stay: 'Riverside Alpine Camps, Kasol',
+      meals: 'Breakfast • Cafe Lunch in Kasol • Campfire BBQ & Dinner',
+      checkpoints: [
+        {
+          id: 'cp-3-1',
+          time: '07:00 AM',
+          title: 'Scenic Drive along Parvati River Canyon',
+          desc: 'Departure from Manali towards Kasol and Barshaini.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-3-2',
+          time: '11:00 AM',
+          title: 'Trek Commencement up to Tosh Village',
+          desc: 'Hike across apple orchards and traditional wooden bridges.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-3-3',
+          time: '05:00 PM',
+          title: 'Descent to Riverside Campsite in Kasol',
+          desc: 'Check-in to alpine tents, evening snacks & Parvati river breeze.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        }
+      ]
+    },
+    {
+      day: 4,
+      title: 'Old Manali Heritage Walk & Mall Road Shopping',
+      altitude: '2,050m',
+      stay: 'Mountain View Resort, Aleo',
+      meals: 'Breakfast • Local Himachali Dham • Farewell Gala Dinner',
+      checkpoints: [
+        {
+          id: 'cp-4-1',
+          time: '09:30 AM',
+          title: 'Old Manali & Hadimba Temple Pine Forest Walk',
+          desc: 'Cultural heritage tour and cedar forest exploration.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-4-2',
+          time: '03:30 PM',
+          title: 'Mall Road Shopping & Local Souvenirs',
+          desc: 'Supervised free time for students in designated market zone.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-4-3',
+          time: '07:30 PM',
+          title: 'Gala DJ Night & Expedition Awards',
+          desc: 'Celebration dinner and certificate distribution.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        }
+      ]
+    },
+    {
+      day: 5,
+      title: 'Beas River Rafting & Homeward Journey',
+      altitude: '1,500m (Kullu)',
+      stay: 'Overnight in Luxury AC Coach',
+      meals: 'Buffet Breakfast • Riverfront Lunch • Highway Dinner',
+      checkpoints: [
+        {
+          id: 'cp-5-1',
+          time: '08:00 AM',
+          title: 'Resort Checkout & Drive to Kullu',
+          desc: 'Baggage loaded into coaches. Proceed to rafting point.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-5-2',
+          time: '10:00 AM',
+          title: 'Grade-III Beas River Rafting with Kayak Escort',
+          desc: 'Students equipped with certified life jackets & helmets.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        },
+        {
+          id: 'cp-5-3',
+          time: '04:30 PM',
+          title: 'Commence Return Drive Towards Campus',
+          desc: 'Air-suspension coaches en route. Highway dinner stop scheduled.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        }
+      ]
+    },
+    {
+      day: 6,
+      title: 'Safe Arrival at College Campus',
+      altitude: 'College Campus',
+      stay: 'Home',
+      meals: 'Highway morning breakfast prior to arrival',
+      checkpoints: [
+        {
+          id: 'cp-6-1',
+          time: '08:00 AM',
+          title: 'Arrival at College Gate & Parent Handover',
+          desc: 'Trip concludes safely. Students dismissed to parents.',
+          is_completed: false,
+          completed_at: null,
+          completed_by: null
+        }
+      ]
+    }
+  ],
+  inclusions: [
+    'Luxury AC Coach Transportation with commercial drivers & GPS tracking',
+    'All Mountain Resort & Riverside Alpine Camp Stays (Triple / Quad sharing)',
+    'Nutritious Buffet Meals (Breakfast, Lunch & Dinner as per itinerary) + evening tea',
+    'Certified High-Altitude Mountaineering Guides & Wilderness First Responders (WFR)',
+    'Comprehensive Medical Kit with Portable Oxygen Cylinders & Pulse Oximeters',
+    'Forest Entry Permits, Green Tax, Tolls & Local Guide Logistics',
+    'Evening Bonfire, Acoustic Setup & Campfire BBQ Night',
+    'Full Group Travel & Accidental Insurance coverage for every student'
+  ],
+  exclusions: [
+    'Personal expenses (shopping, personal cafe orders, laundry, phone recharge)',
+    'Optional adventure sports not included in basic package (solo paragliding / zipline)',
+    'Extra room service or personal room heater charges if opted individually',
+    'Medical expenses exceeding travel insurance coverage'
+  ]
 };
-
-const DEFAULT_ITINERARY = [
-  {
-    day: 1,
-    title: 'Departure & The Himalayan Ascent Drive',
-    altitude: '2,050m (Manali)',
-    stay: 'Luxury Mountain View Resort, Aleo',
-    meals: 'Buffet Breakfast on highway • Lunch halt • Welcome Alpine Dinner',
-    events: [
-      { time: '05:30 AM', desc: 'Reporting at College Campus Main Gate & Baggage Sanity Check' },
-      { time: '06:15 AM', desc: 'Official Flag-Off by Principal & Faculty Team' },
-      { time: '09:00 AM', desc: 'Highway Grand Express breakfast buffet halt' },
-      { time: '05:30 PM', desc: 'Arrival in Manali, room allocation & tea/snacks' },
-      { time: '07:30 PM', desc: 'Trip briefing & do\'s and don\'ts with Nomadller expedition team' }
-    ]
-  },
-  {
-    day: 2,
-    title: 'Solang Valley Snow Trek & Acclimatization Walk',
-    altitude: '2,560m (Solang Valley)',
-    stay: 'Luxury Mountain View Resort, Aleo',
-    meals: 'Continental Breakfast • Packed Valley Lunch • Hot Soup & Dinner',
-    events: [
-      { time: '07:30 AM', desc: 'Morning stretching & fitness warm-up' },
-      { time: '09:00 AM', desc: 'Drive to Solang Valley base point' },
-      { time: '10:30 AM', desc: 'Guided acclimatization trek to Anjani Mahadev waterfall' },
-      { time: '02:00 PM', desc: 'Optional paragliding & zorbing under certified instructor supervision' },
-      { time: '07:00 PM', desc: 'Bonfire, live acoustic music & group debrief' }
-    ]
-  },
-  {
-    day: 3,
-    title: 'Kasol Valley & The Tosh Alpine Village Trek',
-    altitude: '2,400m (Tosh Village)',
-    stay: 'Alpine Riverside Tents / Cottages, Kasol',
-    meals: 'Breakfast • Cafe Lunch in Kasol • Campfire BBQ & Dinner',
-    events: [
-      { time: '07:00 AM', desc: 'Scenic morning drive along the Parvati River canyon' },
-      { time: '11:00 AM', desc: 'Trek commencement from Barshaini up to Tosh village' },
-      { time: '01:30 PM', desc: 'Explore traditional wooden architecture & apple orchards' },
-      { time: '05:00 PM', desc: 'Descent to riverside campsite in Kasol' },
-      { time: '08:00 PM', desc: 'Acoustic jam session & hot fresh dinner' }
-    ]
-  },
-  {
-    day: 4,
-    title: 'Old Manali Culture Walk, Hadimba Temple & Mall Road',
-    altitude: '2,050m',
-    stay: 'Luxury Mountain View Resort, Aleo',
-    meals: 'Breakfast • Local Himachali Dham Lunch • Farewell Banquet',
-    events: [
-      { time: '09:30 AM', desc: 'Heritage walk through old Manali cedar forests & Hadimba Shrine' },
-      { time: '01:00 PM', desc: 'Authentic Himachali lunch & cafe exploration' },
-      { time: '03:30 PM', desc: 'Souvenir shopping, local handicrafts & street food on Mall Road' },
-      { time: '07:30 PM', desc: 'Gala DJ night & college awards presentation' }
-    ]
-  },
-  {
-    day: 5,
-    title: 'River Rafting in Beas & Homeward Journey',
-    altitude: '1,500m (Kullu)',
-    stay: 'Overnight Journey in Luxury AC Coach',
-    meals: 'Buffet Breakfast • Riverfront Lunch • Highway Dinner',
-    events: [
-      { time: '08:00 AM', desc: 'Checkout & proceed to Kullu rafting point' },
-      { time: '10:00 AM', desc: 'Grade-III Beas river rafting with lifejackets & rescue kayakers' },
-      { time: '02:00 PM', desc: 'Lunch and freshen up at Kullu river lounge' },
-      { time: '04:30 PM', desc: 'Commence comfortable return drive' }
-    ]
-  },
-  {
-    day: 6,
-    title: 'Safe Arrival Back at College Campus',
-    altitude: 'Campus',
-    stay: 'Home',
-    meals: 'Morning highway breakfast prior to arrival',
-    events: [
-      { time: '08:00 AM', desc: 'Buses reach college campus safely. Handover to parents & students dismissal.' }
-    ]
-  }
-];
-
-const DEFAULT_INCLUSIONS = [
-  'Luxury AC Coach Transportation with certified commercial drivers & GPS tracking',
-  'All 3 Star Mountain Resort & Riverside Alpine Camp stays (Quad / Triple sharing)',
-  'Nutritious Buffet Meals (Breakfast, Lunch & Dinner as per itinerary) + evening tea',
-  'Certified High-Altitude Mountaineering Guides & Wilderness First Responders (WFR)',
-  'Comprehensive Medical Kit with Portable Oxygen Cylinders & Pulse Oximeters',
-  'Forest Entry Permits, Green Tax, Tolls & Local Guide Logistics',
-  'Evening Bonfire, Acoustic Setup & Campfire BBQ Night',
-  'Full Group Travel & Accidental Insurance coverage for every student'
-];
-
-const DEFAULT_EXCLUSIONS = [
-  'Personal expenses (shopping, personal cafe orders, laundry, phone recharge)',
-  'Optional adventure sports not included in basic package (solo paragliding / zipline)',
-  'Extra room orders or personal heater charges if opted individually',
-  'Medical expenses exceeding travel insurance coverage'
-];
 
 const DEFAULT_STUDENTS = [
   {
@@ -213,8 +367,8 @@ const DEFAULT_UPDATES = [
   {
     id: 'upd-1',
     trip_code: TRIP_CODE,
-    title: 'Trip Flag-Off & Campus Departure Completed',
-    description: 'All students accounted for. Both coaches departed on schedule with Faculty team and Nomadller leads. High energy throughout!',
+    title: 'Flag-Off & Campus Departure Completed',
+    description: 'Both luxury AC coaches have departed campus with faculty team and Nomadller leads. All 48 students accounted for.',
     location_name: 'College Campus Main Gate',
     update_type: 'Departure',
     posted_by: 'Prof. K. Rajagopal (HOD)',
@@ -223,26 +377,16 @@ const DEFAULT_UPDATES = [
   {
     id: 'upd-2',
     trip_code: TRIP_CODE,
-    title: 'Breakfast & Refreshment Halt',
-    description: 'Students enjoyed a healthy buffet breakfast at Highway Plaza. Roll call verified 100% attendance before boarding.',
+    title: 'Highway Breakfast Halt Completed',
+    description: 'Students enjoyed a healthy buffet breakfast at Highway Grand Plaza. Roll call verified 100% presence before departure.',
     location_name: 'Highway Express Oasis',
     update_type: 'Meal',
     posted_by: 'Arjun Negi (Nomadller)',
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 10).toISOString()
-  },
-  {
-    id: 'upd-3',
-    trip_code: TRIP_CODE,
-    title: 'Resort Arrival & Safe Room Allocation',
-    description: 'We have checked in to Mountain View Resort. Welcome herbal tea served, luggage placed in respective rooms. Evening campfire session scheduled for 7:30 PM.',
-    location_name: 'Mountain View Resort, Aleo, Manali',
-    update_type: 'Hotel',
-    posted_by: 'Prof. K. Rajagopal (HOD)',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString()
   }
 ];
 
-// Helper to access LocalStorage cache
+// LocalStorage helpers
 function getStorage(key, fallback) {
   try {
     const raw = localStorage.getItem('nomad_college_' + key);
@@ -257,11 +401,13 @@ function setStorage(key, val) {
   try {
     localStorage.setItem('nomad_college_' + key, JSON.stringify(val));
   } catch (e) {
-    console.warn('Storage save failed:', e);
+    console.warn('Storage save error:', e);
   }
 }
 
-// 1. Get Trip Metadata & Itinerary
+// -------------------------------------------------------------
+// 1. Fetch Dynamic Trip Metadata (With Checkpoints & Itinerary)
+// -------------------------------------------------------------
 export async function fetchTripMetadata() {
   if (supabase) {
     try {
@@ -272,16 +418,104 @@ export async function fetchTripMetadata() {
         .maybeSingle();
 
       if (data && !error) {
-        return { ...DEFAULT_TRIP, ...data, itinerary: DEFAULT_ITINERARY, inclusions: DEFAULT_INCLUSIONS, exclusions: DEFAULT_EXCLUSIONS };
+        const full = {
+          ...INITIAL_TRIP_DATA,
+          ...data,
+          itinerary: (data.itinerary_data && data.itinerary_data.length > 0) ? data.itinerary_data : INITIAL_TRIP_DATA.itinerary,
+          inclusions: (data.inclusions && data.inclusions.length > 0) ? data.inclusions : INITIAL_TRIP_DATA.inclusions,
+          exclusions: (data.exclusions && data.exclusions.length > 0) ? data.exclusions : INITIAL_TRIP_DATA.exclusions
+        };
+        setStorage('trip_config', full);
+        return full;
       }
     } catch (e) {
-      console.warn('Using default trip metadata');
+      console.warn('Supabase trip fetch failed, falling back to cache');
     }
   }
-  return { ...DEFAULT_TRIP, itinerary: DEFAULT_ITINERARY, inclusions: DEFAULT_INCLUSIONS, exclusions: DEFAULT_EXCLUSIONS };
+  return getStorage('trip_config', INITIAL_TRIP_DATA);
 }
 
-// 2. Get All Students
+// -------------------------------------------------------------
+// 2. Save Entire Dynamic Trip Configuration
+// -------------------------------------------------------------
+export async function saveTripConfig(newConfig) {
+  const merged = { ...INITIAL_TRIP_DATA, ...newConfig, updated_at: new Date().toISOString() };
+  setStorage('trip_config', merged);
+
+  if (supabase) {
+    try {
+      await supabase
+        .from('college_trips')
+        .upsert({
+          trip_code: TRIP_CODE,
+          college_name: merged.college_name,
+          trip_title: merged.trip_title,
+          destination: merged.destination,
+          dates: merged.dates,
+          duration: merged.duration,
+          coaches: merged.coaches,
+          lead_faculty: merged.lead_faculty,
+          faculty_phone: merged.faculty_phone,
+          nomad_guide: merged.nomad_guide,
+          nomad_phone: merged.nomad_phone,
+          emergency_helpline: merged.emergency_helpline,
+          itinerary_data: merged.itinerary,
+          inclusions: merged.inclusions,
+          exclusions: merged.exclusions
+        }, { onConflict: 'trip_code' });
+    } catch (e) {
+      console.warn('Supabase trip config save failed, saved locally');
+    }
+  }
+
+  return merged;
+}
+
+// -------------------------------------------------------------
+// 3. THE GUIDE'S TICK SYSTEM: Toggle Itinerary Checkpoint
+// -------------------------------------------------------------
+export async function toggleCheckpoint(checkpointId, isCompleted, authorName = 'Guide Arjun Negi') {
+  const trip = await fetchTripMetadata();
+  let targetCheckpoint = null;
+  let targetDayTitle = '';
+
+  const updatedItinerary = trip.itinerary.map(day => {
+    const updatedCheckpoints = (day.checkpoints || []).map(cp => {
+      if (cp.id === checkpointId) {
+        targetCheckpoint = {
+          ...cp,
+          is_completed: isCompleted,
+          completed_at: isCompleted ? new Date().toISOString() : null,
+          completed_by: isCompleted ? authorName : null
+        };
+        targetDayTitle = day.title;
+        return targetCheckpoint;
+      }
+      return cp;
+    });
+    return { ...day, checkpoints: updatedCheckpoints };
+  });
+
+  trip.itinerary = updatedItinerary;
+  await saveTripConfig(trip);
+
+  // Automatically broadcast this milestone to the parent feed if marked complete!
+  if (isCompleted && targetCheckpoint) {
+    await postLiveUpdate({
+      title: `Checkpoint Completed: ${targetCheckpoint.title}`,
+      description: `${targetCheckpoint.desc || ''} (Verified on time by ${authorName}).`,
+      location_name: targetDayTitle || trip.destination,
+      update_type: 'Milestone',
+      posted_by: authorName
+    });
+  }
+
+  return trip;
+}
+
+// -------------------------------------------------------------
+// 4. Students Management
+// -------------------------------------------------------------
 export async function fetchStudents() {
   if (supabase) {
     try {
@@ -296,13 +530,12 @@ export async function fetchStudents() {
         return data;
       }
     } catch (e) {
-      console.warn('Supabase fetch failed, falling back to local data');
+      console.warn('Supabase students fetch failed, using local');
     }
   }
   return getStorage('students', DEFAULT_STUDENTS);
 }
 
-// 3. Register a New Student
 export async function registerStudent(studentData) {
   const newStudent = {
     id: 'std-' + Date.now(),
@@ -326,34 +559,37 @@ export async function registerStudent(studentData) {
         return data;
       }
     } catch (e) {
-      console.warn('Supabase insert failed, saving locally');
+      console.warn('Supabase student insert error, saving to cache');
     }
   }
 
-  // Local storage save
   const current = getStorage('students', DEFAULT_STUDENTS);
   const updated = [newStudent, ...current];
   setStorage('students', updated);
   return newStudent;
 }
 
-// 4. Update Student Status (Attendance by Teacher)
 export async function updateStudentAttendance(id, newStatus, newNotes = '') {
   if (supabase) {
     try {
       await supabase
         .from('college_students')
-        .update({ status: newStatus, notes: newNotes })
+        .update({ status: newStatus, notes: newNotes, last_update: `Status: ${newStatus}` })
         .eq('id', id);
     } catch (e) {
-      console.warn('Supabase update failed');
+      console.warn('Supabase attendance update failed');
     }
   }
 
   const current = getStorage('students', DEFAULT_STUDENTS);
   const updated = current.map(s => {
     if (s.id === id) {
-      return { ...s, status: newStatus, notes: newNotes || s.notes, last_update: 'Status updated to: ' + newStatus };
+      return { 
+        ...s, 
+        status: newStatus, 
+        notes: newNotes || s.notes, 
+        last_update: `Status: ${newStatus} (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})` 
+      };
     }
     return s;
   });
@@ -361,7 +597,35 @@ export async function updateStudentAttendance(id, newStatus, newNotes = '') {
   return updated;
 }
 
-// 5. Get Real-Time Live Updates (Parent Feed)
+export async function deleteStudent(id) {
+  if (supabase) {
+    try {
+      await supabase.from('college_students').delete().eq('id', id);
+    } catch (e) {
+      console.warn('Supabase delete failed');
+    }
+  }
+  const current = getStorage('students', DEFAULT_STUDENTS);
+  const updated = current.filter(s => s.id !== id);
+  setStorage('students', updated);
+  return updated;
+}
+
+export async function lookupStudent(query) {
+  const students = await fetchStudents();
+  const clean = (query || '').trim().toLowerCase();
+  if (!clean) return null;
+
+  return students.find(s => 
+    (s.roll_no && s.roll_no.toLowerCase().includes(clean)) ||
+    (s.name && s.name.toLowerCase().includes(clean)) ||
+    (s.phone && s.phone.includes(clean))
+  );
+}
+
+// -------------------------------------------------------------
+// 5. Parent Live Broadcast Updates
+// -------------------------------------------------------------
 export async function fetchLiveUpdates() {
   if (supabase) {
     try {
@@ -382,7 +646,6 @@ export async function fetchLiveUpdates() {
   return getStorage('updates', DEFAULT_UPDATES);
 }
 
-// 6. Broadcast New Milestone / Update (by Teacher)
 export async function postLiveUpdate(updateData) {
   const newUpdate = {
     id: 'upd-' + Date.now(),
@@ -405,7 +668,7 @@ export async function postLiveUpdate(updateData) {
         return data;
       }
     } catch (e) {
-      console.warn('Supabase broadcast failed, saved to local cache');
+      console.warn('Saved update to cache');
     }
   }
 
@@ -413,17 +676,4 @@ export async function postLiveUpdate(updateData) {
   const updated = [newUpdate, ...current];
   setStorage('updates', updated);
   return newUpdate;
-}
-
-// 7. Find Student by Roll No (for Parent Verification)
-export async function lookupStudent(query) {
-  const students = await fetchStudents();
-  const clean = (query || '').trim().toLowerCase();
-  if (!clean) return null;
-
-  return students.find(s => 
-    (s.roll_no && s.roll_no.toLowerCase().includes(clean)) ||
-    (s.name && s.name.toLowerCase().includes(clean)) ||
-    (s.phone && s.phone.includes(clean))
-  );
 }

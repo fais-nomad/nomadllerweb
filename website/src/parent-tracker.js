@@ -1,86 +1,217 @@
 import { 
-  fetchLiveUpdates, 
+  fetchTripMetadata, 
   lookupStudent 
 } from './college-data.js';
 
+let currentTrip = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadLiveFeed();
+  await loadParentTracker();
   setupStudentSearch();
 
-  // Poll for updates every 30 seconds
-  setInterval(loadLiveFeed, 30000);
+  // Auto-refresh every 20 seconds to pull guide's ticked milestones
+  setInterval(loadParentTracker, 20000);
 });
 
-// 1. Render Live Milestones Feed
-async function loadLiveFeed() {
-  const container = document.getElementById('live-feed-container');
-  const countBadge = document.getElementById('updates-count-badge');
+async function loadParentTracker() {
+  currentTrip = await fetchTripMetadata();
+  if (!currentTrip) return;
+
+  renderTripHeaders(currentTrip);
+  renderJourneyProgress(currentTrip);
+  renderLatestMilestone(currentTrip);
+  renderJourneyTimeline(currentTrip);
+  renderContactCards(currentTrip);
+}
+
+// 1. Headers & Banner
+function renderTripHeaders(trip) {
+  const elTitle = document.getElementById('parent-trip-title');
+  const elSub = document.getElementById('parent-banner-sub');
+  const elEmergencyBtn = document.getElementById('parent-emergency-btn');
+
+  if (elTitle) elTitle.textContent = `${trip.college_name} • ${trip.trip_title}`;
+  if (elSub) elSub.textContent = `Destination: ${trip.destination} | Dates: ${trip.dates}`;
+  if (elEmergencyBtn && trip.emergency_helpline) {
+    elEmergencyBtn.href = `tel:${trip.emergency_helpline.replace(/[^0-9+]/g, '')}`;
+    elEmergencyBtn.innerHTML = `<i class="ph-fill ph-phone-call"></i> 24x7 Helpline: ${trip.emergency_helpline}`;
+  }
+}
+
+// 2. Journey Progress Bar
+function renderJourneyProgress(trip) {
+  const days = trip.itinerary || [];
+  let total = 0;
+  let completed = 0;
+
+  days.forEach(d => {
+    (d.checkpoints || []).forEach(cp => {
+      total++;
+      if (cp.is_completed) completed++;
+    });
+  });
+
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  const elPercent = document.getElementById('parent-progress-percent');
+  const elFill = document.getElementById('parent-progress-fill');
+  const elCount = document.getElementById('parent-progress-count');
+
+  if (elPercent) elPercent.textContent = `${percent}%`;
+  if (elFill) elFill.style.width = `${percent}%`;
+  if (elCount) elCount.textContent = `${completed} of ${total} checkpoints verified by Tour Guide`;
+}
+
+// 3. Latest Verified Milestone Card
+function renderLatestMilestone(trip) {
+  const days = trip.itinerary || [];
+  let latestCp = null;
+  let latestDayTitle = '';
+
+  // Scan through in order to find the latest completed checkpoint
+  days.forEach(d => {
+    (d.checkpoints || []).forEach(cp => {
+      if (cp.is_completed) {
+        latestCp = cp;
+        latestDayTitle = `Day ${d.day}: ${d.title}`;
+      }
+    });
+  });
+
+  const elTitle = document.getElementById('latest-milestone-title');
+  const elDesc = document.getElementById('latest-milestone-desc');
+  const elTime = document.getElementById('latest-milestone-time');
+  const elBadge = document.getElementById('latest-milestone-badge');
+
+  if (latestCp) {
+    if (elTitle) elTitle.textContent = `${latestCp.time} • ${latestCp.title}`;
+    if (elDesc) elDesc.textContent = `${latestCp.desc || ''} (${latestDayTitle})`;
+    if (elTime && latestCp.completed_at) {
+      elTime.textContent = `Verified at ${new Date(latestCp.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} by ${latestCp.completed_by || 'Tour Guide'}`;
+    }
+    if (elBadge) {
+      elBadge.className = 'ct-status-badge ct-status-present';
+      elBadge.textContent = '🟢 Verified Passed';
+    }
+  } else {
+    if (elTitle) elTitle.textContent = 'Expedition Preparing for Departure';
+    if (elDesc) elDesc.textContent = 'Guides will tick off the first checkpoint once coaches are flagged off from campus.';
+    if (elBadge) {
+      elBadge.className = 'ct-status-badge ct-status-alert';
+      elBadge.textContent = '⏱️ In Preparation';
+    }
+  }
+}
+
+// 4. Render Complete Itinerary Journey Map
+function renderJourneyTimeline(trip) {
+  const container = document.getElementById('parent-journey-container');
   if (!container) return;
 
-  const updates = await fetchLiveUpdates();
-  if (countBadge) {
-    countBadge.textContent = `${updates.length} Live Milestones Posted`;
-  }
+  const days = trip.itinerary || [];
 
-  if (updates.length === 0) {
-    container.innerHTML = `
-      <div class="ct-card" style="text-align: center; color: var(--ct-text-muted);">
-        <i class="ph ph-broadcast" style="font-size: 2rem; color: var(--ct-primary); margin-bottom: 0.5rem;"></i>
-        <p>No milestone updates posted yet. Faculty will begin broadcasting once travel begins.</p>
-      </div>
-    `;
-    return;
-  }
+  container.innerHTML = days.map(d => {
+    const checkpoints = d.checkpoints || [];
 
-  container.innerHTML = updates.map(u => {
-    let typeClass = 'ct-tag-stay';
-    let icon = 'ph-map-pin';
+    const checkpointsHtml = checkpoints.map(cp => {
+      const isDone = cp.is_completed;
+      const icon = isDone 
+        ? '<i class="ph-fill ph-check-circle" style="color: #10b981; font-size: 1.35rem;"></i>' 
+        : '<i class="ph ph-clock" style="color: var(--ct-text-subtle); font-size: 1.35rem;"></i>';
 
-    if (u.update_type === 'Departure') {
-      typeClass = 'ct-tag-altitude';
-      icon = 'ph-bus';
-    } else if (u.update_type === 'Meal') {
-      typeClass = 'ct-tag-stay';
-      icon = 'ph-fork-knife';
-    } else if (u.update_type === 'Hotel') {
-      typeClass = 'ct-tag-stay';
-      icon = 'ph-bed';
-    } else if (u.update_type === 'Safety') {
-      typeClass = 'ct-tag-altitude';
-      icon = 'ph-shield-check';
-    }
+      const timeMeta = isDone && cp.completed_at
+        ? `<div style="font-size:0.75rem; color:#34d399; margin-top:0.2rem;">
+            ✓ Completed &amp; verified at ${new Date(cp.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (${cp.completed_by || 'Guide'})
+           </div>`
+        : `<div style="font-size:0.75rem; color:var(--ct-text-subtle); margin-top:0.2rem;">Scheduled checkpoint</div>`;
 
-    const timeAgo = formatTimeAgo(u.created_at);
+      return `
+        <div style="display: flex; align-items: flex-start; gap: 0.85rem; padding: 0.85rem 1rem; background: ${isDone ? 'rgba(16, 185, 129, 0.05)' : 'rgba(0,0,0,0.2)'}; border: 1px solid ${isDone ? 'rgba(16, 185, 129, 0.25)' : 'var(--ct-glass-border)'}; border-radius: var(--ct-radius-sm); margin-bottom: 0.6rem;">
+          <div style="padding-top: 0.1rem;">${icon}</div>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+              <h4 style="font-family: var(--ct-font-display); font-size: 0.98rem; font-weight: 700; color: #ffffff;">
+                <span style="color: var(--ct-accent-cyan); margin-right: 0.4rem;">${cp.time}</span>
+                ${cp.title}
+              </h4>
+              <span class="ct-status-badge ${isDone ? 'ct-status-present' : 'ct-status-alert'}" style="font-size: 0.68rem; padding: 0.2rem 0.5rem;">
+                ${isDone ? 'COMPLETED' : 'UPCOMING'}
+              </span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-top: 0.2rem;">${cp.desc || ''}</p>
+            ${timeMeta}
+          </div>
+        </div>
+      `;
+    }).join('');
 
     return `
-      <article class="ct-feed-item">
-        <div class="ct-feed-top">
-          <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <span class="ct-tag ${typeClass}">
-              <i class="ph ${icon}"></i> ${u.update_type || 'Milestone'}
-            </span>
-            <h3 class="ct-feed-title">${u.title}</h3>
+      <div class="ct-card" style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--ct-glass-border); padding-bottom: 0.75rem;">
+          <div>
+            <span class="ct-tag ct-tag-stay" style="margin-bottom: 0.3rem; display: inline-block;">Day ${d.day < 10 ? '0' + d.day : d.day}</span>
+            <h3 style="font-family: var(--ct-font-display); font-size: 1.25rem; color: #ffffff;">${d.title}</h3>
           </div>
-          <span class="ct-feed-time">⏱️ ${timeAgo}</span>
-        </div>
-        <p style="color: var(--ct-text-muted); font-size: 0.95rem; line-height: 1.6;">
-          ${u.description}
-        </p>
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.75rem;">
-          <div class="ct-feed-location">
-            <i class="ph-fill ph-map-pin" style="color: var(--ct-primary);"></i>
-            <span>${u.location_name || 'En Route'}</span>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            ${d.altitude ? `<span class="ct-tag ct-tag-altitude"><i class="ph ph-mountains"></i> ${d.altitude}</span>` : ''}
+            ${d.stay ? `<span class="ct-tag ct-tag-stay"><i class="ph ph-bed"></i> ${d.stay}</span>` : ''}
           </div>
-          <span style="font-size: 0.78rem; color: var(--ct-text-subtle);">
-            Broadcast by: <strong>${u.posted_by || 'Faculty Team'}</strong>
-          </span>
         </div>
-      </article>
+
+        ${d.meals ? `
+          <div style="font-size: 0.82rem; color: #a7f3d0; margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
+            <i class="ph-fill ph-fork-knife" style="color: var(--ct-primary);"></i>
+            <strong>Meals:</strong> ${d.meals}
+          </div>
+        ` : ''}
+
+        <div style="margin-top: 0.8rem;">
+          ${checkpointsHtml || '<p style="color:var(--ct-text-muted); font-size:0.85rem;">No checkpoints planned for this day.</p>'}
+        </div>
+      </div>
     `;
   }).join('');
 }
 
-// 2. Student Lookup Logic
+// 5. Dynamic Contact Cards
+function renderContactCards(trip) {
+  const container = document.getElementById('parent-contacts-container');
+  if (!container) return;
+
+  const facultyPhone = (trip.faculty_phone || '+91 98470 12345').replace(/[^0-9+]/g, '');
+  const guidePhone = (trip.nomad_phone || '+91 62389 98382').replace(/[^0-9+]/g, '');
+
+  container.innerHTML = `
+    <div class="ct-card">
+      <span class="ct-tag ct-tag-stay" style="margin-bottom: 0.8rem; display: inline-block;">Lead Faculty In-Charge</span>
+      <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">${trip.lead_faculty || 'Prof. K. Rajagopal'}</h3>
+      <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Faculty Coordinator</p>
+      <a href="tel:${facultyPhone}" class="ct-btn ct-btn-secondary ct-btn-sm" style="width: 100%;">
+        <i class="ph-fill ph-phone-call"></i> Call Faculty: ${trip.faculty_phone || facultyPhone}
+      </a>
+    </div>
+
+    <div class="ct-card">
+      <span class="ct-tag ct-tag-altitude" style="margin-bottom: 0.8rem; display: inline-block;">Nomadller Expedition Lead</span>
+      <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">${trip.nomad_guide || 'Arjun Negi'}</h3>
+      <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Certified Wilderness First Responder</p>
+      <a href="tel:${guidePhone}" class="ct-btn ct-btn-secondary ct-btn-sm" style="width: 100%;">
+        <i class="ph-fill ph-phone-call"></i> Call Guide: ${trip.nomad_phone || guidePhone}
+      </a>
+    </div>
+
+    <div class="ct-card">
+      <span class="ct-tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); margin-bottom: 0.8rem; display: inline-block;">Nomadller Central Support</span>
+      <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">Central Operations Desk</h3>
+      <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">24x7 Emergency Desk</p>
+      <a href="https://wa.me/916238998382?text=Hello%20Nomadller,%20I%20am%20a%20parent%20inquiring%20about%20the%20college%20expedition." target="_blank" rel="noopener noreferrer" class="ct-btn ct-btn-primary ct-btn-sm" style="width: 100%;">
+        <i class="ph-fill ph-whatsapp-logo"></i> WhatsApp Emergency Desk
+      </a>
+    </div>
+  `;
+}
+
+// 6. Student Lookup Logic
 function setupStudentSearch() {
   const form = document.getElementById('parent-search-form');
   const input = document.getElementById('parent-search-input');
@@ -96,17 +227,16 @@ function setupStudentSearch() {
     const student = await lookupStudent(query);
 
     if (!student) {
-      alert(`No student found matching "${query}". Please check the Roll Number or Name (e.g., CET-CS-042 or Aditya) or register first on the Student page.`);
+      alert(`No student found matching "${query}". Please check the Roll Number or Name (e.g. CET-CS-042 or Aditya) or verify registration on the Student portal.`);
       resultCard.classList.remove('visible');
       return;
     }
 
-    // Populate data
     document.getElementById('res-name').textContent = student.name;
     document.getElementById('res-roll').textContent = `Roll No: ${student.roll_no}`;
     document.getElementById('res-bus').textContent = student.bus_no || 'Bus 1';
-    document.getElementById('res-room').textContent = student.room_no || 'Resort Room 204';
-    document.getElementById('res-dept').textContent = student.department || 'CET Department';
+    document.getElementById('res-room').textContent = student.room_no || 'Room 101';
+    document.getElementById('res-dept').textContent = student.department || 'Department';
     document.getElementById('res-last-update').textContent = student.last_update || 'Verified Safe with Group';
 
     const badge = document.getElementById('res-badge');
@@ -132,19 +262,4 @@ function setupStudentSearch() {
     resultCard.classList.add('visible');
     resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
-}
-
-// Helper: Relative Time Formatter
-function formatTimeAgo(dateString) {
-  if (!dateString) return 'Just now';
-  const now = new Date();
-  const past = new Date(dateString);
-  const diffMinutes = Math.floor((now - past) / (1000 * 60));
-
-  if (diffMinutes < 1) return 'Just now';
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
 }

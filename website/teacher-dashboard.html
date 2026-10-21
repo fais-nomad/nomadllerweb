@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Faculty Command Dashboard | College Expedition Coordinator Portal | Nomadller</title>
-  <meta name="description" content="Faculty & Trip Coordinator Dashboard. Manage student roll calls, update live student status, and broadcast real-time milestones to parents.">
+  <title>Guide &amp; Faculty Command Center | Real-Time Milestone Ticking | Nomadller</title>
+  <meta name="description" content="Guide &amp; Faculty Control Center. Tick live itinerary checkpoints to update parents in real-time, manage student roll calls, and edit trip details dynamically.">
   <link rel="stylesheet" href="/college-trip.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/fill/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/regular/style.css">
@@ -17,19 +17,19 @@
       <div class="ct-brand-logo">N</div>
       <div class="ct-brand-text">
         <h1>NOMADLLER</h1>
-        <span>Faculty &amp; Coordinator Portal</span>
+        <span>Guide &amp; Faculty Command Center</span>
       </div>
     </div>
     <nav class="ct-nav-links">
       <a href="/teacher-dashboard" class="ct-nav-pill active">
-        <i class="ph ph-chalkboard-teacher"></i> Faculty Dashboard
+        <i class="ph ph-chalkboard-teacher"></i> Guide Center
       </a>
       <a href="/parent-tracker" class="ct-nav-pill">
         <span class="badge-live"></span>
         <i class="ph ph-map-pin-line"></i> Parent Live Tracker
       </a>
       <a href="/college-trip" class="ct-nav-pill">
-        <i class="ph ph-backpack"></i> Itinerary &amp; Plan
+        <i class="ph ph-backpack"></i> Student Portal
       </a>
       <a href="/" class="ct-nav-pill">
         <i class="ph ph-house"></i> Home
@@ -45,10 +45,10 @@
         <i class="ph-fill ph-lock-key"></i>
       </div>
       <h2 style="font-family: var(--ct-font-display); font-size: 1.5rem; margin-bottom: 0.5rem;">
-        Faculty &amp; Guide Access
+        Guide &amp; Faculty Access
       </h2>
       <p style="font-size: 0.88rem; color: var(--ct-text-muted); margin-bottom: 1.5rem;">
-        Please enter the coordinator 4-digit PIN to access attendance controls &amp; parent broadcasting. (Default PIN: <code>1234</code>)
+        Enter the coordinator PIN to check off live milestones and manage roll calls. (Default PIN: <code>1234</code>)
       </p>
 
       <form id="form-auth-pin" style="display: flex; flex-direction: column; gap: 0.75rem;">
@@ -62,74 +62,129 @@
           required
         >
         <button type="submit" class="ct-btn ct-btn-primary" style="width: 100%;">
-          <i class="ph-fill ph-sign-in"></i> Unlock Dashboard
+          <i class="ph-fill ph-sign-in"></i> Unlock Command Center
         </button>
       </form>
     </section>
 
-    <!-- Main Dashboard (Initially Hidden until PIN entered) -->
+    <!-- Main Dashboard -->
     <div id="dashboard-content" style="display: none;">
 
-      <!-- Header & Quick Actions -->
-      <div class="ct-section-header" style="flex-wrap: wrap; gap: 1rem;">
+      <!-- Header & Top Actions -->
+      <div class="ct-section-header" style="flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
         <div>
-          <h1 style="font-family: var(--ct-font-display); font-size: 2rem; font-weight: 800;">
-            Expedition Command Dashboard
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;">
+            <span class="ct-tag ct-tag-stay" id="dash-college-badge">College of Engineering &amp; Technology</span>
+            <span class="badge-live"></span>
+            <span style="font-size: 0.75rem; color: var(--ct-primary); font-weight: 700;">LIVE SYSTEM ACTIVE</span>
+          </div>
+          <h1 style="font-family: var(--ct-font-display); font-size: 1.85rem; font-weight: 800;" id="dash-trip-title">
+            Expedition Command &amp; Live Ticking
           </h1>
-          <p style="font-size: 0.9rem; color: var(--ct-text-muted);">
-            CET Himalayan Expedition • Live Roll Call &amp; Parent Broadcast System
-          </p>
         </div>
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-          <button class="ct-btn ct-btn-primary ct-btn-sm" id="btn-broadcast-modal">
-            <i class="ph-fill ph-broadcast"></i> Broadcast Live Milestone
-          </button>
-          <button class="ct-btn ct-btn-secondary ct-btn-sm" id="btn-export-csv">
-            <i class="ph ph-file-arrow-down"></i> Export Roster (CSV)
-          </button>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+          <div style="font-size: 0.8rem; color: var(--ct-text-muted); background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: var(--ct-radius-full); border: 1px solid var(--ct-glass-border);">
+            Guide on Duty: <strong id="current-guide-name" style="color: #ffffff;">Arjun Negi</strong>
+          </div>
           <button class="ct-btn ct-btn-secondary ct-btn-sm" id="btn-logout-pin">
             <i class="ph ph-sign-out"></i> Lock
           </button>
         </div>
       </div>
 
-      <!-- Real-Time Statistics Cards -->
-      <div class="ct-stats-grid">
-        <div class="ct-stat-card">
-          <h4>Total Registered</h4>
-          <div class="ct-stat-number" id="stat-total" style="color: #ffffff;">0</div>
-        </div>
-        <div class="ct-stat-card">
-          <h4>Present / Safe</h4>
-          <div class="ct-stat-number" id="stat-present" style="color: #34d399;">0</div>
-        </div>
-        <div class="ct-stat-card">
-          <h4>On Board Coach</h4>
-          <div class="ct-stat-number" id="stat-bus" style="color: #38bdf8;">0</div>
-        </div>
-        <div class="ct-stat-card">
-          <h4>At Resort / Camp</h4>
-          <div class="ct-stat-number" id="stat-hotel" style="color: #a5b4fc;">0</div>
-        </div>
-      </div>
+      <!-- Navigation Tabs -->
+      <nav class="ct-tabs">
+        <button class="ct-tab-btn active" data-tab="tab-checkpoints">
+          <i class="ph-fill ph-check-square"></i> 1. Live Milestone Checklist (Tick System)
+        </button>
+        <button class="ct-tab-btn" data-tab="tab-rollcall">
+          <i class="ph-fill ph-users"></i> 2. Student Roll Call &amp; Attendance
+        </button>
+        <button class="ct-tab-btn" data-tab="tab-plan-editor">
+          <i class="ph-fill ph-sliders"></i> 3. Dynamic Trip &amp; Plan Editor
+        </button>
+      </nav>
 
-      <!-- Quick Roll Call & Student Attendance Table -->
-      <section class="ct-section">
-        <div class="ct-section-header">
-          <h2 class="ct-section-title">
-            <span class="emoji">📋</span> One-Tap Attendance &amp; Parent Contact Roster
-          </h2>
-          <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <input 
-              type="text" 
-              id="search-students-input" 
-              class="ct-input" 
-              placeholder="Filter by name, roll no, or bus..." 
-              style="padding: 0.4rem 1rem; font-size: 0.85rem; width: 220px;"
-            >
+      <!-- ========================================================
+           TAB 1: LIVE MILESTONE CHECKLIST (THE TICK SYSTEM)
+           ======================================================== -->
+      <section id="tab-checkpoints" class="ct-tab-content">
+        <!-- Progress Bar Card -->
+        <div class="ct-progress-card">
+          <div class="ct-progress-header">
+            <div>
+              <h3 style="font-family: var(--ct-font-display); font-size: 1.15rem; color: #ffffff;">
+                Overall Expedition Progress
+              </h3>
+              <p style="font-size: 0.82rem; color: var(--ct-text-muted);">
+                Ticking any milestone instantly pushes a live notification to all parents.
+              </p>
+            </div>
+            <div style="font-family: var(--ct-font-display); font-size: 1.4rem; font-weight: 800; color: #34d399;" id="progress-percent">
+              0%
+            </div>
+          </div>
+          <div class="ct-progress-track">
+            <div class="ct-progress-fill" id="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--ct-text-subtle); margin-top: 0.5rem;">
+            <span id="progress-count-text">0 of 0 milestones completed</span>
+            <span>Auto-synced with Parents</span>
           </div>
         </div>
 
+        <!-- Day Selector Filter Pills -->
+        <div style="display: flex; gap: 0.5rem; overflow-x: auto; margin-bottom: 1.5rem; padding-bottom: 0.4rem;" id="day-selector-pills">
+          <!-- Populated by teacher-dashboard.js -->
+        </div>
+
+        <!-- Checkpoints List Container -->
+        <div class="ct-checkpoint-list" id="checkpoints-list-container">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- ========================================================
+           TAB 2: STUDENT ROLL CALL & ATTENDANCE
+           ======================================================== -->
+      <section id="tab-rollcall" class="ct-tab-content" style="display: none;">
+        <!-- Stats Summary -->
+        <div class="ct-stats-grid">
+          <div class="ct-stat-card">
+            <h4>Total Registered</h4>
+            <div class="ct-stat-number" id="stat-total" style="color: #ffffff;">0</div>
+          </div>
+          <div class="ct-stat-card">
+            <h4>Present &amp; Safe</h4>
+            <div class="ct-stat-number" id="stat-present" style="color: #34d399;">0</div>
+          </div>
+          <div class="ct-stat-card">
+            <h4>On Board Coach</h4>
+            <div class="ct-stat-number" id="stat-bus" style="color: #38bdf8;">0</div>
+          </div>
+          <div class="ct-stat-card">
+            <h4>At Resort / Camp</h4>
+            <div class="ct-stat-number" id="stat-hotel" style="color: #a5b4fc;">0</div>
+          </div>
+        </div>
+
+        <!-- Controls: Filter & Export -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+          <input 
+            type="text" 
+            id="search-students-input" 
+            class="ct-input" 
+            placeholder="Search by student name, roll no, or coach..." 
+            style="max-width: 320px; padding: 0.5rem 1.25rem;"
+          >
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="ct-btn ct-btn-secondary ct-btn-sm" id="btn-export-csv">
+              <i class="ph ph-file-arrow-down"></i> Export Roster (CSV)
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
         <div class="ct-card">
           <div class="ct-table-responsive">
             <table class="ct-table">
@@ -151,80 +206,128 @@
         </div>
       </section>
 
-      <!-- Broadcast Live Update to Parents Form -->
-      <section class="ct-section" id="broadcast-section">
-        <div class="ct-section-header">
-          <h2 class="ct-section-title">
-            <span class="emoji">📡</span> Broadcast New Milestone to Parents
-          </h2>
-          <span class="ct-tag ct-tag-altitude">Immediately visible on Parent Live Tracker</span>
-        </div>
-
-        <div class="ct-card">
-          <form id="form-broadcast-update">
+      <!-- ========================================================
+           TAB 3: DYNAMIC TRIP & PLAN EDITOR (100% CUSTOMIZABLE)
+           ======================================================== -->
+      <section id="tab-plan-editor" class="ct-tab-content" style="display: none;">
+        <div class="ct-card" style="margin-bottom: 2rem;">
+          <h3 style="font-family: var(--ct-font-display); font-size: 1.3rem; margin-bottom: 1.25rem; color: #ffffff;">
+            🏛️ College &amp; Expedition Master Information
+          </h3>
+          <form id="form-edit-trip-meta">
             <div class="ct-form-row">
               <div class="ct-form-group">
-                <label for="bc-title">Milestone Title *</label>
-                <input 
-                  type="text" 
-                  id="bc-title" 
-                  class="ct-form-control" 
-                  required 
-                  placeholder="e.g. Reached Solang Valley / Lunch Break Underway"
-                >
+                <label for="edit-college-name">College / Institution Name *</label>
+                <input type="text" id="edit-college-name" class="ct-form-control" required>
               </div>
               <div class="ct-form-group">
-                <label for="bc-location">Current Location *</label>
-                <input 
-                  type="text" 
-                  id="bc-location" 
-                  class="ct-form-control" 
-                  required 
-                  placeholder="e.g. Solang Valley Base Camp, 2,560m"
-                >
+                <label for="edit-trip-title">Expedition Title *</label>
+                <input type="text" id="edit-trip-title" class="ct-form-control" required>
               </div>
             </div>
 
             <div class="ct-form-row">
               <div class="ct-form-group">
-                <label for="bc-type">Milestone Category</label>
-                <select id="bc-type" class="ct-form-control">
-                  <option value="Milestone">General Milestone</option>
-                  <option value="Departure">Coach Departure / En Route</option>
-                  <option value="Meal">Meal / Refreshment Halt</option>
-                  <option value="Hotel">Resort / Camp Check-in</option>
-                  <option value="Safety">Safety &amp; Roll Call Completed</option>
-                </select>
+                <label for="edit-destination">Destination *</label>
+                <input type="text" id="edit-destination" class="ct-form-control" required>
               </div>
               <div class="ct-form-group">
-                <label for="bc-posted-by">Author / Coordinator Name</label>
-                <input 
-                  type="text" 
-                  id="bc-posted-by" 
-                  class="ct-form-control" 
-                  value="Prof. K. Rajagopal (HOD)"
-                >
+                <label for="edit-dates">Dates *</label>
+                <input type="text" id="edit-dates" class="ct-form-control" required>
               </div>
             </div>
 
-            <div class="ct-form-group">
-              <label for="bc-desc">Detailed Update Note for Parents *</label>
-              <textarea 
-                id="bc-desc" 
-                class="ct-form-control" 
-                rows="3" 
-                required 
-                placeholder="Describe current activities, weather conditions, next scheduled checkpoint, and reassurance note for parents..."
-              ></textarea>
+            <div class="ct-form-row">
+              <div class="ct-form-group">
+                <label for="edit-coaches">Coaches / Transport Info</label>
+                <input type="text" id="edit-coaches" class="ct-form-control">
+              </div>
+              <div class="ct-form-group">
+                <label for="edit-emergency">24/7 Safety Helpline</label>
+                <input type="text" id="edit-emergency" class="ct-form-control">
+              </div>
             </div>
 
-            <div style="display: flex; justify-content: flex-end;">
-              <button type="submit" class="ct-btn ct-btn-primary" id="btn-submit-broadcast">
-                <i class="ph-fill ph-paper-plane-tilt"></i> Broadcast to Parents Now
+            <div class="ct-form-row">
+              <div class="ct-form-group">
+                <label for="edit-faculty">Lead Faculty Name &amp; Phone</label>
+                <input type="text" id="edit-faculty" class="ct-form-control">
+              </div>
+              <div class="ct-form-group">
+                <label for="edit-guide">Nomadller Guide Name &amp; Phone</label>
+                <input type="text" id="edit-guide" class="ct-form-control">
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+              <button type="submit" class="ct-btn ct-btn-primary">
+                <i class="ph-fill ph-floppy-disk"></i> Save Master Trip Info
               </button>
             </div>
           </form>
         </div>
+
+        <!-- Add New Itinerary Checkpoint Form -->
+        <div class="ct-card" style="margin-bottom: 2rem;">
+          <h3 style="font-family: var(--ct-font-display); font-size: 1.3rem; margin-bottom: 1.25rem; color: #ffffff;">
+            ➕ Add New Checkpoint / Event to Plan
+          </h3>
+          <form id="form-add-checkpoint">
+            <div class="ct-form-row">
+              <div class="ct-form-group">
+                <label for="add-cp-day">Select Day *</label>
+                <select id="add-cp-day" class="ct-form-control">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div class="ct-form-group">
+                <label for="add-cp-time">Scheduled Time *</label>
+                <input type="text" id="add-cp-time" class="ct-form-control" required placeholder="e.g. 02:30 PM">
+              </div>
+            </div>
+
+            <div class="ct-form-group">
+              <label for="add-cp-title">Checkpoint Title *</label>
+              <input type="text" id="add-cp-title" class="ct-form-control" required placeholder="e.g. River Rafting Point Arrival">
+            </div>
+
+            <div class="ct-form-group">
+              <label for="add-cp-desc">Description &amp; Details for Parents *</label>
+              <input type="text" id="add-cp-desc" class="ct-form-control" required placeholder="e.g. Life jackets distributed, safety drill in progress.">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+              <button type="submit" class="ct-btn ct-btn-cyan">
+                <i class="ph-fill ph-plus-circle"></i> Add Checkpoint to Day
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Inclusions & Exclusions Quick Editor -->
+        <div class="ct-card">
+          <h3 style="font-family: var(--ct-font-display); font-size: 1.3rem; margin-bottom: 1.25rem; color: #ffffff;">
+            🎒 Edit Inclusions &amp; Exclusions (1 per line)
+          </h3>
+          <form id="form-edit-inc-exc">
+            <div class="ct-form-row">
+              <div class="ct-form-group">
+                <label for="edit-inclusions">Inclusions (One item per line)</label>
+                <textarea id="edit-inclusions" class="ct-form-control" rows="8"></textarea>
+              </div>
+              <div class="ct-form-group">
+                <label for="edit-exclusions">Exclusions (One item per line)</label>
+                <textarea id="edit-exclusions" class="ct-form-control" rows="8"></textarea>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end;">
+              <button type="submit" class="ct-btn ct-btn-primary">
+                <i class="ph-fill ph-check"></i> Save Inclusions &amp; Exclusions
+              </button>
+            </div>
+          </form>
+        </div>
+
       </section>
 
     </div>

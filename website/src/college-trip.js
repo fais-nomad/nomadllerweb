@@ -11,12 +11,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initTripPage() {
   const trip = await fetchTripMetadata();
+  renderHeroMetadata(trip);
   renderItinerary(trip.itinerary || []);
   renderInclusionsExclusions(trip.inclusions || [], trip.exclusions || []);
   await loadStudentsTable();
 }
 
-// 1. Render Itinerary
+// 1. Dynamic Hero Metadata
+function renderHeroMetadata(trip) {
+  const elCollege = document.getElementById('hero-college-name');
+  const elTitle = document.getElementById('hero-trip-title');
+  const elDesc = document.getElementById('hero-trip-desc');
+  const elDates = document.getElementById('hero-trip-dates');
+  const elDuration = document.getElementById('hero-trip-duration');
+  const elCoaches = document.getElementById('hero-trip-coaches');
+  const elHelpline = document.getElementById('hero-trip-helpline');
+
+  if (elCollege) elCollege.textContent = trip.college_name || 'College Youth Expedition';
+  if (elTitle) elTitle.textContent = trip.trip_title || 'Himalayan Adventure';
+  if (elDesc) elDesc.textContent = `${trip.destination}. Comprehensive itinerary, verified safety guidelines, and live tracking for students, faculty, and parents.`;
+  if (elDates) elDates.textContent = trip.dates || 'Upcoming';
+  if (elDuration) elDuration.textContent = trip.duration || '5 Nights / 6 Days';
+  if (elCoaches) elCoaches.textContent = trip.coaches || 'Luxury AC Coaches';
+  if (elHelpline) elHelpline.textContent = trip.emergency_helpline || '+91 62389 98382';
+}
+
+// 2. Render Dynamic Itinerary & Checkpoints
 function renderItinerary(days) {
   const container = document.getElementById('itinerary-container');
   if (!container) return;
@@ -27,12 +47,27 @@ function renderItinerary(days) {
   }
 
   container.innerHTML = days.map(d => {
-    const eventsHtml = (d.events || []).map(e => `
-      <li>
-        <strong>${e.time}</strong>
-        <span>${e.desc}</span>
-      </li>
-    `).join('');
+    const checkpoints = d.checkpoints || [];
+    const checkpointsHtml = checkpoints.map(cp => {
+      const isDone = cp.is_completed;
+      const statusIcon = isDone 
+        ? '<i class="ph-fill ph-check-circle" style="color:#10b981;"></i>' 
+        : '<i class="ph ph-circle" style="color:var(--ct-text-subtle);"></i>';
+      
+      const verifiedTag = isDone && cp.completed_at
+        ? `<span style="color:#34d399; font-size:0.75rem; margin-left:0.5rem;">(Verified at ${new Date(cp.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})</span>`
+        : '';
+
+      return `
+        <li>
+          <strong>${cp.time}</strong>
+          <span>
+            ${statusIcon} ${cp.title} ${verifiedTag}
+            ${cp.desc ? `<div style="font-size:0.8rem; color:var(--ct-text-subtle); margin-top:2px;">${cp.desc}</div>` : ''}
+          </span>
+        </li>
+      `;
+    }).join('');
 
     return `
       <article class="ct-day-card">
@@ -54,7 +89,7 @@ function renderItinerary(days) {
             </div>
           ` : ''}
           <ul class="ct-day-events">
-            ${eventsHtml}
+            ${checkpointsHtml || '<li>No checkpoints planned yet for this day.</li>'}
           </ul>
         </div>
       </article>
@@ -62,7 +97,7 @@ function renderItinerary(days) {
   }).join('');
 }
 
-// 2. Render Inclusions & Exclusions
+// 3. Render Inclusions & Exclusions
 function renderInclusionsExclusions(inc, exc) {
   const incList = document.getElementById('inclusions-list');
   const excList = document.getElementById('exclusions-list');
@@ -86,7 +121,7 @@ function renderInclusionsExclusions(inc, exc) {
   }
 }
 
-// 3. Load Registered Students Roster
+// 4. Load Registered Students Roster
 async function loadStudentsTable() {
   const tbody = document.getElementById('students-table-body');
   const badge = document.getElementById('student-count-badge');
@@ -125,7 +160,7 @@ async function loadStudentsTable() {
   }).join('');
 }
 
-// 4. Modal Handlers
+// 5. Modal Handlers
 function setupModalHandlers() {
   const modal = document.getElementById('student-modal');
   const openBtn = document.getElementById('btn-open-student-modal');
@@ -146,7 +181,6 @@ function setupModalHandlers() {
     if (e.target === modal) closeModal();
   });
 
-  // Handle student form submit
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();

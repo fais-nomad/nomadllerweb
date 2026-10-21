@@ -1,16 +1,21 @@
 import { 
+  fetchTripMetadata,
+  saveTripConfig,
+  toggleCheckpoint,
   fetchStudents, 
-  updateStudentAttendance, 
-  postLiveUpdate 
+  updateStudentAttendance 
 } from './college-data.js';
 
 const PIN_CODE = '1234';
+let currentTrip = null;
 let currentStudents = [];
+let selectedDayFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', () => {
   setupAuth();
-  setupBroadcastForm();
-  setupSearchFilter();
+  setupTabs();
+  setupPlanEditorForms();
+  setupRollCallSearch();
   setupExportCSV();
 });
 
@@ -26,7 +31,7 @@ function setupAuth() {
   if (isAuth) {
     if (gate) gate.style.display = 'none';
     if (content) content.style.display = 'block';
-    loadTeacherData();
+    loadAllDashboardData();
   }
 
   if (form) {
@@ -36,7 +41,7 @@ function setupAuth() {
         sessionStorage.setItem('nomad_teacher_auth', 'true');
         if (gate) gate.style.display = 'none';
         if (content) content.style.display = 'block';
-        loadTeacherData();
+        loadAllDashboardData();
       } else {
         alert('Incorrect PIN. Please enter 1234.');
         inputPin.value = '';
@@ -54,14 +59,210 @@ function setupAuth() {
   }
 }
 
-// 2. Load Dashboard Data & Stats
-async function loadTeacherData() {
-  currentStudents = await fetchStudents();
-  renderStats(currentStudents);
-  renderStudentsTable(currentStudents);
+// 2. Tab Navigation
+function setupTabs() {
+  const tabs = document.querySelectorAll('.ct-tab-btn');
+  const contents = document.querySelectorAll('.ct-tab-content');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.style.display = 'none');
+
+      tab.classList.add('active');
+      const targetId = tab.getAttribute('data-tab');
+      const targetContent = document.getElementById(targetId);
+      if (targetContent) targetContent.style.display = 'block';
+    });
+  });
 }
 
-function renderStats(students) {
+// 3. Load All Data
+async function loadAllDashboardData() {
+  currentTrip = await fetchTripMetadata();
+  currentStudents = await fetchStudents();
+
+  // Populate header badges
+  const badge = document.getElementById('dash-college-badge');
+  const title = document.getElementById('dash-trip-title');
+  const guide = document.getElementById('current-guide-name');
+
+  if (badge) badge.textContent = currentTrip.college_name || 'College Expedition';
+  if (title) title.textContent = currentTrip.trip_title || 'Expedition Command Center';
+  if (guide) guide.textContent = currentTrip.nomad_guide || 'Guide Arjun Negi';
+
+  // Render Tab 1: Checkpoints
+  renderDayFilterPills();
+  renderCheckpointsList();
+  updateProgressStats();
+
+  // Render Tab 2: Roll Call
+  renderStudentsTable(currentStudents);
+  updateRollCallStats(currentStudents);
+
+  // Pre-fill Tab 3: Plan Editor
+  prefillPlanEditor(currentTrip);
+}
+
+// =========================================================
+// TAB 1: GUIDE'S CHECKPOINT TICK SYSTEM
+// =========================================================
+function renderDayFilterPills() {
+  const container = document.getElementById('day-selector-pills');
+  const addDaySelect = document.getElementById('add-cp-day');
+  if (!container || !currentTrip) return;
+
+  const days = currentTrip.itinerary || [];
+
+  // Populate filter pills
+  let pillsHtml = `
+    <button class="ct-btn ct-btn-sm ${selectedDayFilter === 'all' ? 'ct-btn-primary' : 'ct-btn-secondary'}" data-day="all">
+      All Days (${days.length})
+    </button>
+  `;
+
+  days.forEach(d => {
+    pillsHtml += `
+      <button class="ct-btn ct-btn-sm ${selectedDayFilter === String(d.day) ? 'ct-btn-primary' : 'ct-btn-secondary'}" data-day="${d.day}">
+        Day ${d.day}
+      </button>
+    `;
+  });
+  container.innerHTML = pillsHtml;
+
+  // Populate dropdown in Add Checkpoint form
+  if (addDaySelect) {
+    addDaySelect.innerHTML = days.map(d => `<option value="${d.day}">Day ${d.day}: ${d.title}</option>`).join('');
+  }
+
+  // Filter click listener
+  container.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      selectedDayFilter = btn.getAttribute('data-day');
+      renderDayFilterPills();
+      renderCheckpointsList();
+    });
+  });
+}
+
+function updateProgressStats() {
+  if (!currentTrip || !currentTrip.itinerary) return;
+
+  let totalCheckpoints = 0;
+  let completedCheckpoints = 0;
+
+  currentTrip.itinerary.forEach(d => {
+    (d.checkpoints || []).forEach(cp => {
+      totalCheckpoints++;
+      if (cp.is_completed) completedCheckpoints++;
+    });
+  });
+
+  const percent = totalCheckpoints > 0 ? Math.round((completedCheckpoints / totalCheckpoints) * 100) : 0;
+
+  const elPercent = document.getElementById('progress-percent');
+  const elFill = document.getElementById('progress-bar-fill');
+  const elCount = document.getElementById('progress-count-text');
+
+  if (elPercent) elPercent.textContent = `${percent}%`;
+  if (elFill) elFill.style.width = `${percent}%`;
+  if (elCount) elCount.textContent = `${completedCheckpoints} of ${totalCheckpoints} milestones completed`;
+}
+
+function renderCheckpointsList() {
+  const container = document.getElementById('checkpoints-list-container');
+  if (!container || !currentTrip) return;
+
+  const days = currentTrip.itinerary || [];
+  let html = '';
+
+  days.forEach(d => {
+    if (selectedDayFilter !== 'all' && String(d.day) !== selectedDayFilter) {
+      return;
+    }
+
+    const checkpoints = d.checkpoints || [];
+    html += `
+      <div style="margin-top: 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+        <h4 style="font-family: var(--ct-font-display); font-size: 1.15rem; color: #ffffff;">
+          📅 Day ${d.day}: ${d.title}
+        </h4>
+        <span class="ct-tag ct-tag-stay">${d.stay || ''}</span>
+      </div>
+    `;
+
+    if (checkpoints.length === 0) {
+      html += `<div style="color: var(--ct-text-muted); font-size: 0.85rem; padding: 0.75rem;">No planned checkpoints added for Day ${d.day} yet.</div>`;
+    } else {
+      checkpoints.forEach(cp => {
+        const isDone = cp.is_completed;
+        const timeBadge = isDone && cp.completed_at 
+          ? `<span class="ct-checkpoint-meta"><i class="ph-fill ph-check-circle"></i> Completed at ${new Date(cp.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} by ${cp.completed_by || 'Guide'}</span>`
+          : '<span style="font-size:0.75rem; color:var(--ct-text-subtle);">⬜ Pending - Tap box to mark complete &amp; notify parents</span>';
+
+        html += `
+          <div class="ct-checkpoint-item ${isDone ? 'completed' : ''}" id="card-${cp.id}">
+            <div class="ct-checkpoint-left">
+              <button 
+                type="button" 
+                class="ct-checkpoint-check-btn btn-toggle-cp" 
+                data-cp-id="${cp.id}" 
+                data-done="${isDone ? 'true' : 'false'}"
+                title="${isDone ? 'Click to uncheck' : 'Click to tick & notify parents'}"
+              >
+                <i class="ph-bold ph-check" style="${isDone ? 'color: #042114;' : 'display: none;'}"></i>
+              </button>
+              <div class="ct-checkpoint-info">
+                <h4>
+                  <span style="color: var(--ct-accent-cyan);">${cp.time}</span>
+                  <span>${cp.title}</span>
+                </h4>
+                <p>${cp.desc || ''}</p>
+                ${timeBadge}
+              </div>
+            </div>
+            <div>
+              <span class="ct-status-badge ${isDone ? 'ct-status-present' : 'ct-status-alert'}" style="font-size:0.72rem;">
+                ${isDone ? 'Live Synced' : 'Upcoming'}
+              </span>
+            </div>
+          </div>
+        `;
+      });
+    }
+  });
+
+  container.innerHTML = html;
+
+  // Attach Checkbox Toggle Click Listeners
+  container.querySelectorAll('.btn-toggle-cp').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const cpId = btn.getAttribute('data-cp-id');
+      const currentlyDone = btn.getAttribute('data-done') === 'true';
+      const newStatus = !currentlyDone;
+      const author = currentTrip.nomad_guide || 'Guide on Duty';
+
+      btn.disabled = true;
+      try {
+        currentTrip = await toggleCheckpoint(cpId, newStatus, author);
+        renderCheckpointsList();
+        updateProgressStats();
+        if (newStatus) {
+          alert('✅ Milestone marked completed! Parents have been notified on their Live Tracker.');
+        }
+      } catch (err) {
+        console.error('Error toggling milestone:', err);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+// =========================================================
+// TAB 2: ROLL CALL & ATTENDANCE
+// =========================================================
+function updateRollCallStats(students) {
   const total = students.length;
   const present = students.filter(s => s.status === 'Present').length;
   const bus = students.filter(s => s.status === 'On Bus').length;
@@ -78,7 +279,6 @@ function renderStats(students) {
   if (elHotel) elHotel.textContent = hotel;
 }
 
-// 3. Render Attendance Table
 function renderStudentsTable(students) {
   const tbody = document.getElementById('teacher-students-table');
   if (!tbody) return;
@@ -101,7 +301,7 @@ function renderStudentsTable(students) {
           <div style="font-size:0.78rem; color:var(--ct-text-muted);"><i class="ph ph-bed"></i> ${s.room_no || 'Room 101'}</div>
         </td>
         <td>
-          <div style="font-size:0.85rem; color:#ffffff;">${s.parent_name || 'Guardian'}</div>
+          <div style="font-size:0.85rem; color:#ffffff;">${s.parent_name || 'Parent'}</div>
           <a href="tel:${s.parent_phone}" style="color:var(--ct-primary); font-size:0.8rem; text-decoration:underline;">
             <i class="ph-fill ph-phone-call"></i> ${s.parent_phone || 'N/A'}
           </a>
@@ -115,7 +315,7 @@ function renderStudentsTable(students) {
           </select>
         </td>
         <td>
-          <a href="https://wa.me/${(s.parent_phone || '').replace(/[^0-9]/g, '')}?text=Dear%20Parent,%20this%20is%20from%20the%20CET%20College%20Expedition%20regarding%20${encodeURIComponent(s.name)}." target="_blank" class="ct-btn ct-btn-secondary ct-btn-sm" style="padding:0.35rem 0.7rem; font-size:0.75rem;">
+          <a href="https://wa.me/${(s.parent_phone || '').replace(/[^0-9]/g, '')}?text=Dear%20Parent,%20this%20is%20from%20the%20College%20Expedition%20regarding%20${encodeURIComponent(s.name)}." target="_blank" class="ct-btn ct-btn-secondary ct-btn-sm" style="padding:0.35rem 0.7rem; font-size:0.75rem;">
             <i class="ph-fill ph-whatsapp-logo" style="color:#22c55e;"></i> WhatsApp
           </a>
         </td>
@@ -123,21 +323,19 @@ function renderStudentsTable(students) {
     `;
   }).join('');
 
-  // Attach live status switcher listeners
-  document.querySelectorAll('.ct-attendance-select').forEach(sel => {
+  tbody.querySelectorAll('.ct-attendance-select').forEach(sel => {
     sel.addEventListener('change', async (e) => {
       const id = e.target.getAttribute('data-id');
       const newStatus = e.target.value;
       await updateStudentAttendance(id, newStatus);
       const student = currentStudents.find(st => st.id === id);
       if (student) student.status = newStatus;
-      renderStats(currentStudents);
+      updateRollCallStats(currentStudents);
     });
   });
 }
 
-// 4. Search Filter
-function setupSearchFilter() {
+function setupRollCallSearch() {
   const searchInput = document.getElementById('search-students-input');
   if (!searchInput) return;
 
@@ -153,53 +351,6 @@ function setupSearchFilter() {
   });
 }
 
-// 5. Broadcast Live Milestone to Parents Form
-function setupBroadcastForm() {
-  const form = document.getElementById('form-broadcast-update');
-  const scrollBtn = document.getElementById('btn-broadcast-modal');
-
-  if (scrollBtn) {
-    scrollBtn.addEventListener('click', () => {
-      const section = document.getElementById('broadcast-section');
-      if (section) section.scrollIntoView({ behavior: 'smooth' });
-    });
-  }
-
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const submitBtn = document.getElementById('btn-submit-broadcast');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="ph ph-spinner"></i> Broadcasting...';
-      }
-
-      const updateData = {
-        title: document.getElementById('bc-title').value.trim(),
-        location_name: document.getElementById('bc-location').value.trim(),
-        update_type: document.getElementById('bc-type').value,
-        posted_by: document.getElementById('bc-posted-by').value.trim(),
-        description: document.getElementById('bc-desc').value.trim()
-      };
-
-      try {
-        await postLiveUpdate(updateData);
-        form.reset();
-        alert('📡 Live Milestone successfully broadcasted to parents! It is now live on the Parent Tracker.');
-      } catch (err) {
-        console.error('Broadcast failed:', err);
-        alert('Could not broadcast milestone. Please try again.');
-      } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '<i class="ph-fill ph-paper-plane-tilt"></i> Broadcast to Parents Now';
-        }
-      }
-    });
-  }
-}
-
-// 6. Export Roster to CSV
 function setupExportCSV() {
   const exportBtn = document.getElementById('btn-export-csv');
   if (!exportBtn) return;
@@ -233,4 +384,100 @@ function setupExportCSV() {
     link.click();
     document.body.removeChild(link);
   });
+}
+
+// =========================================================
+// TAB 3: DYNAMIC TRIP & PLAN EDITOR
+// =========================================================
+function prefillPlanEditor(trip) {
+  if (!trip) return;
+
+  // Master trip details
+  document.getElementById('edit-college-name').value = trip.college_name || '';
+  document.getElementById('edit-trip-title').value = trip.trip_title || '';
+  document.getElementById('edit-destination').value = trip.destination || '';
+  document.getElementById('edit-dates').value = trip.dates || '';
+  document.getElementById('edit-coaches').value = trip.coaches || '';
+  document.getElementById('edit-emergency').value = trip.emergency_helpline || '';
+  document.getElementById('edit-faculty').value = `${trip.lead_faculty || ''} (${trip.faculty_phone || ''})`;
+  document.getElementById('edit-guide').value = `${trip.nomad_guide || ''} (${trip.nomad_phone || ''})`;
+
+  // Inclusions & Exclusions
+  const incEl = document.getElementById('edit-inclusions');
+  const excEl = document.getElementById('edit-exclusions');
+  if (incEl) incEl.value = (trip.inclusions || []).join('\n');
+  if (excEl) excEl.value = (trip.exclusions || []).join('\n');
+}
+
+function setupPlanEditorForms() {
+  // 1. Save Master Info
+  const formMeta = document.getElementById('form-edit-trip-meta');
+  if (formMeta) {
+    formMeta.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const facultyRaw = document.getElementById('edit-faculty').value;
+      const guideRaw = document.getElementById('edit-guide').value;
+
+      currentTrip.college_name = document.getElementById('edit-college-name').value.trim();
+      currentTrip.trip_title = document.getElementById('edit-trip-title').value.trim();
+      currentTrip.destination = document.getElementById('edit-destination').value.trim();
+      currentTrip.dates = document.getElementById('edit-dates').value.trim();
+      currentTrip.coaches = document.getElementById('edit-coaches').value.trim();
+      currentTrip.emergency_helpline = document.getElementById('edit-emergency').value.trim();
+      currentTrip.lead_faculty = facultyRaw;
+      currentTrip.nomad_guide = guideRaw;
+
+      await saveTripConfig(currentTrip);
+      alert('🏛️ Master trip information successfully updated and live across all portals!');
+      loadAllDashboardData();
+    });
+  }
+
+  // 2. Add New Checkpoint Form
+  const formAddCp = document.getElementById('form-add-checkpoint');
+  if (formAddCp) {
+    formAddCp.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const targetDay = parseInt(document.getElementById('add-cp-day').value);
+      const time = document.getElementById('add-cp-time').value.trim();
+      const title = document.getElementById('add-cp-title').value.trim();
+      const desc = document.getElementById('add-cp-desc').value.trim();
+
+      const newCp = {
+        id: 'cp-' + Date.now(),
+        time,
+        title,
+        desc,
+        is_completed: false,
+        completed_at: null,
+        completed_by: null
+      };
+
+      const dayObj = currentTrip.itinerary.find(d => d.day === targetDay);
+      if (dayObj) {
+        if (!dayObj.checkpoints) dayObj.checkpoints = [];
+        dayObj.checkpoints.push(newCp);
+        await saveTripConfig(currentTrip);
+        formAddCp.reset();
+        alert(`➕ New checkpoint added to Day ${targetDay}! You can now tick it off when completed.`);
+        loadAllDashboardData();
+      }
+    });
+  }
+
+  // 3. Save Inclusions & Exclusions
+  const formIncExc = document.getElementById('form-edit-inc-exc');
+  if (formIncExc) {
+    formIncExc.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const incText = document.getElementById('edit-inclusions').value;
+      const excText = document.getElementById('edit-exclusions').value;
+
+      currentTrip.inclusions = incText.split('\n').map(s => s.trim()).filter(Boolean);
+      currentTrip.exclusions = excText.split('\n').map(s => s.trim()).filter(Boolean);
+
+      await saveTripConfig(currentTrip);
+      alert('🎒 Inclusions and Exclusions saved successfully and live on the student portal!');
+    });
+  }
 }

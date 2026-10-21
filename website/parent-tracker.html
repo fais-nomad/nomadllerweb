@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Parent Live Trip Tracker | Student Safety & Real-Time Milestones | Nomadller</title>
-  <meta name="description" content="Dedicated parent tracking portal for the College Himalayan Expedition. Real-time safety status, travel milestones, student verification, and direct coordinator emergency contacts.">
+  <title>Parent Live Journey Tracker | Real-Time Guide Milestones &amp; Safety Verification | Nomadller</title>
+  <meta name="description" content="Dedicated parent tracking portal for the College Expedition. Follow live milestone checkpoints verified by guides, check student roll attendance, and view emergency contacts.">
   <link rel="stylesheet" href="/college-trip.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/fill/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.3/src/regular/style.css">
@@ -17,7 +17,7 @@
       <div class="ct-brand-logo">N</div>
       <div class="ct-brand-text">
         <h1>NOMADLLER</h1>
-        <span>Parent Safety &amp; Live Tracking</span>
+        <span>Parent Safety &amp; Live Journey Tracker</span>
       </div>
     </div>
     <nav class="ct-nav-links">
@@ -29,7 +29,7 @@
         <i class="ph ph-backpack"></i> Itinerary &amp; Plan
       </a>
       <a href="/teacher-dashboard" class="ct-nav-pill">
-        <i class="ph ph-chalkboard-teacher"></i> Faculty Portal
+        <i class="ph ph-chalkboard-teacher"></i> Guide Portal
       </a>
       <a href="/" class="ct-nav-pill">
         <i class="ph ph-house"></i> Home
@@ -39,28 +39,73 @@
 
   <main class="ct-container">
 
-    <!-- Reassurance Banner -->
+    <!-- Reassurance Status Banner -->
     <section class="ct-safety-banner">
       <div class="ct-safety-status">
         <div class="ct-pulse-ring"></div>
         <div class="ct-safety-text">
-          <h3>Group Status: Safe, Active &amp; On Schedule</h3>
-          <p>Continuous faculty supervision • 2 Certified High-Altitude First Responders on board</p>
+          <h3 id="parent-banner-title">Group Status: Safe, Active &amp; On Schedule</h3>
+          <p id="parent-banner-sub">Continuous faculty supervision • Live checkpoints verified directly by Tour Guides</p>
         </div>
       </div>
       <div>
-        <a href="tel:+916238998382" class="ct-btn ct-btn-primary ct-btn-sm">
-          <i class="ph-fill ph-phone-call"></i> 24x7 Emergency Desk
+        <a href="tel:+916238998382" class="ct-btn ct-btn-primary ct-btn-sm" id="parent-emergency-btn">
+          <i class="ph-fill ph-phone-call"></i> 24x7 Safety Helpline
         </a>
       </div>
     </section>
 
-    <!-- Student Lookup for Parents -->
+    <!-- Overall Journey Progress Bar -->
+    <div class="ct-progress-card">
+      <div class="ct-progress-header">
+        <div>
+          <span class="ct-tag ct-tag-altitude" style="margin-bottom: 0.4rem; display: inline-block;">
+            <i class="ph-fill ph-broadcast"></i> Live Journey Progress
+          </span>
+          <h2 style="font-family: var(--ct-font-display); font-size: 1.35rem; color: #ffffff;" id="parent-trip-title">
+            College Himalayan Expedition
+          </h2>
+        </div>
+        <div style="font-family: var(--ct-font-display); font-size: 1.8rem; font-weight: 800; color: #34d399;" id="parent-progress-percent">
+          0%
+        </div>
+      </div>
+      <div class="ct-progress-track">
+        <div class="ct-progress-fill" id="parent-progress-fill" style="width: 0%;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--ct-text-muted); margin-top: 0.6rem;">
+        <span id="parent-progress-count">0 of 0 milestones ticked by guide</span>
+        <span style="color: #34d399;"><i class="ph-fill ph-arrows-clockwise"></i> Auto-synced in real-time</span>
+      </div>
+    </div>
+
+    <!-- Current Active Milestone Card -->
+    <section class="ct-card" style="border-color: rgba(16, 185, 129, 0.4); background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 23, 38, 0.8) 100%); margin-bottom: 2.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ct-primary); font-weight: 700;">
+            📍 LATEST VERIFIED CHECKPOINT
+          </span>
+          <h3 id="latest-milestone-title" style="font-family: var(--ct-font-display); font-size: 1.4rem; color: #ffffff; margin-top: 0.3rem;">
+            Loading journey status...
+          </h3>
+          <p id="latest-milestone-desc" style="font-size: 0.92rem; color: var(--ct-text-muted); margin-top: 0.3rem;">
+            Awaiting first checkpoint verification from expedition guides.
+          </p>
+        </div>
+        <div style="text-align: right;">
+          <span class="ct-status-badge ct-status-present" id="latest-milestone-badge">Verified Safe</span>
+          <div id="latest-milestone-time" style="font-size: 0.78rem; color: #a7f3d0; margin-top: 0.4rem;">Just Now</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Student Status Lookup for Parents -->
     <section class="ct-search-box">
       <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem;">
         <i class="ph-fill ph-user-check" style="font-size: 1.5rem; color: var(--ct-primary);"></i>
         <h2 style="font-family: var(--ct-font-display); font-size: 1.35rem; font-weight: 800;">
-          Verify Your Child's Live Status
+          Verify Your Child's Live Safety Status
         </h2>
       </div>
       <p style="font-size: 0.9rem; color: var(--ct-text-muted);">
@@ -117,16 +162,16 @@
       </div>
     </section>
 
-    <!-- Real-Time Milestones Feed -->
+    <!-- Step-by-Step Live Journey Map & Checkpoints -->
     <section class="ct-section">
       <div class="ct-section-header">
         <h2 class="ct-section-title">
-          <span class="emoji">📡</span> Live Travel Milestones &amp; Faculty Broadcasts
+          <span class="emoji">🗺️</span> Complete Itinerary Journey Map &amp; Checkpoints
         </h2>
-        <span class="ct-tag ct-tag-altitude" id="updates-count-badge">Updated in Real-Time</span>
+        <span class="ct-tag ct-tag-stay">Follow along day-by-day</span>
       </div>
 
-      <div id="live-feed-container">
+      <div id="parent-journey-container">
         <!-- Injected dynamically by parent-tracker.js -->
       </div>
     </section>
@@ -135,37 +180,12 @@
     <section class="ct-section">
       <div class="ct-section-header">
         <h2 class="ct-section-title">
-          <span class="emoji">📞</span> Direct Faculty &amp; Guide Helpline
+          <span class="emoji">📞</span> 24/7 Faculty &amp; Guide Helpline
         </h2>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
-        <div class="ct-card">
-          <span class="ct-tag ct-tag-stay" style="margin-bottom: 0.8rem; display: inline-block;">Faculty Lead</span>
-          <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">Prof. K. Rajagopal</h3>
-          <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Head of Department (CET)</p>
-          <a href="tel:+919847012345" class="ct-btn ct-btn-secondary ct-btn-sm" style="width: 100%;">
-            <i class="ph-fill ph-phone-call"></i> Call Professor: +91 98470 12345
-          </a>
-        </div>
-
-        <div class="ct-card">
-          <span class="ct-tag ct-tag-altitude" style="margin-bottom: 0.8rem; display: inline-block;">Nomadller Expedition Lead</span>
-          <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">Arjun Negi</h3>
-          <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Senior Mountaineer &amp; Tour Director</p>
-          <a href="tel:+916238998382" class="ct-btn ct-btn-secondary ct-btn-sm" style="width: 100%;">
-            <i class="ph-fill ph-phone-call"></i> Call Guide: +91 62389 98382
-          </a>
-        </div>
-
-        <div class="ct-card">
-          <span class="ct-tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); margin-bottom: 0.8rem; display: inline-block;">Nomadller 24/7 Operations</span>
-          <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">Central Control Room</h3>
-          <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Round-the-clock emergency desk</p>
-          <a href="https://wa.me/916238998382?text=Hello%20Nomadller,%20I%20am%20a%20parent%20inquiring%20about%20the%20CET%20College%20Expedition." target="_blank" rel="noopener noreferrer" class="ct-btn ct-btn-primary ct-btn-sm" style="width: 100%;">
-            <i class="ph-fill ph-whatsapp-logo"></i> WhatsApp Emergency Desk
-          </a>
-        </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;" id="parent-contacts-container">
+        <!-- Rendered dynamically -->
       </div>
     </section>
 

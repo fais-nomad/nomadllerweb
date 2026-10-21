@@ -975,3 +975,165 @@ a {
     flex-direction: column;
   }
 }
+
+/* =========================================================
+   CHECKPOINTS & PROGRESS TRACKING (DYNAMIC SYSTEM)
+   ========================================================= */
+.ct-progress-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--ct-radius-md);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.ct-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.ct-progress-track {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: var(--ct-radius-full);
+  overflow: hidden;
+  border: 1px solid var(--ct-glass-border);
+}
+
+.ct-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
+  border-radius: var(--ct-radius-full);
+  transition: width 0.4s ease;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+}
+
+/* Checkpoint Checklist Items */
+.ct-checkpoint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.ct-checkpoint-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(14, 23, 38, 0.7);
+  border: 1px solid var(--ct-glass-border);
+  border-radius: var(--ct-radius-sm);
+  padding: 1rem 1.25rem;
+  transition: all 0.25s ease;
+}
+
+.ct-checkpoint-item:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(20, 32, 54, 0.85);
+}
+
+.ct-checkpoint-item.completed {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.ct-checkpoint-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  flex: 1;
+}
+
+.ct-checkpoint-check-btn {
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--ct-text-subtle);
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all 0.2s ease;
+}
+
+.ct-checkpoint-check-btn:hover {
+  border-color: var(--ct-primary);
+  transform: scale(1.05);
+}
+
+.ct-checkpoint-item.completed .ct-checkpoint-check-btn {
+  background: var(--ct-primary);
+  border-color: var(--ct-primary);
+  color: #042114;
+  box-shadow: 0 0 10px var(--ct-primary-glow);
+}
+
+.ct-checkpoint-info h4 {
+  font-family: var(--ct-font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ct-checkpoint-info p {
+  font-size: 0.85rem;
+  color: var(--ct-text-muted);
+  margin-top: 0.2rem;
+}
+
+.ct-checkpoint-meta {
+  font-size: 0.75rem;
+  color: #34d399;
+  margin-top: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Tabs */
+.ct-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--ct-glass-border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+}
+
+.ct-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--ct-text-muted);
+  font-family: var(--ct-font-sans);
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--ct-radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.ct-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ct-tab-btn.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
