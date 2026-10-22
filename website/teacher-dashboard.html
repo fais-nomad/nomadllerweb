@@ -94,7 +94,7 @@
             Guide on Duty: <strong id="current-guide-name" style="color: #ffffff;">Arjun Negi</strong>
           </div>
           <button class="ct-btn ct-btn-cyan ct-btn-sm" id="btn-quick-upload-pdf">
-            <i class="ph-fill ph-file-arrow-up"></i> Upload PDF Plan
+            <i class="ph-fill ph-sparkle"></i> Add Travel Details
           </button>
           <button class="ct-btn ct-btn-secondary ct-btn-sm" id="btn-logout-pin">
             <i class="ph ph-sign-out"></i> Lock
@@ -221,7 +221,7 @@
            ======================================================== -->
       <section id="tab-plan-editor" class="ct-tab-content" style="display: none;">
 
-        <!-- Magic AI Itinerary PDF Importer Card -->
+        <!-- Magic AI Travel Details & Itinerary Generator Card -->
         <div class="ct-card" style="border: 2px dashed rgba(16, 185, 129, 0.45); background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.08) 100%); margin-bottom: 2rem;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem;">
             <div>
@@ -229,17 +229,39 @@
                 <i class="ph-fill ph-sparkle" style="color: #10b981;"></i> AI Auto-Extraction
               </span>
               <h3 style="font-family: var(--ct-font-display); font-size: 1.4rem; color: #ffffff;">
-                📄 Upload Itinerary PDF &amp; Auto-Generate Entire Plan
+                📝 Add Travel Details &amp; Auto-Generate Entire Plan
               </h3>
-              <p style="font-size: 0.88rem; color: var(--ct-text-muted); margin-top: 0.35rem; max-width: 680px;">
-                Upload any college trip PDF brochure, quotation, or itinerary document. Our AI will automatically extract the destination, days, timed checkpoints, inclusions, and exclusions into this portal.
+              <p style="font-size: 0.88rem; color: var(--ct-text-muted); margin-top: 0.35rem; max-width: 720px;">
+                Paste or type your travel details (WhatsApp itinerary message, tour notes, or rough outline). Our AI will instantly parse the destination, days, timed checkpoints, inclusions, and exclusions into this portal.
               </p>
             </div>
-            <div>
-              <label for="input-itinerary-pdf" class="ct-btn ct-btn-primary" style="cursor: pointer; padding: 0.85rem 1.6rem; font-size: 0.95rem;">
-                <i class="ph-fill ph-file-arrow-up"></i> Select Itinerary PDF
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <label for="input-itinerary-pdf" class="ct-btn ct-btn-outline ct-btn-sm" style="cursor: pointer; font-size: 0.85rem;">
+                <i class="ph-fill ph-file-pdf"></i> Or Upload PDF File
               </label>
               <input type="file" id="input-itinerary-pdf" accept="application/pdf" style="display: none;">
+            </div>
+          </div>
+
+          <!-- Travel Details Textarea -->
+          <div style="margin-top: 1.25rem;">
+            <textarea id="input-travel-text" class="ct-form-control" rows="6" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(16, 185, 129, 0.35); font-size: 0.92rem; line-height: 1.55; color: #ffffff; resize: vertical;" placeholder="Paste your travel details or itinerary text here...&#10;&#10;e.g.&#10;College: CET College of Engineering&#10;Expedition: Manali &amp; Kasol Youth Expedition (Nov 15 - 20)&#10;Destination: Manali &amp; Kasol Valley&#10;Day 1: Campus departure at 06:00 AM, highway breakfast, evening check-in at Manali resort&#10;Day 2: Solang Valley snow hike, paragliding, lunch, evening campfire&#10;Day 3: Kasol, Manikaran Sahib &amp; Tosh village trek&#10;Inclusions: AC Transport, 3-Star Resort, All Buffet Meals, Trek Guides, Travel Insurance&#10;Exclusions: Personal shopping, room service, optional adventure activities"></textarea>
+          </div>
+
+          <!-- Action Buttons Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" id="btn-load-sample-text" class="ct-btn ct-btn-secondary ct-btn-sm">
+                <i class="ph ph-notepad"></i> Paste Sample Format
+              </button>
+              <button type="button" id="btn-clear-travel-text" class="ct-btn ct-btn-secondary ct-btn-sm">
+                <i class="ph ph-trash"></i> Clear Text
+              </button>
+            </div>
+            <div>
+              <button type="button" id="btn-generate-from-text" class="ct-btn ct-btn-primary" style="padding: 0.75rem 1.75rem; font-size: 0.95rem; font-weight: 700;">
+                <i class="ph-fill ph-magic-wand"></i> Auto-Generate Entire Plan from Text
+              </button>
             </div>
           </div>
 
@@ -248,8 +270,8 @@
             <div style="display: flex; align-items: center; gap: 0.85rem;">
               <i class="ph ph-spinner ph-spin" style="font-size: 1.75rem; color: var(--ct-primary);" id="pdf-spinner"></i>
               <div>
-                <h4 id="pdf-status-title" style="font-size: 1rem; color: #ffffff; font-weight: 700;">Reading PDF Document...</h4>
-                <p id="pdf-status-desc" style="font-size: 0.82rem; color: #a7f3d0;">Extracting day-by-day itinerary, timing checkpoints, inclusions &amp; exclusions with AI...</p>
+                <h4 id="pdf-status-title" style="font-size: 1rem; color: #ffffff; font-weight: 700;">Analyzing Travel Details...</h4>
+                <p id="pdf-status-desc" style="font-size: 0.82rem; color: #a7f3d0;">Structuring day-by-day itinerary, timing checkpoints, inclusions &amp; exclusions with AI...</p>
               </div>
             </div>
           </div>

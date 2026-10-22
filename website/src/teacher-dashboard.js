@@ -492,120 +492,226 @@ function setupPlanEditorForms() {
 const DEEPSEEK_API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY || 'sk-b5efc3008f744aad8122b69e0676c6e8';
 
 function setupPDFUploader() {
+  const travelTextInput = document.getElementById('input-travel-text');
+  const btnGenerateFromText = document.getElementById('btn-generate-from-text');
+  const btnLoadSample = document.getElementById('btn-load-sample-text');
+  const btnClearText = document.getElementById('btn-clear-travel-text');
   const fileInput = document.getElementById('input-itinerary-pdf');
   const quickBtn = document.getElementById('btn-quick-upload-pdf');
   const statusBox = document.getElementById('pdf-import-status');
   const statusTitle = document.getElementById('pdf-status-title');
   const statusDesc = document.getElementById('pdf-status-desc');
 
-  if (quickBtn && fileInput) {
+  // Quick Action Button in Header
+  if (quickBtn) {
     quickBtn.addEventListener('click', () => {
-      // Switch to Tab 3 (Plan Editor) so progress is clearly visible
       const planTabBtn = document.querySelector('[data-tab="tab-plan-editor"]');
       if (planTabBtn) planTabBtn.click();
-      fileInput.click();
+      if (travelTextInput) {
+        travelTextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        travelTextInput.focus();
+      }
     });
   }
 
-  if (!fileInput) return;
+  // 1. Paste Sample Format Button
+  if (btnLoadSample && travelTextInput) {
+    btnLoadSample.addEventListener('click', () => {
+      travelTextInput.value = `College: CET College of Engineering & Technology
+Expedition: Annual Himalayan Snow & Parvati Valley Youth Expedition
+Destination: Manali • Solang Snow Valley • Kasol • Tosh Trek
+Duration: 5 Nights / 6 Days
+Dates: Nov 15 - Nov 20, 2026
+Lead Faculty: Prof. K. Rajagopal (+91 98470 12345)
+Safety Helpline: +91 62389 98382
 
-  fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
+Day 1: Departure & The Himalayan Ascent Drive
+- 06:00 AM: Campus Assembly & Flag-off
+- 09:30 AM: Highway Grand Breakfast Halt
+- 06:30 PM: Mountain View Resort Check-in & Dinner
 
-    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      alert('Please upload a valid PDF document.');
-      return;
+Day 2: Solang Valley Snow Activities & Acclimatization
+- 08:00 AM: Buffet Breakfast at Resort
+- 10:30 AM: Arrival at Solang Snow Point & Trek Gear Distribution
+- 01:30 PM: Hot Lunch at Alpine Shelter
+- 07:30 PM: Return to Resort, Bonfire & Music Night
+
+Day 3: Parvati Valley & The Tosh Village Hike
+- 07:30 AM: Scenic Drive to Kasol & Manikaran
+- 12:00 PM: Tosh Waterfall Trek & Cafe Lunch
+- 08:00 PM: Riverside Camping & Campfire Dinner in Kasol
+
+Day 4: Rafting in Beas River & Old Manali Culture Walk
+- 08:30 AM: Beas River White Water Rafting Session
+- 02:00 PM: Old Manali Cafe Hopping & Local Market
+- 08:00 PM: Gala Expedition Dinner & DJ Session
+
+Day 5: Naggar Castle Exploration & Return Journey
+- 09:00 AM: Heritage Tour of Naggar Castle & Art Gallery
+- 04:00 PM: Boarding return coaches towards campus
+- 09:00 PM: Highway Dinner Halt
+
+Day 6: Campus Arrival & Safe Dismissal
+- 08:30 AM: Safe arrival at College Main Gate and dismissal to parents
+
+Inclusions:
+- Luxury AC Transportation with commercial drivers & GPS tracking
+- Mountain Resort & Riverside Alpine Camp Stays (Triple sharing)
+- All Buffet Meals (Breakfast, Lunch & Dinner) as per itinerary
+- Certified Mountaineering Guides & High-Altitude Medical Kit with Oxygen
+- Beas River White Water Rafting & Solang Snow Activities
+- Travel & Accidental Insurance coverage for every student
+
+Exclusions:
+- Personal expenses, cafe snacks, and shopping
+- Solo paragliding or personal adventure camera rentals
+- Any room heater or personal laundry charges`;
+      travelTextInput.focus();
+    });
+  }
+
+  // 2. Clear Text Button
+  if (btnClearText && travelTextInput) {
+    btnClearText.addEventListener('click', () => {
+      travelTextInput.value = '';
+      travelTextInput.focus();
+    });
+  }
+
+  // Common Processor for Extracted Plan
+  async function applyAndSaveExtractedPlan(extractedPlan) {
+    if (!extractedPlan) return;
+
+    if (extractedPlan.college_name) currentTrip.college_name = extractedPlan.college_name;
+    if (extractedPlan.trip_title) currentTrip.trip_title = extractedPlan.trip_title;
+    if (extractedPlan.destination) currentTrip.destination = extractedPlan.destination;
+    if (extractedPlan.dates) currentTrip.dates = extractedPlan.dates;
+    if (extractedPlan.duration) currentTrip.duration = extractedPlan.duration;
+    if (extractedPlan.lead_faculty) currentTrip.lead_faculty = extractedPlan.lead_faculty;
+    if (extractedPlan.emergency_helpline) currentTrip.emergency_helpline = extractedPlan.emergency_helpline;
+
+    if (extractedPlan.itinerary && extractedPlan.itinerary.length > 0) {
+      currentTrip.itinerary = extractedPlan.itinerary;
+    }
+    if (extractedPlan.inclusions && extractedPlan.inclusions.length > 0) {
+      currentTrip.inclusions = extractedPlan.inclusions;
+    }
+    if (extractedPlan.exclusions && extractedPlan.exclusions.length > 0) {
+      currentTrip.exclusions = extractedPlan.exclusions;
     }
 
-    if (statusBox) statusBox.style.display = 'block';
-    if (statusTitle) statusTitle.textContent = `Reading "${file.name}"...`;
-    if (statusDesc) statusDesc.textContent = 'Extracting pages & formatted text layout from PDF...';
+    // Save immediately to localStorage & Supabase
+    await saveTripConfig(currentTrip);
 
-    try {
-      const arrayBuffer = await file.arrayBuffer();
+    // Update UI immediately
+    await loadAllDashboardData();
+    prefillPlanEditor(currentTrip);
 
-      if (typeof window.pdfjsLib === 'undefined') {
-        throw new Error('PDF.js library could not be loaded. Please check your internet connection.');
+    if (statusTitle) statusTitle.textContent = '✅ Plan Generated & Live Across All Portals!';
+    if (statusDesc) statusDesc.textContent = `Successfully built ${currentTrip.itinerary.length} Days, ${currentTrip.inclusions.length} Inclusions, and ${currentTrip.exclusions.length} Exclusions!`;
+
+    alert(`🎉 Travel Plan Successfully Generated!\n\n• Title: ${currentTrip.trip_title || 'Expedition'}\n• Destination: ${currentTrip.destination}\n• Total Days: ${currentTrip.itinerary.length} Days\n• Inclusions: ${currentTrip.inclusions.length} items\n• Exclusions: ${currentTrip.exclusions.length} items\n\nAll checkpoints and milestones are now live for Guide Ticking and Parent Tracking!`);
+  }
+
+  // 3. Auto-Generate from Text Input
+  if (btnGenerateFromText && travelTextInput) {
+    btnGenerateFromText.addEventListener('click', async () => {
+      const rawText = travelTextInput.value.trim();
+      if (!rawText) {
+        alert('Please enter or paste your travel details in the box first.\n\nYou can also click "Paste Sample Format" to test instantly.');
+        travelTextInput.focus();
+        return;
       }
 
-      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      let fullText = '';
+      if (statusBox) statusBox.style.display = 'block';
+      if (statusTitle) statusTitle.textContent = 'Analyzing Travel Details with AI...';
+      if (statusDesc) statusDesc.textContent = 'Extracting destination, day-by-day plan, timed checkpoints, inclusions & exclusions...';
 
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const items = textContent.items || [];
-        
-        // Group items into visual lines by rounded Y coordinate
-        const linesMap = new Map();
-        for (const item of items) {
-          const str = (item.str || '').trim();
-          if (!str) continue;
-          const y = Math.round(item.transform[5] / 4) * 4;
-          if (!linesMap.has(y)) {
-            linesMap.set(y, []);
+      btnGenerateFromText.disabled = true;
+
+      try {
+        const extractedPlan = await extractItineraryFromTextWithAI(rawText);
+        await applyAndSaveExtractedPlan(extractedPlan);
+      } catch (err) {
+        console.error('Text Parsing Error:', err);
+        alert('Error processing travel details: ' + (err.message || 'Unknown error'));
+        if (statusBox) statusBox.style.display = 'none';
+      } finally {
+        btnGenerateFromText.disabled = false;
+      }
+    });
+  }
+
+  // 4. Optional PDF File Upload
+  if (fileInput) {
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+        alert('Please upload a valid PDF document.');
+        return;
+      }
+
+      if (statusBox) statusBox.style.display = 'block';
+      if (statusTitle) statusTitle.textContent = `Reading "${file.name}"...`;
+      if (statusDesc) statusDesc.textContent = 'Extracting pages & formatted text layout from PDF...';
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+
+        if (typeof window.pdfjsLib === 'undefined') {
+          throw new Error('PDF.js library could not be loaded. Please check your internet connection.');
+        }
+
+        const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = '';
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const items = textContent.items || [];
+          
+          const linesMap = new Map();
+          for (const item of items) {
+            const str = (item.str || '').trim();
+            if (!str) continue;
+            const y = Math.round(item.transform[5] / 4) * 4;
+            if (!linesMap.has(y)) {
+              linesMap.set(y, []);
+            }
+            linesMap.get(y).push({ x: item.transform[4], text: str });
           }
-          linesMap.get(y).push({ x: item.transform[4], text: str });
+
+          const sortedYs = Array.from(linesMap.keys()).sort((a, b) => b - a);
+          const pageLines = sortedYs.map(y => {
+            const lineItems = linesMap.get(y);
+            lineItems.sort((a, b) => a.x - b.x);
+            return lineItems.map(it => it.text).join(' ');
+          });
+
+          fullText += `\n--- PAGE ${i} ---\n` + pageLines.join('\n') + '\n';
         }
 
-        // Sort lines top-to-bottom (higher Y = higher on PDF page)
-        const sortedYs = Array.from(linesMap.keys()).sort((a, b) => b - a);
-        const pageLines = sortedYs.map(y => {
-          const lineItems = linesMap.get(y);
-          // Sort words left-to-right (lower X = left)
-          lineItems.sort((a, b) => a.x - b.x);
-          return lineItems.map(it => it.text).join(' ');
-        });
+        // Also put the extracted text into the text box so the teacher can see it
+        if (travelTextInput) {
+          travelTextInput.value = fullText.trim();
+        }
 
-        fullText += `\n--- PAGE ${i} ---\n` + pageLines.join('\n') + '\n';
+        if (statusTitle) statusTitle.textContent = 'Analyzing Itinerary, Checkpoints & Inclusions with AI...';
+        if (statusDesc) statusDesc.textContent = `Extracted ${pdf.numPages} pages (${fullText.length} characters). Structuring tour plan...`;
+
+        const extractedPlan = await extractItineraryFromTextWithAI(fullText);
+        await applyAndSaveExtractedPlan(extractedPlan);
+      } catch (err) {
+        console.error('PDF Processing Error:', err);
+        alert('Error parsing PDF: ' + (err.message || 'Unknown error') + '\nPlease check console or edit details manually.');
+        if (statusBox) statusBox.style.display = 'none';
+      } finally {
+        fileInput.value = '';
       }
-
-      if (statusTitle) statusTitle.textContent = 'Analyzing Itinerary, Checkpoints & Inclusions with AI...';
-      if (statusDesc) statusDesc.textContent = `Extracted ${pdf.numPages} pages (${fullText.length} characters). Structuring tour plan...`;
-
-      // Call AI extraction with intelligent fallback
-      const extractedPlan = await extractItineraryFromTextWithAI(fullText);
-
-      if (extractedPlan) {
-        if (extractedPlan.college_name) currentTrip.college_name = extractedPlan.college_name;
-        if (extractedPlan.trip_title) currentTrip.trip_title = extractedPlan.trip_title;
-        if (extractedPlan.destination) currentTrip.destination = extractedPlan.destination;
-        if (extractedPlan.dates) currentTrip.dates = extractedPlan.dates;
-        if (extractedPlan.duration) currentTrip.duration = extractedPlan.duration;
-        if (extractedPlan.lead_faculty) currentTrip.lead_faculty = extractedPlan.lead_faculty;
-        if (extractedPlan.emergency_helpline) currentTrip.emergency_helpline = extractedPlan.emergency_helpline;
-
-        if (extractedPlan.itinerary && extractedPlan.itinerary.length > 0) {
-          currentTrip.itinerary = extractedPlan.itinerary;
-        }
-        if (extractedPlan.inclusions && extractedPlan.inclusions.length > 0) {
-          currentTrip.inclusions = extractedPlan.inclusions;
-        }
-        if (extractedPlan.exclusions && extractedPlan.exclusions.length > 0) {
-          currentTrip.exclusions = extractedPlan.exclusions;
-        }
-
-        // Save immediately to localStorage & Supabase
-        await saveTripConfig(currentTrip);
-
-        // Update UI immediately
-        await loadAllDashboardData();
-        prefillPlanEditor(currentTrip);
-
-        if (statusTitle) statusTitle.textContent = '✅ Extraction Complete & Live!';
-        if (statusDesc) statusDesc.textContent = `Successfully extracted ${currentTrip.itinerary.length} Days, ${currentTrip.inclusions.length} Inclusions, and ${currentTrip.exclusions.length} Exclusions!`;
-
-        alert(`🎉 PDF Successfully Processed!\n\n• Title: ${currentTrip.trip_title || 'Expedition'}\n• Destination: ${currentTrip.destination}\n• Total Days: ${currentTrip.itinerary.length} Days\n• Inclusions: ${currentTrip.inclusions.length} items\n• Exclusions: ${currentTrip.exclusions.length} items\n\nAll checkpoints and milestones are now live for Guide Ticking and Parent Tracking!`);
-      }
-    } catch (err) {
-      console.error('PDF Processing Error:', err);
-      alert('Error parsing PDF: ' + (err.message || 'Unknown error') + '\nPlease check console or edit details manually.');
-      if (statusBox) statusBox.style.display = 'none';
-    } finally {
-      fileInput.value = '';
-    }
-  });
+    });
+  }
 }
 
 // AI Extraction with DeepSeek + Intelligent Regex Fallback
