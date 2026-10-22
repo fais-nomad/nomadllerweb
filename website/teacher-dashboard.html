@@ -334,6 +334,66 @@
           </form>
         </div>
 
+        <!-- Dynamic Day-by-Day Itinerary & Checkpoints Manager -->
+        <div class="ct-card" style="margin-bottom: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <div>
+              <h3 style="font-family: var(--ct-font-display); font-size: 1.35rem; color: #ffffff;">
+                🗺️ Day-by-Day Itinerary &amp; Milestone Manager
+              </h3>
+              <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-top: 0.2rem;">
+                Live list of days and checkpoints. Add, delete, or modify individual milestones in real-time.
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" class="ct-btn ct-btn-cyan ct-btn-sm" id="btn-toggle-add-day">
+                <i class="ph-fill ph-calendar-plus"></i> Add New Day
+              </button>
+              <button type="button" class="ct-btn ct-btn-secondary ct-btn-sm" id="btn-clear-all-itinerary" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
+                <i class="ph ph-trash"></i> Reset All Days
+              </button>
+            </div>
+          </div>
+
+          <!-- Inline Add New Day Form (hidden by default) -->
+          <div id="inline-add-day-box" style="display: none; background: rgba(0,0,0,0.35); padding: 1.25rem; border-radius: var(--ct-radius-sm); border: 1px solid var(--ct-glass-border); margin-bottom: 1.5rem;">
+            <h4 style="font-family: var(--ct-font-display); font-size: 1.05rem; color: #34d399; margin-bottom: 0.75rem;">
+              ➕ Add New Day to Trip Plan
+            </h4>
+            <form id="form-inline-add-day">
+              <div class="ct-form-row">
+                <div class="ct-form-group">
+                  <label for="new-day-title">Day Title / Main Highlights *</label>
+                  <input type="text" id="new-day-title" class="ct-form-control" required placeholder="e.g. Solang Valley Snow Activities &amp; Trek">
+                </div>
+                <div class="ct-form-group">
+                  <label for="new-day-stay">Hotel / Resort / Camp Stay</label>
+                  <input type="text" id="new-day-stay" class="ct-form-control" placeholder="e.g. Mountain View Resort, Manali">
+                </div>
+              </div>
+              <div class="ct-form-row">
+                <div class="ct-form-group">
+                  <label for="new-day-altitude">Altitude / Location (Optional)</label>
+                  <input type="text" id="new-day-altitude" class="ct-form-control" placeholder="e.g. 2,050m">
+                </div>
+                <div class="ct-form-group">
+                  <label for="new-day-meals">Meals Plan (Optional)</label>
+                  <input type="text" id="new-day-meals" class="ct-form-control" placeholder="e.g. Buffet Breakfast • Lunch • Gala Dinner">
+                </div>
+              </div>
+              <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem;">
+                <button type="button" id="btn-cancel-add-day" class="ct-btn ct-btn-secondary ct-btn-sm">Cancel</button>
+                <button type="submit" class="ct-btn ct-btn-primary ct-btn-sm"><i class="ph-fill ph-plus-circle"></i> Save Day</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- List of Days & Checkpoints -->
+          <div id="editor-days-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
         <!-- Add New Itinerary Checkpoint Form -->
         <div class="ct-card" style="margin-bottom: 2rem;">
           <h3 style="font-family: var(--ct-font-display); font-size: 1.3rem; margin-bottom: 1.25rem; color: #ffffff;">
@@ -371,10 +431,10 @@
           </form>
         </div>
 
-        <!-- Inclusions & Exclusions Quick Editor -->
+        <!-- Inclusions, Exclusions & Packing List Quick Editor -->
         <div class="ct-card">
           <h3 style="font-family: var(--ct-font-display); font-size: 1.3rem; margin-bottom: 1.25rem; color: #ffffff;">
-            🎒 Edit Inclusions &amp; Exclusions (1 per line)
+            🎒 Edit Inclusions, Exclusions &amp; Packing List
           </h3>
           <form id="form-edit-inc-exc">
             <div class="ct-form-row">
@@ -387,9 +447,13 @@
                 <textarea id="edit-exclusions" class="ct-form-control" rows="8"></textarea>
               </div>
             </div>
-            <div style="display: flex; justify-content: flex-end;">
+            <div class="ct-form-group" style="margin-top: 1rem;">
+              <label for="edit-packing">Mandatory Packing Checklist (One item per line)</label>
+              <textarea id="edit-packing" class="ct-form-control" rows="5" placeholder="College Identity Card&#10;Comfortable walking shoes&#10;Power bank &amp; charging cables&#10;Prescribed personal medication..."></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
               <button type="submit" class="ct-btn ct-btn-primary">
-                <i class="ph-fill ph-check"></i> Save Inclusions &amp; Exclusions
+                <i class="ph-fill ph-check"></i> Save Inclusions, Exclusions &amp; Packing List
               </button>
             </div>
           </form>

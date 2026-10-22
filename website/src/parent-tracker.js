@@ -30,8 +30,18 @@ function renderTripHeaders(trip) {
   const elSub = document.getElementById('parent-banner-sub');
   const elEmergencyBtn = document.getElementById('parent-emergency-btn');
 
-  if (elTitle) elTitle.textContent = `${trip.college_name} • ${trip.trip_title}`;
-  if (elSub) elSub.textContent = `Destination: ${trip.destination} | Dates: ${trip.dates}`;
+  const titleParts = [trip.college_name, trip.trip_title].filter(Boolean);
+  if (elTitle) elTitle.textContent = titleParts.length > 0 ? titleParts.join(' • ') : 'College Youth Expedition';
+
+  if (elSub) {
+    const metaParts = [];
+    if (trip.destination && trip.destination !== 'Expedition Destination') metaParts.push(`Destination: ${trip.destination}`);
+    if (trip.dates && trip.dates !== 'Dates Upcoming') metaParts.push(`Dates: ${trip.dates}`);
+    elSub.textContent = metaParts.length > 0 
+      ? metaParts.join(' | ') 
+      : 'Continuous faculty supervision • Live checkpoints verified directly by Tour Guides';
+  }
+
   if (elEmergencyBtn && trip.emergency_helpline) {
     elEmergencyBtn.href = `tel:${trip.emergency_helpline.replace(/[^0-9+]/g, '')}`;
     elEmergencyBtn.innerHTML = `<i class="ph-fill ph-phone-call"></i> 24x7 Helpline: ${trip.emergency_helpline}`;
@@ -59,7 +69,11 @@ function renderJourneyProgress(trip) {
 
   if (elPercent) elPercent.textContent = `${percent}%`;
   if (elFill) elFill.style.width = `${percent}%`;
-  if (elCount) elCount.textContent = `${completed} of ${total} checkpoints verified by Tour Guide`;
+  if (elCount) {
+    elCount.textContent = total > 0 
+      ? `${completed} of ${total} checkpoints verified by Tour Guide` 
+      : '0 checkpoints configured';
+  }
 }
 
 // 3. Latest Verified Milestone Card
@@ -94,11 +108,14 @@ function renderLatestMilestone(trip) {
       elBadge.textContent = '🟢 Verified Passed';
     }
   } else {
-    if (elTitle) elTitle.textContent = 'Expedition Preparing for Departure';
-    if (elDesc) elDesc.textContent = 'Guides will tick off the first checkpoint once coaches are flagged off from campus.';
+    if (elTitle) elTitle.textContent = 'Expedition In Preparation';
+    if (elDesc) elDesc.textContent = 'Tour guides will verify and tick checkpoints live as the journey begins.';
     if (elBadge) {
       elBadge.className = 'ct-status-badge ct-status-alert';
-      elBadge.textContent = '⏱️ In Preparation';
+      elBadge.textContent = '⏱️ Pending Departure';
+    }
+    if (elTime) {
+      elTime.textContent = 'Scheduled';
     }
   }
 }
@@ -110,11 +127,24 @@ function renderJourneyTimeline(trip) {
 
   const days = trip.itinerary || [];
 
+  if (!days || days.length === 0) {
+    container.innerHTML = `
+      <div class="ct-card" style="text-align: center; padding: 2.5rem 1rem;">
+        <i class="ph ph-map-pin" style="font-size: 2.5rem; color: var(--ct-primary); margin-bottom: 0.5rem; display: inline-block;"></i>
+        <h4 style="color: #ffffff; font-size: 1.1rem; margin-bottom: 0.35rem;">Expedition Journey Map Awaiting Publication</h4>
+        <p style="color: var(--ct-text-muted); font-size: 0.88rem; max-width: 450px; margin: 0 auto;">
+          The day-by-day journey milestones are currently being configured. Real-time updates and checkpoint tracking will stream here automatically.
+        </p>
+      </div>
+    `;
+    return;
+  }
+
   container.innerHTML = days.map(d => {
     const checkpoints = d.checkpoints || [];
 
     const checkpointsHtml = checkpoints.map(cp => {
-      const isDone = cp.is_completed;
+      const isDone = Boolean(cp.is_completed);
       const icon = isDone 
         ? '<i class="ph-fill ph-check-circle" style="color: #10b981; font-size: 1.35rem;"></i>' 
         : '<i class="ph ph-clock" style="color: var(--ct-text-subtle); font-size: 1.35rem;"></i>';
@@ -178,25 +208,32 @@ function renderContactCards(trip) {
   const container = document.getElementById('parent-contacts-container');
   if (!container) return;
 
-  const facultyPhone = (trip.faculty_phone || '+91 98470 12345').replace(/[^0-9+]/g, '');
-  const guidePhone = (trip.nomad_phone || '+91 62389 98382').replace(/[^0-9+]/g, '');
+  const facultyName = trip.lead_faculty || 'Faculty In-Charge';
+  const facultyPhone = (trip.faculty_phone || '').replace(/[^0-9+]/g, '');
+
+  const guideName = trip.nomad_guide || 'Nomadller Expedition Lead';
+  const guidePhone = (trip.nomad_phone || trip.emergency_helpline || '+91 62389 98382').replace(/[^0-9+]/g, '');
 
   container.innerHTML = `
     <div class="ct-card">
       <span class="ct-tag ct-tag-stay" style="margin-bottom: 0.8rem; display: inline-block;">Lead Faculty In-Charge</span>
-      <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">${trip.lead_faculty || 'Prof. K. Rajagopal'}</h3>
+      <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">${facultyName}</h3>
       <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Faculty Coordinator</p>
-      <a href="tel:${facultyPhone}" class="ct-btn ct-btn-secondary ct-btn-sm" style="width: 100%;">
-        <i class="ph-fill ph-phone-call"></i> Call Faculty: ${trip.faculty_phone || facultyPhone}
-      </a>
+      ${facultyPhone ? `
+        <a href="tel:${facultyPhone}" class="ct-btn ct-btn-secondary ct-btn-sm" style="width: 100%;">
+          <i class="ph-fill ph-phone-call"></i> Call Faculty: ${trip.faculty_phone}
+        </a>
+      ` : `
+        <div style="font-size:0.82rem; color:var(--ct-text-muted);">Assigned on tour departure</div>
+      `}
     </div>
 
     <div class="ct-card">
       <span class="ct-tag ct-tag-altitude" style="margin-bottom: 0.8rem; display: inline-block;">Nomadller Expedition Lead</span>
-      <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">${trip.nomad_guide || 'Arjun Negi'}</h3>
-      <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Certified Wilderness First Responder</p>
+      <h3 style="font-family: var(--ct-font-display); font-size: 1.2rem; color: #ffffff;">${guideName}</h3>
+      <p style="font-size: 0.85rem; color: var(--ct-text-muted); margin-bottom: 1rem;">Certified Tour Lead / Safety Officer</p>
       <a href="tel:${guidePhone}" class="ct-btn ct-btn-secondary ct-btn-sm" style="width: 100%;">
-        <i class="ph-fill ph-phone-call"></i> Call Guide: ${trip.nomad_phone || guidePhone}
+        <i class="ph-fill ph-phone-call"></i> Call Guide: ${trip.nomad_phone || trip.emergency_helpline || '+91 62389 98382'}
       </a>
     </div>
 

@@ -3,7 +3,12 @@ import {
   saveTripConfig,
   toggleCheckpoint,
   fetchStudents, 
-  updateStudentAttendance 
+  updateStudentAttendance,
+  addItineraryDay,
+  deleteItineraryDay,
+  addItineraryCheckpoint,
+  deleteItineraryCheckpoint,
+  clearAllItineraryDays
 } from './college-data.js';
 
 const PIN_CODE = '1234';
@@ -175,6 +180,29 @@ function renderCheckpointsList() {
   if (!container || !currentTrip) return;
 
   const days = currentTrip.itinerary || [];
+  if (!days || days.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 3rem 1rem; background: rgba(0,0,0,0.25); border-radius: var(--ct-radius-sm); border: 1px dashed var(--ct-glass-border);">
+        <i class="ph ph-calendar-blank" style="font-size: 2.5rem; color: var(--ct-text-subtle); margin-bottom: 0.5rem; display: inline-block;"></i>
+        <h4 style="color: #ffffff; font-size: 1.1rem; margin-bottom: 0.35rem;">No Journey Milestones Configured Yet</h4>
+        <p style="color: var(--ct-text-muted); font-size: 0.88rem; max-width: 460px; margin: 0 auto 1.25rem;">
+          Your trip currently has no itinerary days or checkpoints. Auto-generate the complete itinerary from travel notes or build days manually.
+        </p>
+        <button type="button" class="ct-btn ct-btn-cyan ct-btn-sm" id="btn-goto-plan-tab">
+          <i class="ph ph-sliders"></i> Go to Plan &amp; Details Tab
+        </button>
+      </div>
+    `;
+    const btnGoto = document.getElementById('btn-goto-plan-tab');
+    if (btnGoto) {
+      btnGoto.addEventListener('click', () => {
+        const tabBtn = document.querySelector('.ct-admin-nav-item[data-tab="plan"]');
+        if (tabBtn) tabBtn.click();
+      });
+    }
+    return;
+  }
+
   let html = '';
 
   days.forEach(d => {
@@ -404,11 +432,127 @@ function prefillPlanEditor(trip) {
   document.getElementById('edit-faculty').value = trip.lead_faculty || (trip.coordinator_name ? `${trip.coordinator_name} (${trip.coordinator_phone || ''})` : '');
   document.getElementById('edit-guide').value = trip.nomad_guide || (trip.guide_name ? `${trip.guide_name} (${trip.guide_phone || ''})` : '');
 
-  // Inclusions & Exclusions
+  // Inclusions & Exclusions & Packing
   const incEl = document.getElementById('edit-inclusions');
   const excEl = document.getElementById('edit-exclusions');
+  const packEl = document.getElementById('edit-packing');
   if (incEl) incEl.value = (trip.inclusions || []).join('\n');
   if (excEl) excEl.value = (trip.exclusions || []).join('\n');
+  if (packEl) packEl.value = (trip.packing_list || []).join('\n');
+
+  // Render Day-by-Day Itinerary Manager
+  renderPlanEditorDays(trip.itinerary || []);
+}
+
+function renderPlanEditorDays(days) {
+  const container = document.getElementById('editor-days-container');
+  if (!container) return;
+
+  if (!days || days.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 2.5rem 1rem; background: rgba(0,0,0,0.25); border-radius: var(--ct-radius-sm); border: 1px dashed var(--ct-glass-border);">
+        <i class="ph ph-calendar-blank" style="font-size: 2.2rem; color: var(--ct-text-subtle); margin-bottom: 0.5rem; display: inline-block;"></i>
+        <h4 style="color: #ffffff; font-size: 1.05rem;">No Itinerary Days Configured Yet</h4>
+        <p style="color: var(--ct-text-muted); font-size: 0.85rem; max-width: 440px; margin: 0.35rem auto 1rem;">
+          Click "Add New Day" above or paste tour details into the AI box at the top to auto-generate the complete plan.
+        </p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = days.map(d => {
+    const checkpoints = d.checkpoints || [];
+    const checkpointsHtml = checkpoints.map(cp => `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0.85rem; background: rgba(0,0,0,0.35); border: 1px solid var(--ct-glass-border); border-radius: var(--ct-radius-sm); margin-bottom: 0.45rem; font-size: 0.88rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1;">
+          <span style="color: var(--ct-accent-cyan); font-weight: 700; min-width: 75px;">${cp.time}</span>
+          <div>
+            <strong style="color: #ffffff;">${cp.title}</strong>
+            ${cp.desc ? `<div style="font-size: 0.78rem; color: var(--ct-text-muted); margin-top: 1px;">${cp.desc}</div>` : ''}
+          </div>
+        </div>
+        <div>
+          <button type="button" class="btn-delete-cp" data-id="${cp.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.3rem 0.5rem; font-size: 1.05rem;" title="Delete this checkpoint">
+            <i class="ph ph-trash"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="ct-day-editor-card" style="background: rgba(14, 23, 38, 0.75); border: 1px solid var(--ct-glass-border); border-radius: var(--ct-radius-sm); padding: 1.25rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem; padding-bottom: 0.65rem; border-bottom: 1px solid var(--ct-glass-border);">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span class="ct-badge-pill" style="background: var(--ct-primary); color: #041017; font-weight: 800; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: var(--ct-radius-full);">
+                DAY ${d.day < 10 ? '0' + d.day : d.day}
+              </span>
+              <h4 style="font-family: var(--ct-font-display); font-size: 1.15rem; color: #ffffff; margin: 0;">
+                ${d.title}
+              </h4>
+            </div>
+            <div style="display: flex; gap: 0.75rem; margin-top: 0.4rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--ct-text-muted);">
+              ${d.stay ? `<span><i class="ph ph-bed"></i> ${d.stay}</span>` : ''}
+              ${d.altitude ? `<span><i class="ph ph-mountains"></i> ${d.altitude}</span>` : ''}
+              ${d.meals ? `<span><i class="ph ph-fork-knife"></i> ${d.meals}</span>` : ''}
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.4rem;">
+            <button type="button" class="ct-btn ct-btn-secondary ct-btn-sm btn-quick-add-to-day" data-day="${d.day}" style="font-size: 0.78rem; padding: 0.35rem 0.7rem;">
+              <i class="ph-fill ph-plus"></i> Add Milestone
+            </button>
+            <button type="button" class="ct-btn ct-btn-sm btn-delete-day" data-day="${d.day}" style="background: rgba(239, 68, 68, 0.12); border: 1px solid #ef4444; color: #ef4444; font-size: 0.78rem; padding: 0.35rem 0.7rem;">
+              <i class="ph ph-trash"></i> Delete Day
+            </button>
+          </div>
+        </div>
+
+        <div class="day-checkpoints-list" style="margin-top: 0.75rem;">
+          ${checkpointsHtml || '<div style="color:var(--ct-text-muted); font-size:0.82rem; padding:0.5rem 0;">No milestones added to this day yet. Click "Add Milestone" above.</div>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Attach delete handlers for checkpoints
+  container.querySelectorAll('.btn-delete-cp').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const cpId = btn.getAttribute('data-id');
+      if (confirm('Delete this milestone from the plan?')) {
+        await deleteItineraryCheckpoint(cpId);
+        await loadAllDashboardData();
+        prefillPlanEditor(currentTrip);
+      }
+    });
+  });
+
+  // Attach delete handlers for days
+  container.querySelectorAll('.btn-delete-day').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const dayNum = parseInt(btn.getAttribute('data-day'));
+      if (confirm(`Are you sure you want to delete Day ${dayNum} and all its milestones?`)) {
+        await deleteItineraryDay(dayNum);
+        await loadAllDashboardData();
+        prefillPlanEditor(currentTrip);
+      }
+    });
+  });
+
+  // Attach quick add handlers
+  container.querySelectorAll('.btn-quick-add-to-day').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dayNum = btn.getAttribute('data-day');
+      const addDaySelect = document.getElementById('add-cp-day');
+      const formAddCp = document.getElementById('form-add-checkpoint');
+      if (addDaySelect) addDaySelect.value = dayNum;
+      if (formAddCp) {
+        formAddCp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const timeInput = document.getElementById('add-cp-time');
+        if (timeInput) timeInput.focus();
+      }
+    });
+  });
 }
 
 function setupPlanEditorForms() {
@@ -437,54 +581,101 @@ function setupPlanEditorForms() {
     });
   }
 
-  // 2. Add New Checkpoint Form
-  const formAddCp = document.getElementById('form-add-checkpoint');
-  if (formAddCp) {
-    formAddCp.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const targetDay = parseInt(document.getElementById('add-cp-day').value);
-      const time = document.getElementById('add-cp-time').value.trim();
-      const title = document.getElementById('add-cp-title').value.trim();
-      const desc = document.getElementById('add-cp-desc').value.trim();
+  // 2. Toggle Add New Day Form
+  const btnToggleAddDay = document.getElementById('btn-toggle-add-day');
+  const btnCancelAddDay = document.getElementById('btn-cancel-add-day');
+  const inlineAddDayBox = document.getElementById('inline-add-day-box');
+  const formInlineAddDay = document.getElementById('form-inline-add-day');
 
-      const newCp = {
-        id: 'cp-' + Date.now(),
-        time,
-        title,
-        desc,
-        is_completed: false,
-        completed_at: null,
-        completed_by: null
-      };
-
-      const dayObj = currentTrip.itinerary.find(d => d.day === targetDay);
-      if (dayObj) {
-        if (!dayObj.checkpoints) dayObj.checkpoints = [];
-        dayObj.checkpoints.push(newCp);
-        await saveTripConfig(currentTrip);
-        formAddCp.reset();
-        alert(`➕ New checkpoint added to Day ${targetDay}! You can now tick it off when completed.`);
-        loadAllDashboardData();
+  if (btnToggleAddDay && inlineAddDayBox) {
+    btnToggleAddDay.addEventListener('click', () => {
+      inlineAddDayBox.style.display = inlineAddDayBox.style.display === 'none' ? 'block' : 'none';
+      if (inlineAddDayBox.style.display === 'block') {
+        const titleInput = document.getElementById('new-day-title');
+        if (titleInput) titleInput.focus();
       }
     });
   }
 
-  // 3. Save Inclusions & Exclusions
+  if (btnCancelAddDay && inlineAddDayBox) {
+    btnCancelAddDay.addEventListener('click', () => {
+      inlineAddDayBox.style.display = 'none';
+    });
+  }
+
+  if (formInlineAddDay) {
+    formInlineAddDay.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('new-day-title').value.trim();
+      const stay = document.getElementById('new-day-stay').value.trim();
+      const altitude = document.getElementById('new-day-altitude').value.trim();
+      const meals = document.getElementById('new-day-meals').value.trim();
+
+      await addItineraryDay({ title, stay, altitude, meals });
+      formInlineAddDay.reset();
+      if (inlineAddDayBox) inlineAddDayBox.style.display = 'none';
+
+      await loadAllDashboardData();
+      prefillPlanEditor(currentTrip);
+      alert('🎉 New day added successfully to the live itinerary!');
+    });
+  }
+
+  // 3. Clear / Reset All Itinerary Days
+  const btnClearAll = document.getElementById('btn-clear-all-itinerary');
+  if (btnClearAll) {
+    btnClearAll.addEventListener('click', async () => {
+      if (confirm('⚠️ Warning: Are you sure you want to completely RESET & CLEAR all itinerary days and checkpoints?\n\nThis will remove all current days so you can start completely fresh.')) {
+        await clearAllItineraryDays();
+        await loadAllDashboardData();
+        prefillPlanEditor(currentTrip);
+        alert('🗑️ All itinerary days and checkpoints cleared! You can now add new days or paste fresh travel details.');
+      }
+    });
+  }
+
+  // 4. Add New Checkpoint Form
+  const formAddCp = document.getElementById('form-add-checkpoint');
+  if (formAddCp) {
+    formAddCp.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const dayVal = document.getElementById('add-cp-day').value;
+      if (!dayVal) {
+        alert('Please create or select an itinerary day first.');
+        return;
+      }
+      const targetDay = parseInt(dayVal);
+      const time = document.getElementById('add-cp-time').value.trim();
+      const title = document.getElementById('add-cp-title').value.trim();
+      const desc = document.getElementById('add-cp-desc').value.trim();
+
+      await addItineraryCheckpoint(targetDay, { time, title, desc });
+      formAddCp.reset();
+      alert(`➕ New checkpoint added to Day ${targetDay}! It is now live in the Guide Checklist and Parent Tracker.`);
+      await loadAllDashboardData();
+      prefillPlanEditor(currentTrip);
+    });
+  }
+
+  // 5. Save Inclusions, Exclusions & Packing List
   const formIncExc = document.getElementById('form-edit-inc-exc');
   if (formIncExc) {
     formIncExc.addEventListener('submit', async (e) => {
       e.preventDefault();
       const incText = document.getElementById('edit-inclusions').value;
       const excText = document.getElementById('edit-exclusions').value;
+      const packEl = document.getElementById('edit-packing');
 
       currentTrip.inclusions = incText.split('\n').map(s => s.trim()).filter(Boolean);
       currentTrip.exclusions = excText.split('\n').map(s => s.trim()).filter(Boolean);
+      currentTrip.packing_list = packEl ? packEl.value.split('\n').map(s => s.trim()).filter(Boolean) : [];
 
       await saveTripConfig(currentTrip);
-      alert('🎒 Inclusions and Exclusions saved successfully and live on the student portal!');
+      alert('🎒 Inclusions, Exclusions & Packing List saved successfully and live on the student portal!');
     });
   }
 }
+
 
 // =========================================================
 // PDF UPLOADER & AI ITINERARY / INCLUSIONS EXTRACTOR
@@ -598,6 +789,9 @@ Exclusions:
     }
     if (extractedPlan.exclusions && extractedPlan.exclusions.length > 0) {
       currentTrip.exclusions = extractedPlan.exclusions;
+    }
+    if (extractedPlan.packing_list && extractedPlan.packing_list.length > 0) {
+      currentTrip.packing_list = extractedPlan.packing_list;
     }
 
     // Save immediately to localStorage & Supabase

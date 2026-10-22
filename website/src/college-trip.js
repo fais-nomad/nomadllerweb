@@ -14,6 +14,7 @@ async function initTripPage() {
   renderHeroMetadata(trip);
   renderItinerary(trip.itinerary || []);
   renderInclusionsExclusions(trip.inclusions || [], trip.exclusions || []);
+  renderPackingList(trip.packing_list || []);
   await loadStudentsTable();
 }
 
@@ -27,9 +28,13 @@ function renderHeroMetadata(trip) {
   const elHelpline = document.getElementById('hero-trip-helpline');
 
   if (elCollege) elCollege.textContent = trip.college_name || 'College Youth Expedition';
-  if (elTitle) elTitle.textContent = trip.trip_title || 'Himalayan Adventure';
-  if (elDesc) elDesc.textContent = `${trip.destination}. Comprehensive itinerary, verified safety guidelines, and live tracking for students, faculty, and parents.`;
-  if (elDates) elDates.textContent = trip.dates || 'Upcoming';
+  if (elTitle) elTitle.textContent = trip.trip_title || 'Annual College Expedition';
+  if (elDesc) {
+    elDesc.textContent = (trip.destination && trip.destination !== 'Expedition Destination')
+      ? `${trip.destination}. Comprehensive itinerary, verified safety guidelines, and live tracking for students, faculty, and parents.`
+      : 'Comprehensive itinerary, verified safety guidelines, and live tracking for students, faculty, and parents.';
+  }
+  if (elDates) elDates.textContent = trip.dates || 'Dates Upcoming';
   if (elDuration) elDuration.textContent = trip.duration || '5 Nights / 6 Days';
   if (elHelpline) elHelpline.textContent = trip.emergency_helpline || '+91 62389 98382';
 }
@@ -40,14 +45,27 @@ function renderItinerary(days) {
   if (!container) return;
 
   if (!days || days.length === 0) {
-    container.innerHTML = '<p style="color:var(--ct-text-muted);">Itinerary details are being finalized.</p>';
+    container.innerHTML = `
+      <div class="ct-card" style="text-align: center; padding: 3rem 1.5rem; background: rgba(14, 23, 38, 0.6); border: 1px dashed var(--ct-glass-border); border-radius: var(--ct-radius-md);">
+        <i class="ph ph-map-trifold" style="font-size: 3rem; color: var(--ct-primary); margin-bottom: 0.75rem; display: inline-block;"></i>
+        <h3 style="font-family: var(--ct-font-display); font-size: 1.35rem; color: #ffffff; margin-bottom: 0.5rem;">
+          Expedition Itinerary Under Preparation
+        </h3>
+        <p style="color: var(--ct-text-muted); font-size: 0.92rem; max-width: 520px; margin: 0 auto 1.25rem;">
+          The day-by-day expedition schedule will appear here as soon as it is published by the tour guides &amp; faculty coordinators.
+        </p>
+        <a href="/teacher-dashboard" class="ct-btn ct-btn-secondary ct-btn-sm" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+          <i class="ph ph-sliders"></i> Open Guide Command Center
+        </a>
+      </div>
+    `;
     return;
   }
 
   container.innerHTML = days.map(d => {
     const checkpoints = d.checkpoints || [];
     const checkpointsHtml = checkpoints.map(cp => {
-      const isDone = cp.is_completed;
+      const isDone = Boolean(cp.is_completed);
       const statusIcon = isDone 
         ? '<i class="ph-fill ph-check-circle" style="color:#10b981;"></i>' 
         : '<i class="ph ph-circle" style="color:var(--ct-text-subtle);"></i>';
@@ -101,22 +119,89 @@ function renderInclusionsExclusions(inc, exc) {
   const excList = document.getElementById('exclusions-list');
 
   if (incList) {
-    incList.innerHTML = inc.map(item => `
-      <li>
-        <i class="ph-fill ph-check-circle"></i>
-        <span>${item}</span>
-      </li>
-    `).join('');
+    if (!inc || inc.length === 0) {
+      incList.innerHTML = '<li style="color:var(--ct-text-muted); font-size:0.88rem;">Trip inclusions are being finalized by coordinators.</li>';
+    } else {
+      incList.innerHTML = inc.map(item => `
+        <li>
+          <i class="ph-fill ph-check-circle"></i>
+          <span>${item}</span>
+        </li>
+      `).join('');
+    }
   }
 
   if (excList) {
-    excList.innerHTML = exc.map(item => `
-      <li>
-        <i class="ph-fill ph-x-circle"></i>
-        <span>${item}</span>
-      </li>
-    `).join('');
+    if (!exc || exc.length === 0) {
+      excList.innerHTML = '<li style="color:var(--ct-text-muted); font-size:0.88rem;">Trip exclusions are being finalized by coordinators.</li>';
+    } else {
+      excList.innerHTML = exc.map(item => `
+        <li>
+          <i class="ph-fill ph-x-circle"></i>
+          <span>${item}</span>
+        </li>
+      `).join('');
+    }
   }
+}
+
+// 3.5 Render Dynamic Packing Checklist
+function renderPackingList(packing) {
+  const container = document.getElementById('packing-checklist-container');
+  if (!container) return;
+
+  if (Array.isArray(packing) && packing.length > 0) {
+    container.innerHTML = `
+      <div class="ct-card">
+        <ul class="ct-list-items" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.85rem;">
+          ${packing.map(item => `
+            <li style="font-size: 0.92rem;">
+              <i class="ph-fill ph-check-circle" style="color: var(--ct-accent-cyan);"></i>
+              <span>${item}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="ct-card" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+      <div>
+        <h3 style="color: var(--ct-accent-cyan); margin-bottom: 0.8rem; font-family: var(--ct-font-display);">
+          <i class="ph ph-identification-card"></i> Identity &amp; Documents
+        </h3>
+        <ul class="ct-list-items">
+          <li><i class="ph-fill ph-check" style="color:var(--ct-accent-cyan)"></i> College Identity Card (Mandatory for entry/transport)</li>
+          <li><i class="ph-fill ph-check" style="color:var(--ct-accent-cyan)"></i> Government Photo ID (Aadhaar / Voter ID / Passport)</li>
+          <li><i class="ph-fill ph-check" style="color:var(--ct-accent-cyan)"></i> Signed Parent Consent Form (if required)</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 style="color: var(--ct-primary); margin-bottom: 0.8rem; font-family: var(--ct-font-display);">
+          <i class="ph ph-t-shirt"></i> Apparel &amp; Footwear
+        </h3>
+        <ul class="ct-list-items">
+          <li><i class="ph-fill ph-check" style="color:var(--ct-primary)"></i> Season-appropriate travel attire &amp; extra change of clothes</li>
+          <li><i class="ph-fill ph-check" style="color:var(--ct-primary)"></i> Comfortable walking / sports shoes with good grip</li>
+          <li><i class="ph-fill ph-check" style="color:var(--ct-primary)"></i> Lightweight jacket or windcheater</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 style="color: var(--ct-accent-amber); margin-bottom: 0.8rem; font-family: var(--ct-font-display);">
+          <i class="ph ph-first-aid"></i> Health &amp; Personal Essentials
+        </h3>
+        <ul class="ct-list-items">
+          <li><i class="ph-fill ph-check" style="color:var(--ct-accent-amber)"></i> Personal 10,000mAh Power Bank &amp; mobile charger</li>
+          <li><i class="ph-fill ph-check" style="color:var(--ct-accent-amber)"></i> Personal prescribed medication &amp; personal toiletries</li>
+          <li><i class="ph-fill ph-check" style="color:var(--ct-accent-amber)"></i> Reusable water bottle (stay hydrated)</li>
+        </ul>
+      </div>
+    </div>
+  `;
 }
 
 // 4. Load Registered Students Roster
